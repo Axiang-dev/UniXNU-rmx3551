@@ -1,0 +1,78 @@
+name: RMX3551 kernel build
+
+# Kernel only.  No IPSW, no userdata image, no firmware: this job exists to
+# answer one question - does the format2 configuration resolve far enough to
+# compile a Darwin 24 kernel for this board.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'board.toml'
+      - 'dts/**'
+      - 'configs/**'
+      - 'kits/**'
+      - 'patches/**'
+      - 'migration/**'
+      - 'feeds.toml'
+      - 'unixnu.lock'
+      - 'scripts/**'
+      - '.github/workflows/kernel.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  kernel:
+    runs-on: macos-15-intel
+    timeout-minutes: 360
+    steps:
+      - name: Checkout device repo with driver submodules
+        uses: actions/checkout@v4
+        with:
+          path: device
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Checkout UniXNU toolchain
+        uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU
+          # The revision the format2 migration notes pin for this branch.
+          ref: 0fc0fc1f9ddd0fbd4787738afef38667df5e0a95
+          path: tools
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Toolchain check
+        run: |
+          set -euo pipefail
+          xcode-select -p
+          xcrun --sdk iphoneos --show-sdk-path
+          brew install dtc >/dev/null 2>&1 || true
+          dtc --version
+          python3 --version
+
+      - name: Resolve configuration and build the kernel
+        working-directory: device
+        run: |
+          set -euo pipefail
+          python3 scripts/build-pong-format2.py \
+            --unixnu ../tools \
+            --out ../build \
+            --jobs 4
+
+      - name: Upload the result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rmx3551-kernel
+          path: |
+            build/**/resolved-profile.json
+            build/**/*_FORMAT2_RESULT.json
+            build/**/hardware.dtb
+            build/**/kernel/*
+          if-no-files-found: warn
+          retention-days: 7

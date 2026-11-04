@@ -10,7 +10,7 @@ summary = "realme GT2 Master Explorer (RMX3551), iPadOS18 Darwin24 format2 migra
 id = "configuration"
 status = "implemented"
 components = ["Rmx3551Platform24"]
-paths = ["board.toml", "feeds.toml", "unixnu.lock", ".gitmodules", "configs/**", "dts/**", "migration/format2/**", "scripts/*format2*", "scripts/*native*sources*", "scripts/pong_native_inputs.py", "scripts/build-pong-profile-kernel.py", ".github/workflows/**", "README.md", "README_EN.md"]
+paths = ["board.toml", "feeds.toml", "unixnu.lock", "configs/**", "dts/**", "migration/format2/**", "scripts/*format2*", "scripts/*native*sources*", "scripts/pong_native_inputs.py", "scripts/build-pong-profile-kernel.py", ".github/workflows/**", "README.md", "README_EN.md"]
 inputs = ["Pong live Android DT、NothingOSS SM8475源码与匹配22H374 restore"]
 configuration = ["board.toml、pong_ipados18_defconfig 与对应板级配置"]
 procedure = ["选择 ARM64、SM8475、22H374 和 Pong 四层配置，数组完整列出。"]
@@ -466,4 +466,4 @@ procedure = ["Preserve existing remote scripts and workflows", "Select required 
 completion = ["Reviewable source-only pull request with cumulative WiFi,brightness,input,audio,battery,USB,storage,userland,GPU/Metal and conditional PAC changes"]
 limits = ["No private binaries,firmware,restore images,Data or credentials", "Full hosted build and packaging pipeline not run", "Poster frame backlog and audible wake recovery still unresolved", "Running22H374 remainsarm64"]
 next_action = ["Review and run the preserved hosted packaging workflow with required local inputs"]
-evidence = [{kind = "source", reported_kind = "host-build", reference = ".gitmodules", result = "Twelve Chengdong-Yu/pong-* driver repositories referenced as submodules under drivers/ with original path names."}, {kind = "source", reported_kind = "host-build", reference = "migration/ipados18/runtime-fixes-and-build-overlay.md", result = "Merged native helper/UI/audio/sleep/Sileo/phone/route binaries, frontend,ArmCpu and changed GPU units compiled. Prepared Mesa source reproduces all25 changed source files; current device results remain separately recorded."}]
+evidence = [{kind = "source", reported_kind = "host-build", reference = result = "Twelve Chengdong-Yu/pong-* driver repositories referenced as submodules under drivers/ with original path names."}, {kind = "source", reported_kind = "host-build", reference = "migration/ipados18/runtime-fixes-and-build-overlay.md", result = "Merged native helper/UI/audio/sleep/Sileo/phone/route binaries, frontend,ArmCpu and changed GPU units compiled. Prepared Mesa source reproduces all25 changed source files; current device results remain separately recorded."}]

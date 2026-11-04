@@ -75,6 +75,18 @@ jobs:
           set -euo pipefail
           python3 scripts/fetch-pong-native-sources.py
 
+      - name: Extract the pinned Apple components
+        # The kernel build reads kernelcache/DeviceTree/TrustCache out of the
+        # restore, at device/apple/<os-profile>/components/.  Only those three
+        # are fetched: the full userdata image is a separate, much heavier job.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          python3 scripts/prepare-ipados18-components.py \
+            --remote \
+            --output-dir apple/ipados18-22H374 \
+            --only KernelCache --only DeviceTree --only StaticTrustCache
+
       - name: Resolve configuration and build the kernel
         working-directory: device
         run: |
@@ -96,7 +108,10 @@ jobs:
         if: failure()
         run: |
           set +e
-          log=$(find "${PONG_WORK_ROOT}" -type f -name '*.log' 2>/dev/null | sort | tail -1)
+          log=$(find "${PONG_WORK_ROOT}" -maxdepth 3 -type f -name 'build-*.log' 2>/dev/null | sort | tail -1)
+          if [ -z "${log}" ]; then
+            log=$(find "${PONG_WORK_ROOT}" -type f -name '*.log' 2>/dev/null | sort | tail -1)
+          fi
           if [ -n "${log}" ]; then
             echo "===== ${log} (last 200 lines) ====="
             tail -200 "${log}"

@@ -80,10 +80,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "${PONG_WORK_ROOT}" "${PONG_INPUT_ROOT}"
+          # The README is explicit: the shipping defconfig needs Wi-Fi, backlight
+          # and Adreno stages whose firmware this public repository does not
+          # carry, so hosted builds select the ci variant instead.
           python3 scripts/build-pong-format2.py \
             --unixnu ../tools \
             --out ../build \
-            --jobs 4
+            --jobs 4 \
+            --defconfig pong_ipados18_ci_defconfig
 
       - name: Show the XNU build log when the kernel fails
         # build-ipados18-pong-macos.py only prints the path of the log it keeps,

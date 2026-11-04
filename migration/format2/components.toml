@@ -1,15 +1,15 @@
 
 [[component]]
-id = "PongPlatform24"
+id = "Rmx3551Platform24"
 kind = "kit"
-function = "Pong SM8475 platform aggregate, including A730, QCA6490, storage, input and power"
+function = "rmx3551 SM8475 platform aggregate, including A730, QCA6490, storage, input and power"
 scope = "device"
-repository = "https://github.com/Chengdong-Yu/UniXNU-pong.git"
+repository = "https://github.com/Axiang-dev/UniXNU-rmx3551.git"
 # The revision is the device repository's own HEAD at install time; the kit
 # ships in this repository, so no external pin applies.
 revision = "local"
-path = "kits/PongPlatform24"
-hardware = ["SM8475", "Adreno730", "QCA6490", "TFA9873", "Goodix Berlin-D"]
+path = "kits/Rmx3551Platform24"
+hardware = ["SM8475", "Adreno730", "QCA6490", "TFA9873", "Synaptics S3910"]
 os_abi = ["ipados-18.7.10-22H374"]
 board_dependencies = ["Pong Android DT", "Pong modem/vendor firmware", "22H374 kernelcache and dyld cache"]
 verified_devices = []

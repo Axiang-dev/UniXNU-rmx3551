@@ -5,6 +5,11 @@ name: RMX3551 kernel build
 # compile a Darwin 24 kernel for this board.
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: 'macOS runner label. The packaging notes pin macos-15-intel; macos-latest is the arm64 fallback when that pool is out of capacity.'
+        required: false
+        default: macos-15-intel
   push:
     paths:
       - 'board.toml'
@@ -23,7 +28,7 @@ permissions:
 
 jobs:
   kernel:
-    runs-on: macos-15-intel
+    runs-on: ${{ inputs.runner || 'macos-15-intel' }}
     timeout-minutes: 360
     env:
       # scripts/pong_paths.py falls back to /Volumes/PongDev and

@@ -1,0 +1,24 @@
+name: macOS runner probe
+
+# Throwaway: answers one question - can this repository still acquire a
+# GitHub-hosted macOS runner at all?  Delete once the kernel build runs again.
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        required: false
+        default: macos-latest
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ${{ inputs.runner || 'macos-latest' }}
+    timeout-minutes: 10
+    steps:
+      - name: Say hello
+        run: |
+          uname -a
+          xcode-select -p
+          sw_vers

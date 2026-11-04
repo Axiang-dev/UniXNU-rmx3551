@@ -25,6 +25,13 @@ jobs:
   kernel:
     runs-on: macos-15-intel
     timeout-minutes: 360
+    env:
+      # scripts/pong_paths.py falls back to /Volumes/PongDev and
+      # /Volumes/Untitled/Pong-iPadOS18, the author's external disks.  Both
+      # accept an override, so point them inside the runner workspace.
+      PONG_WORK_ROOT: ${{ github.workspace }}/pong-work
+      PONG_ROOT: ${{ github.workspace }}/pong-work
+      PONG_INPUT_ROOT: ${{ github.workspace }}/pong-inputs
     steps:
       - name: Checkout device repo with driver submodules
         uses: actions/checkout@v4
@@ -68,6 +75,7 @@ jobs:
         working-directory: device
         run: |
           set -euo pipefail
+          mkdir -p "${PONG_WORK_ROOT}" "${PONG_INPUT_ROOT}"
           python3 scripts/build-pong-format2.py \
             --unixnu ../tools \
             --out ../build \

@@ -55,6 +55,15 @@ jobs:
           dtc --version
           python3 --version
 
+      - name: Fetch the pinned Apple and board sources
+        # feeds.toml lists six Apple-OSS repositories; configs/pong-native-sources.toml
+        # adds four board prerequisites.  The script fetches each pin with
+        # --depth 1, so even the linux tree only costs one commit.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          python3 scripts/fetch-pong-native-sources.py
+
       - name: Resolve configuration and build the kernel
         working-directory: device
         run: |

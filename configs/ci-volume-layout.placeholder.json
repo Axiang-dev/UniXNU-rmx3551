@@ -1,0 +1,13 @@
+{
+  "ci_placeholder": true,
+  "note": "Placeholder volume UUIDs for compiling the kernel before any userdata image exists. A kernel built against these mounts nothing: replace this file with the layout read out of the real 22H374 images (scripts/prepare-pong-userland-from-ipsw.py --volume-layout-out) before flashing.",
+  "os": {
+    "uuid": "C62E4369-C178-5816-8767-28F6C449F221"
+  },
+  "systemos": {
+    "uuid": "A3E08D77-1CF1-5AEB-AD95-742C10950623"
+  },
+  "data": {
+    "uuid": "1983B021-9723-5253-95B5-B23ACF99B49E"
+  }
+}

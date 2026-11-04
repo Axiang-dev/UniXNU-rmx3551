@@ -32,6 +32,10 @@ jobs:
       PONG_WORK_ROOT: ${{ github.workspace }}/pong-work
       PONG_ROOT: ${{ github.workspace }}/pong-work
       PONG_INPUT_ROOT: ${{ github.workspace }}/pong-inputs
+      # The kernel bakes three APFS volume UUIDs in as constants.  Without a
+      # userdata image there is nothing to read them from, so a fixed uuid5
+      # placeholder stands in - enough to compile and link, mounts nothing.
+      PONG_VOLUME_LAYOUT: ${{ github.workspace }}/device/configs/ci-volume-layout.placeholder.json
     steps:
       - name: Checkout device repo with driver submodules
         uses: actions/checkout@v4

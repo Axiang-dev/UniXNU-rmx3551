@@ -87,16 +87,18 @@ jobs:
 
       - name: Show the XNU build log when the kernel fails
         # build-ipados18-pong-macos.py only prints the path of the log it keeps,
-        # and that path dies with the runner.  Surface the tail here.
+        # and that path dies with the runner.  The tree name and the file name
+        # both vary (Pong-iPadOS18-native/build-<utc>.log today), so search.
         if: failure()
         run: |
           set +e
-          log=$(ls -t "${PONG_WORK_ROOT}"/build/Pong-iPadOS18/native-build/*.log 2>/dev/null | head -1)
+          log=$(find "${PONG_WORK_ROOT}" -type f -name '*.log' 2>/dev/null | sort | tail -1)
           if [ -n "${log}" ]; then
-            echo "===== ${log} (last 150 lines) ====="
-            tail -150 "${log}"
+            echo "===== ${log} (last 200 lines) ====="
+            tail -200 "${log}"
           else
-            echo 'no native-build log was produced'
+            echo 'no build log was produced under '"${PONG_WORK_ROOT}"
+            find "${PONG_WORK_ROOT}" -maxdepth 4 -type d 2>/dev/null | head -40
           fi
 
       - name: Upload the result
@@ -109,6 +111,6 @@ jobs:
             build/**/*_FORMAT2_RESULT.json
             build/**/hardware.dtb
             build/**/kernel/*
-            pong-work/build/Pong-iPadOS18/native-build/*.log
+            pong-work/**/*.log
           if-no-files-found: warn
           retention-days: 7

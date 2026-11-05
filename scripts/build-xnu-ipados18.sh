@@ -269,7 +269,7 @@ if [ "${XNU_PONG_WIFI:-0}" = 1 ]; then
   python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-wifi-native.py" --tree "$ROOT" \
     --ath11k "$WIFI_BUILD/libPongAth11k.a"
 fi
-if [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
+if [ "${XNU_PONG_POWER:-0}" = 1 ] || [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
   python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-power-native.py" --tree "$ROOT"
 fi
 if [ ! -f "$KERNEL_SDKROOT/usr/local/lib/kernel/libfirehose_kernel.a" ]; then
@@ -1002,7 +1002,10 @@ PY_RAM_BLOCK_BINDINGS
     PLATFORM_ARCHIVES="$PLATFORM_ARCHIVES -Wl,-force_load,$ROOT/build/pong-adreno/libPongAdrenoPlatform.a"
     PLATFORM_DEPENDENCIES="$PLATFORM_DEPENDENCIES $ROOT/build/pong-adreno/libPongAdrenoPlatform.a"
   fi
-  if [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
+  # POWER builds the archive on its own: NativeUfs calls the Apps-SMMU lease
+  # symbols and a -static kernel link does not honour weak_import.  Wi-Fi and
+  # backlight require POWER, so this union is what keeps the two sides matched.
+  if [ "${XNU_PONG_POWER:-0}" = 1 ] || [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
     POWER_ARCHIVE=$ROOT/build/pong-power/libPongPower.a
     test -f "$POWER_ARCHIVE"
     PLATFORM_ARCHIVES="$PLATFORM_ARCHIVES -Wl,-force_load,$POWER_ARCHIVE"

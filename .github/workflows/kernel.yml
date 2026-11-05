@@ -148,8 +148,12 @@ jobs:
         working-directory: device
         run: |
           set -euo pipefail
+          # The kernel step names its output mach.development.pong, while the
+          # payload step defaults to kernel/kernel.macho: point it at the file.
+          kernel=$(find ../build -path '*/kernel/mach.*' -type f | head -1)
+          echo "payload kernel: ${kernel}"
           python3 ../tools/unixnu build payload \
-            -D . --out ../build \
+            -D . --out ../build --kernel "$kernel" \
             --unique-chip-id 0x0123456789abcdef 2>&1 \
             | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           find ../build -name 'payload.img' -exec ls -l {} \;

@@ -78,8 +78,11 @@ jobs:
           # scripts/decompress-ipados18-kernelcache.py shells out to the lzfse
           # CLI and refuses to run without it.
           brew install lzfse >/dev/null 2>&1 || true
+          # The payload step writes its FAT volume with mformat/mcopy.
+          brew install mtools >/dev/null 2>&1 || true
           dtc --version
           lzfse -h 2>&1 | head -1
+          mformat --version 2>&1 | head -1
           python3 --version
 
       - name: Fetch the pinned Apple and board sources
@@ -137,6 +140,19 @@ jobs:
             --jobs 4 \
             --defconfig pong_ipados18_ci_defconfig 2>&1 \
             | tee "${GITHUB_WORKSPACE}/build-driver.log"
+
+      - name: Build the boot payload volume
+        # Stage 3->4: the FAT volume UniXNU reads (kernel, ADT, config).  The
+        # trust cache and the Data seed are optional and stay out: this is the
+        # bring-up payload, not the shipping one.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          python3 ../tools/unixnu build payload \
+            -D . --out ../build \
+            --unique-chip-id 0x0123456789abcdef 2>&1 \
+            | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
+          find ../build -name 'payload.img' -exec ls -l {} \;
 
       - name: Show the XNU build log when the kernel fails
         # build-ipados18-pong-macos.py only prints the path of the log it keeps,
@@ -219,6 +235,7 @@ jobs:
             build/**/*_FORMAT2_RESULT.json
             build/**/hardware.dtb
             build/**/kernel/*
+            build/**/payload/*
             kernel-build.log
           if-no-files-found: warn
           retention-days: 7

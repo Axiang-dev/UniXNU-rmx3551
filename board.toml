@@ -107,6 +107,9 @@ size_mib = 96
 # applog list trimmed to the services the trace reads. DarwinBoot copies the line into a
 # 1024-byte buffer and refuses more than 1000 bytes; keep the final assembled line within1023 bytes.
 kernel_args = [
+  # Verbose boot: without it XNU initialises the framebuffer console but prints
+  # nothing, which is indistinguishable from a hang on a board with no serial.
+  "-v",
   "keepsyms=1",
   "cpus=1",
   "pong_allow_unauthenticated_root=1",

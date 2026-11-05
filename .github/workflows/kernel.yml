@@ -149,6 +149,16 @@ jobs:
           # happened before any XNU log was written.
           out="${GITHUB_WORKSPACE}/kernel-build.log"
           cp "${GITHUB_WORKSPACE}/build-driver.log" "$out" 2>/dev/null || : > "$out"
+          # Why the link still misses a symbol is usually a config that never
+          # reached the .config, so record what the profile actually resolved to.
+          {
+            echo '===== resolved config ====='
+            cfg=$(find "${GITHUB_WORKSPACE}/build" -maxdepth 5 -name .config 2>/dev/null | head -1)
+            echo "$cfg"
+            grep -E 'XNU_(PONG_POWER|NATIVE_UFS|PONG_WIFI|PONG_ADRENO_PLATFORM|ARMCPU|ARM_DT_PLATFORM)=' "$cfg" 2>/dev/null
+            echo '===== pong-power archive ====='
+            ls -l "${PONG_WORK_ROOT}/build/pong-power" 2>/dev/null || echo 'no pong-power build dir'
+          } 2>&1 | tee -a "$out"
           log=$(find "${PONG_WORK_ROOT}" -maxdepth 3 -type f -name 'build-*.log' 2>/dev/null | sort | tail -1)
           if [ -z "${log}" ]; then
             log=$(find "${PONG_WORK_ROOT}" -type f -name '*.log' 2>/dev/null | sort | tail -1)

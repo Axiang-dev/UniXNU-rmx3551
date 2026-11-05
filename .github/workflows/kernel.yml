@@ -1,5 +1,9 @@
 name: RMX3551 kernel build
 
+# Runner note (2026-11-05): the hosted-macOS shortage was a queue problem, not
+# a repository problem - macos-15-intel and macos-14 both acquire a machine in
+# seconds, macos-latest (the newer pool) is the one that stalls.  Keep the pin.
+#
 # Kernel only.  No IPSW, no userdata image, no firmware: this job exists to
 # answer one question - does the format2 configuration resolve far enough to
 # compile a Darwin 24 kernel for this board.

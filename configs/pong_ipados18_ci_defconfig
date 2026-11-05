@@ -6,6 +6,10 @@
 #     (build-pong-adreno-platform.py refuses to continue without them)
 # NativeUfs, the DT platform, and ArmCpu stay on, so the Intel host gates
 # and the XNU link still run.
+# PongPower must stay on even though this profile carries no firmware: NativeUfs
+# calls pong_smmu_lease_lock/unlock (declared weak_import, but the kernel links
+# with -no_weak_imports), and PongPlatformResources.cpp is the only definition.
+# Turning POWER off fails the link with two undefined symbols.
 # The boot packager defaults to all 8 SM8475 CPU nodes; PSCI starts them.
 # --cpus 1 retains the isolated bring-up option. CPU composition is selected
 # separately by pong_ui_software=1 and the matching 22H374 runtime adapter.
@@ -32,6 +36,7 @@ CONFIG_XNU_NATIVE_PAN=y
 CONFIG_XNU_NATIVE_RAM_BLOCK=n
 CONFIG_XNU_NATIVE_TRUST_CACHE=n
 CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
 CONFIG_XNU_NATIVE_VIRTIO_BLOCK=n
 CONFIG_XNU_NATIVE_VIRTIO_CONSOLE=n
 CONFIG_XNU_OWNER_BOOT_MANIFEST=n

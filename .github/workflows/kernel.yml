@@ -28,7 +28,9 @@ on:
       - '.github/workflows/kernel.yml'
 
 permissions:
-  contents: read
+  # write is for the ci-logs branch only: artifacts and job logs need a token
+  # to download, so the build log is committed back instead.
+  contents: write
 
 jobs:
   kernel:
@@ -127,11 +129,14 @@ jobs:
           # The README is explicit: the shipping defconfig needs Wi-Fi, backlight
           # and Adreno stages whose firmware this public repository does not
           # carry, so hosted builds select the ci variant instead.
+          # tee so the failure has a log even when the crash happens before the
+          # inner build script writes one (a bad defconfig name, for instance).
           python3 scripts/build-pong-format2.py \
             --unixnu ../tools \
             --out ../build \
             --jobs 4 \
-            --defconfig pong_ipados18_ci_defconfig
+            --defconfig pong_ipados18_ci_defconfig 2>&1 \
+            | tee "${GITHUB_WORKSPACE}/build-driver.log"
 
       - name: Show the XNU build log when the kernel fails
         # build-ipados18-pong-macos.py only prints the path of the log it keeps,
@@ -140,22 +145,58 @@ jobs:
         if: failure()
         run: |
           set +e
+          # Start from the driver's own output: it exists even when the failure
+          # happened before any XNU log was written.
+          out="${GITHUB_WORKSPACE}/kernel-build.log"
+          cp "${GITHUB_WORKSPACE}/build-driver.log" "$out" 2>/dev/null || : > "$out"
           log=$(find "${PONG_WORK_ROOT}" -maxdepth 3 -type f -name 'build-*.log' 2>/dev/null | sort | tail -1)
           if [ -z "${log}" ]; then
             log=$(find "${PONG_WORK_ROOT}" -type f -name '*.log' 2>/dev/null | sort | tail -1)
           fi
           if [ -n "${log}" ]; then
             echo "===== ${log} ====="
+            echo "===== ${log} =====" >> "$out"
             # The interesting line is usually not in the tail, so show both the
             # tail and every error the build printed.
-            tail -120 "${log}"
-            echo "===== error lines ====="
-            grep -n -E "error:|Error |FAILED|failed|not found|No such file" "${log}" | tail -60
-            cp "${log}" "${GITHUB_WORKSPACE}/kernel-build.log"
+            tail -400 "${log}" | tee -a "$out"
+            echo "===== error lines =====" | tee -a "$out"
+            grep -n -E "error:|Error |FAILED|failed|not found|No such file" "${log}" | tail -80 | tee -a "$out"
           else
-            echo 'no build log was produced under '"${PONG_WORK_ROOT}"
-            find "${PONG_WORK_ROOT}" -maxdepth 4 -type d 2>/dev/null | head -40
+            echo 'no XNU log was produced under '"${PONG_WORK_ROOT}" | tee -a "$out"
+            find "${PONG_WORK_ROOT}" -maxdepth 4 -type d 2>/dev/null | head -40 | tee -a "$out"
           fi
+
+      - name: Publish the build log to the ci-logs branch
+        # Job logs and artifacts both require a token to download.  Pushing the
+        # log to a throwaway branch keeps the failure readable from a plain
+        # `git fetch`, which is the only channel available without a PAT.
+        if: always()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          src="${GITHUB_WORKSPACE}/kernel-build.log"
+          [ -f "$src" ] || { echo 'no kernel-build.log to publish'; exit 0; }
+          rm -rf "${RUNNER_TEMP}/ci-logs"
+          git init -q "${RUNNER_TEMP}/ci-logs"
+          cd "${RUNNER_TEMP}/ci-logs"
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # Full fetch, not --depth 1: a shallow clone cannot push over a
+          # complete remote branch ("shallow update not allowed").
+          if git fetch -q origin ci-logs 2>/dev/null; then
+            git checkout -q -B ci-logs FETCH_HEAD
+          else
+            git checkout -q --orphan ci-logs
+            git rm -rq --cached . 2>/dev/null || true
+          fi
+          mkdir -p runs
+          cp "$src" "runs/${GITHUB_RUN_ID}-attempt${GITHUB_RUN_ATTEMPT}.log"
+          printf '%s\n' "${GITHUB_RUN_ID} ${GITHUB_SHA::8} ${GITHUB_JOB} $(date -u +%FT%TZ)" > runs/index.txt
+          git add -A
+          git -c user.name='ci' -c user.email='ci@users.noreply.github.com' \
+              commit -q -m "log: run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}" || true
+          git push -q --force origin ci-logs
+          echo "published runs/${GITHUB_RUN_ID}-attempt${GITHUB_RUN_ATTEMPT}.log"
 
       - name: Upload the result
         if: always()

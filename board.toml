@@ -110,6 +110,9 @@ kernel_args = [
   # Verbose boot: without it XNU initialises the framebuffer console but prints
   # nothing, which is indistinguishable from a hang on a board with no serial.
   "-v",
+  # The documented on-screen diagnostic page: it draws its own overlay into the
+  # XNU framebuffer mapping, so it works before the text console is alive.
+  "boot-progress=1",
   "keepsyms=1",
   "cpus=1",
   "pong_allow_unauthenticated_root=1",

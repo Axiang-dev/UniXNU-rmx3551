@@ -115,6 +115,35 @@ jobs:
           PY
           df -h
 
+      - name: Put the dyld shared cache on the root volume
+        # launchd resolves its cache through the root's own
+        # /System/Library/Caches/com.apple.dyld and strips the DYLD_* environment
+        # the kernel passes, so a cache that only exists inside the SystemOS
+        # cryptex is unreachable and launchd_cache_loader aborts (-67062).  The
+        # root window is rebuilt with the cryptex caches and keeps its volume
+        # UUID, which the kernel's root_match_volume_uuid depends on.
+        timeout-minutes: 90
+        run: |
+          set -euo pipefail
+          prepared="$(cat ci-userland-path.txt)"
+          python3 device/scripts/inject-dyld-root.py \
+            --root "${prepared}/pong-ipados18-system.cdr" \
+            --cryptex "${prepared}/pong-ipados18-systemos.cdr" \
+            --work "${RUNNER_TEMP}/root-rebuild" \
+            --report ci-dyld-root.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('ci-dyld-root.json').read_text())
+          if not report['cache']:
+              raise SystemExit('the rebuilt root carries no dyld cache')
+          print('root bytes', report['original_bytes'], '->', report['rebuilt_bytes'])
+          print('uuid kept', report['os_uuid'])
+          for item in report['cache']:
+              print(' ', item['name'], item['bytes'])
+          PY
+          df -h
+
       - name: SHNGROOT directory
         # Hashes every byte of roughly 19 GiB; this is the disk-bound half.
         timeout-minutes: 150

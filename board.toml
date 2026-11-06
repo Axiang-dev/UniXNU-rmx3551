@@ -102,6 +102,11 @@ volume = "UNIXNU"
 # inside the payload image the package step repacks, so the volume stays well
 # below that bound.
 size_mib = 96
+# The original Apple trust caches travel in the payload (docs/concepts/security.md):
+# StaticTrustCache and Cryptex1,SystemTrustCache from this IPSW, bundled by
+# scripts/build-trust-bundle.py.  The payload step accepts the bundle only when
+# its SHA-256 is listed here.
+trust_cache_sha256 = ["cc4f5079fafbb81cf32f54718666461630381972867428e13c6e8a906b58d7cd"]
 # The current runtime arguments this board brings up with: the ones scripts/build-ipados18-prelinked-boot.py
 # used to write, minus its boot-epoch (the ADT carries a software clock instead) and with the
 # applog list trimmed to the services the trace reads. DarwinBoot copies the line into a

@@ -205,9 +205,12 @@ jobs:
           python3 scripts/pong-prelink-prune-personality.py "$kernel"
 
       - name: Build the boot payload volume
-        # Stage 3->4: the FAT volume UniXNU reads (kernel, ADT, config).  The
-        # trust cache and the Data seed are optional and stay out: this is the
-        # bring-up payload, not the shipping one.
+        # Stage 3->4: the FAT volume UniXNU reads (kernel, ADT, trust caches,
+        # config).  The trust caches are the IPSW's own StaticTrustCache and
+        # Cryptex1,SystemTrustCache modules: the original AppleImage4/AMFI
+        # components verify the sealed system binaries and the dyld shared cache
+        # against them (docs/concepts/security.md), and without them launchd's
+        # cache loader aborts with "Failed to verify code directory".
         working-directory: device
         run: |
           set -euo pipefail
@@ -218,9 +221,16 @@ jobs:
             kernel=$(find ../build -path '*/kernel/mach.*' -type f | head -1)
           fi
           echo "payload kernel: ${kernel}"
+          python3 scripts/prepare-ipados18-components.py --remote \
+            --only StaticTrustCache --only 'Cryptex1,SystemTrustCache' \
+            --output-dir apple/ipados18-22H374 2>&1 | tail -3
+          caches=(apple/ipados18-22H374/components/Firmware/*.trustcache)
+          echo "trust modules: ${caches[*]}"
+          python3 scripts/build-trust-bundle.py --output ../build/trust/rmx3551-trust.bundle "${caches[@]}"
           python3 ../tools/unixnu build payload \
             -D . --out ../build --kernel "$kernel" \
-            --unique-chip-id 0x0123456789abcdef 2>&1 \
+            --unique-chip-id 0x0123456789abcdef \
+            --trust-cache ../build/trust/rmx3551-trust.bundle 2>&1 \
             | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           find ../build -name 'payload.img' -exec ls -l {} \;
 

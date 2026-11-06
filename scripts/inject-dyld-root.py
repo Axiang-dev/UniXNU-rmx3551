@@ -135,19 +135,22 @@ def main():
     args.work.mkdir(parents=True, exist_ok=True)
     scratch = args.work / 'root-rebuild.sparseimage'
 
+    # The original stays mounted until ditto has copied it; only then is its
+    # name handed to the rebuilt volume.
     root_device, root_mount = attach(args.root)
-    try:
-        wanted_uuid = volume_uuid(root_mount)
-        name = plistlib.loads(run(['diskutil', 'info', '-plist', root_mount]).stdout)['VolumeName']
-        used_bytes = int(plistlib.loads(run(['diskutil', 'info', '-plist', root_mount]).stdout)['TotalSize'])
-    finally:
-        detach(root_device)
+    info = plistlib.loads(run(['diskutil', 'info', '-plist', root_mount]).stdout)
+    wanted_uuid = info['VolumeUUID']
+    name = info['VolumeName']
     size_mib = (original_bytes >> 20) + args.extra_mib
     print(f'root: {original_bytes} bytes, uuid {wanted_uuid}, name {name!r}; '
           f'new volume {size_mib} MiB', file=sys.stderr)
 
+    # A distinct volume name: two volumes with the same name land on the same
+    # /Volumes path and ditto would copy the root onto itself.  The real name is
+    # restored after the original is detached.
+    staging_name = 'RMXRootRebuild'
     run(['hdiutil', 'create', '-size', f'{size_mib}m', '-fs', 'APFS',
-         '-volname', name, '-type', 'SPARSE', '-quiet', scratch])
+         '-volname', staging_name, '-type', 'SPARSE', '-quiet', scratch])
     new_device, new_mount = attach(scratch, readwrite=True)
     try:
         # ditto keeps signatures, xattrs and ACLs; the root is a sealed system
@@ -176,6 +179,11 @@ def main():
                   f'{sum(item["bytes"] for item in copied)} bytes', file=sys.stderr)
         finally:
             detach(cryptex_device)
+        # The original root is no longer needed: free its name, give it back to
+        # the rebuilt volume so the superblock lookup and the system volume name
+        # stay identical to a stock install.
+        detach(root_device)
+        run(['diskutil', 'rename', new_mount, name])
     finally:
         detach(new_device)
 

@@ -170,10 +170,14 @@ jobs:
           import json, sys
           from pathlib import Path
           sys.path.insert(0, 'kits/NativePrelink')
-          from native_prelink import macho
+          from native_prelink import arm64_image, macho
           from emit_prelink import COALESCED
           board = json.loads(Path(sys.argv[1]).read_text())
-          image = macho(Path(sys.argv[2]).read_bytes())
+          raw = Path(sys.argv[2]).read_bytes()
+          print('kernelcache magic:', raw[:4].hex(), 'bytes:', len(raw))
+          # The reference script slices the fat image before parsing; macho()
+          # rejects anything that is not a thin little-endian arm64 header.
+          image = macho(arm64_image(raw))
           base = min(s['va'] for s in image['segments'] if s['name'] in COALESCED and s['size'])
           print(hex(int(board['fixed_prelink_base'], 16) - base))
           PY_SLIDE

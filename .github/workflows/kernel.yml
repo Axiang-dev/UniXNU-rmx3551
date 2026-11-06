@@ -174,7 +174,8 @@ jobs:
           from emit_prelink import COALESCED
           board = json.loads(Path(sys.argv[1]).read_text())
           raw = Path(sys.argv[2]).read_bytes()
-          print('kernelcache magic:', raw[:4].hex(), 'bytes:', len(raw))
+          # Diagnostics must go to stderr: stdout is captured as the slide.
+          print('kernelcache magic:', raw[:4].hex(), 'bytes:', len(raw), file=sys.stderr)
           # The reference script slices the fat image before parsing; macho()
           # rejects anything that is not a thin little-endian arm64 header.
           image = macho(arm64_image(raw))

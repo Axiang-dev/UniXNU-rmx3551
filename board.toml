@@ -174,13 +174,22 @@ packed_data_ramdisk = false
 unique_chip_id = "required"
 # The J171 BuildIdentity's chip ID, the same value [ipsw] carries.
 chip_id = "0x8010"
+# Root selection (docs/guide/userdata.md "Root selection"): the kernel mounts the
+# volume whose UUID the /chosen/root-matching dictionary names.  This is the OS
+# volume inside the userdata image this board installs (role 1, "system"),
+# read back from the flashed image with tools/apfs.
+root_match_volume_uuid = "B07DF049-7AD9-47B5-9F8F-9EE728056398"
 
 [userdata]
-# The userdata partition this board installs into, in 4 KiB sectors: the geometry
-# scripts/install-pong-ufs-data.py and scripts/prepare-ipados18-ufs-layout.py check
-# against, and the same pair those scripts read from the device's own GPT.
-first_lba = 0x413248
-last_lba = 0x75A40EA
+# The userdata partition this board installs into, in 4 KiB sectors, read from the
+# device's own GPT (docs/guide/userdata.md: "first_lba and last_lba come from the
+# GPT entry named userdata on the device").  The reference port's pair
+# (0x413248..0x75A40EA, a 512 GB unit) describes a different capacity and made
+# every 256 GB unit fail the driver's geometry check.
+#
+#   0x2B52EC .. 0x3AA97FA  *  4096  =  240,321,506,304 bytes (223.8 GiB)
+first_lba = 0x2B52EC
+last_lba = 0x3AA97FA
 lba_bytes = 4096
 # The windows of the userdata image are the OS and SystemOS disk images of the IPSW, in
 # that order; the OS profile lists them ([userdata] windows of

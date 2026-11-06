@@ -13,9 +13,10 @@
 [submodule "drivers/DarwinBoot24"]
 	path = drivers/DarwinBoot24
 	url = https://github.com/Chengdong-Yu/pong-darwin-boot24.git
-[submodule "drivers/NativeUfs"]
-	path = drivers/NativeUfs
-	url = https://github.com/Chengdong-Yu/pong-ufs.git
+# The UFS transport is vendored in this repository rather than checked out as a
+# submodule: the board carries two source patches (optional pong,* property
+# cross-checks and the device-derived userdata geometry) that the upstream tree
+# does not have.  See drivers/NativeUfs/PongUfsTransport.cpp.
 [submodule "drivers/PongAdreno"]
 	path = drivers/PongAdreno
 	url = https://github.com/Chengdong-Yu/pong-adreno.git

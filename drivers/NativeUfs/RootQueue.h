@@ -4,10 +4,11 @@ static bool hostWaitRegister (unsigned offset, uint32_t mask, uint32_t value)
 {
   uint64_t deadline;
   clock_interval_to_deadline (100, kMillisecondScale, &deadline);
+  unsigned polls = 0;
   do {
     if ((read32 (gHost.hc, offset) & mask) == value) return true;
     IODelay (10);
-  } while (mach_absolute_time () < deadline);
+  } while (++polls < 10000 && mach_absolute_time () < deadline);
   return false;
 }
 

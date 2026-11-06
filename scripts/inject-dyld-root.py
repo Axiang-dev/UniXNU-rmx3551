@@ -35,7 +35,17 @@ from pathlib import Path
 
 def run(argv, **kwargs):
     print('+', ' '.join(str(a) for a in argv), file=sys.stderr)
-    return subprocess.run([str(a) for a in argv], check=True, capture_output=True, **kwargs)
+    result = subprocess.run([str(a) for a in argv], capture_output=True, **kwargs)
+    if result.returncode:
+        # ditto over a system volume can run for half an hour before it hits a
+        # single directory it may not read; without its stderr the failure looks
+        # like a timeout.
+        for stream in (result.stdout, result.stderr):
+            text = stream.decode('utf-8', 'replace').strip()
+            if text:
+                print(text[-4000:], file=sys.stderr)
+        raise SystemExit(f'{argv[0]} failed with exit status {result.returncode}')
+    return result
 
 
 def hdiutil_info(image):
@@ -155,13 +165,12 @@ def main():
     try:
         # ditto keeps signatures, xattrs and ACLs; the root is a sealed system
         # volume whose files must stay byte identical.
-        run(['ditto', '--rsrc', '--extattr', '--acl', root_mount, new_mount])
-        target = Path(new_mount) / 'System/Library/Caches/com.apple.dyld'
-        if target.is_symlink():
-            # A sealed root points this directory at preboot; the rebuilt volume
-            # carries the real files here instead, so the link has to go.
-            target.unlink()
-        target.mkdir(parents=True, exist_ok=True)
+        # The root carries root-only directories (700); the runner is not root.
+        run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', root_mount, new_mount])
+        target = str(Path(new_mount) / 'System/Library/Caches/com.apple.dyld')
+        # A sealed root points this directory at preboot; the rebuilt volume
+        # carries the real files here instead, so the link has to go.
+        run(['sudo', 'sh', '-c', f'rm -rf {target} && mkdir -p {target}'])
         cryptex_device, cryptex_mount = attach(args.cryptex)
         try:
             found = sorted(Path(cryptex_mount).rglob('dyld_shared_cache*'))
@@ -171,10 +180,11 @@ def main():
             for source in found:
                 if not source.is_file():
                     continue
-                destination = target / source.name
-                run(['ditto', '--rsrc', '--extattr', '--acl', source, destination])
-                copied.append({'name': source.name, 'bytes': destination.stat().st_size,
-                               'sha256': hashlib.sha256(destination.read_bytes()).hexdigest()})
+                destination = Path(target) / source.name
+                run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', source, destination])
+                # Size only: the layout step hashes the whole window afterwards,
+                # and hashing 1.6 GiB here would double the step's runtime.
+                copied.append({'name': source.name, 'bytes': Path(destination).stat().st_size})
             print(f'cache: {len(copied)} files, '
                   f'{sum(item["bytes"] for item in copied)} bytes', file=sys.stderr)
         finally:

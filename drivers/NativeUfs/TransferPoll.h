@@ -22,7 +22,7 @@ static UfsTransferEnd pollUfsTransfer(Port &port, UfsTransferPoll &state)
       // Also allow a completion so fast that software never observes DB=1.
       if (state.ocs != 15) return UfsTransferEnd::Completed;
     }
-    if (port.expired()) return UfsTransferEnd::Timeout;
+    if (state.polls >= 1000000 || port.expired()) return UfsTransferEnd::Timeout;
     port.delay();
   }
 }

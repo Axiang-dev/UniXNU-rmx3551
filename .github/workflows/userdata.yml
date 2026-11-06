@@ -70,6 +70,9 @@ jobs:
             command -v "$t" >/dev/null || { echo "missing tool: $t"; exit 1; }
           done
           sudo -n true || { echo 'the userland chain needs passwordless sudo'; exit 1; }
+          # decrypt-ipados18-aea.py speaks HPKE to unwrap the AEA content keys.
+          python3 -m pip install --user --quiet pyhpke
+          python3 -c 'import pyhpke; print("pyhpke", pyhpke.__name__)'
 
       - name: Prepared userland from the IPSW
         # Attaches the restore, decrypts the two AEA payloads and writes the

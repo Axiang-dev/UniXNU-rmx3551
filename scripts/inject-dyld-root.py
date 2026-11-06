@@ -178,8 +178,10 @@ def main():
     parser.add_argument('--cryptex', type=Path, required=True,
                         help='SystemOS image that carries the dyld cache')
     parser.add_argument('--work', type=Path, required=True)
-    parser.add_argument('--slack-mib', type=int, default=512,
-                        help='room left over for APFS metadata once the cache is in')
+    parser.add_argument('--slack-mib', type=int, default=1024,
+                        help='room left over for APFS metadata once the cache is in; '
+                             '512 was 50 MiB short on the 22H374 root, whose copy takes '
+                             '330 MiB more than its source container')
     parser.add_argument('--keep-original', action='store_true',
                         help='keep a .orig.cdr copy next to the root (6.4 GiB)')
     parser.add_argument('--report', type=Path, default=None)
@@ -231,6 +233,14 @@ def main():
             # system volume whose files must stay byte identical.  The root
             # carries root-only directories (700) and the runner is not root.
             run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', root_mount, new_mount])
+            after_root = free_mib(new_mount)
+            print(f'root copied: {before - after_root} MiB used, {after_root} MiB left; '
+                  f'cache needs {cache_bytes / MIB:.0f} MiB', file=sys.stderr)
+            if after_root < cache_bytes // MIB + 256:
+                raise SystemExit(
+                    f'{scratch}: the copy leaves {after_root} MiB, the cache needs '
+                    f'{cache_bytes / MIB:.0f} MiB + 256 MiB; rerun with --slack-mib '
+                    f'{args.slack_mib + cache_bytes // MIB + 512 - after_root}')
             target = Path(new_mount) / 'System/Library/Caches/com.apple.dyld'
             # The stock root points this directory at the cryptex it cannot see;
             # the rebuilt volume carries the real files here instead.

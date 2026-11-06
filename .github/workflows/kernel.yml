@@ -144,17 +144,13 @@ jobs:
       - name: Prelink the Apple kexts into the kernel
         # A source build alone is not a bootable kernel: the Apple kexts and
         # platform services live in the original kernelcache, and IOKit's C++
-        # runtime faults in OSMetaClass::postModLoad without them.  board.toml
-        # [kernel.prelink] still carries the 21H461 slide, so this derives the
-        # slide from the 22H374 storage bindings the same way
-        # scripts/build-ipados18-prelinked-boot.py does:
-        #   slide = fixed_prelink_base - lowest coalesced segment base
+        # runtime faults in OSMetaClass::postModLoad without them.  This mirrors
+        # scripts/build-ipados18-prelinked-boot.py: the kernelcache is a fat
+        # image, so it is sliced to a thin arm64 Mach-O first, and that thin
+        # file is what emit_prelink.py expects for --prelinked.
         working-directory: device
         run: |
           set -euo pipefail
-          # The storage bind step writes into the device repository, not the
-          # build tree (scripts/build-pong-ufs-ipados18-macos.py passes its own
-          # output directory), so look in both places.
           bindings=$(find . ../build -name bindings.json -path '*native-ufs*' 2>/dev/null | head -1)
           echo "bindings: ${bindings:-<none>}"
           if [ -z "${bindings}" ]; then
@@ -166,7 +162,8 @@ jobs:
           native=$(find ../build -path '*/kernel/mach.development.pong' -type f | head -1)
           out=$(dirname "$native")/kernel.macho
           echo "native: ${native}"
-          slide=$(python3 - "$bindings" "$cache" <<'PY_SLIDE'
+          thin=$(mktemp -t prelinked).macho
+          slide=$(python3 - "$bindings" "$cache" "$thin" <<'PY_SLIDE'
           import json, sys
           from pathlib import Path
           sys.path.insert(0, 'kits/NativePrelink')
@@ -174,19 +171,17 @@ jobs:
           from emit_prelink import COALESCED
           board = json.loads(Path(sys.argv[1]).read_text())
           raw = Path(sys.argv[2]).read_bytes()
-          # Diagnostics must go to stderr: stdout is captured as the slide.
-          print('kernelcache magic:', raw[:4].hex(), 'bytes:', len(raw), file=sys.stderr)
-          # The reference script slices the fat image before parsing; macho()
-          # rejects anything that is not a thin little-endian arm64 header.
-          image = macho(arm64_image(raw))
+          thin = arm64_image(raw)
+          Path(sys.argv[3]).write_bytes(thin)
+          image = macho(thin)
           base = min(s['va'] for s in image['segments'] if s['name'] in COALESCED and s['size'])
           print(hex(int(board['fixed_prelink_base'], 16) - base))
           PY_SLIDE
           )
-          echo "slide: ${slide}"
+          echo "slide: ${slide}  thin: $(stat -f%z "$thin") bytes"
           python3 kits/NativePrelink/emit_prelink.py \
             --kernel "$native" \
-            --prelinked "$cache" \
+            --prelinked "$thin" \
             --slide "$slide" \
             --output "$out" \
             --root com.apple.kec.corecrypto \

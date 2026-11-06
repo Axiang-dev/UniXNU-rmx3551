@@ -141,6 +141,48 @@ jobs:
             --defconfig pong_ipados18_ci_defconfig 2>&1 \
             | tee "${GITHUB_WORKSPACE}/build-driver.log"
 
+      - name: Prelink the Apple kexts into the kernel
+        # A source build alone is not a bootable kernel: the Apple kexts and
+        # platform services live in the original kernelcache, and IOKit's C++
+        # runtime faults in OSMetaClass::postModLoad without them.  board.toml
+        # [kernel.prelink] still carries the 21H461 slide, so this derives the
+        # slide from the 22H374 storage bindings the same way
+        # scripts/build-ipados18-prelinked-boot.py does:
+        #   slide = fixed_prelink_base - lowest coalesced segment base
+        working-directory: device
+        run: |
+          set -euo pipefail
+          bindings=$(find ../build -name bindings.json -path '*native-ufs*' | head -1)
+          echo "bindings: ${bindings:-<none>}"
+          cache=apple/ipados18-22H374/components/kernelcache.release.ipad7c.decompressed/kernelcache.release.ipad7c.decompressed
+          native=$(find ../build -path '*/kernel/mach.development.pong' -type f | head -1)
+          out=$(dirname "$native")/kernel.macho
+          echo "native: ${native}"
+          slide=$(python3 - "$bindings" "$cache" <<'PY_SLIDE'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, 'kits/NativePrelink')
+          from native_prelink import macho, COALESCED
+          board = json.loads(Path(sys.argv[1]).read_text())
+          image = macho(Path(sys.argv[2]).read_bytes())
+          base = min(s['va'] for s in image['segments'] if s['name'] in COALESCED and s['size'])
+          print(hex(int(board['fixed_prelink_base'], 16) - base))
+          PY_SLIDE
+          )
+          echo "slide: ${slide}"
+          python3 kits/NativePrelink/emit_prelink.py \
+            --kernel "$native" \
+            --prelinked "$cache" \
+            --slide "$slide" \
+            --output "$out" \
+            --root com.apple.kec.corecrypto \
+            --root com.apple.kec.pthread \
+            --root com.apple.filesystems.apfs \
+            --root com.apple.kec.Compression \
+            --root com.apple.AppleFSCompression.AppleFSCompressionTypeZlib \
+            2>&1 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
+          ls -l "$out"
+
       - name: Build the boot payload volume
         # Stage 3->4: the FAT volume UniXNU reads (kernel, ADT, config).  The
         # trust cache and the Data seed are optional and stay out: this is the
@@ -150,7 +192,10 @@ jobs:
           set -euo pipefail
           # The kernel step names its output mach.development.pong, while the
           # payload step defaults to kernel/kernel.macho: point it at the file.
-          kernel=$(find ../build -path '*/kernel/mach.*' -type f | head -1)
+          kernel=$(find ../build -path '*/kernel/kernel.macho' -type f | head -1)
+          if [ -z "$kernel" ]; then
+            kernel=$(find ../build -path '*/kernel/mach.*' -type f | head -1)
+          fi
           echo "payload kernel: ${kernel}"
           python3 ../tools/unixnu build payload \
             -D . --out ../build --kernel "$kernel" \

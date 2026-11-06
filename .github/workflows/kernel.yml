@@ -152,8 +152,16 @@ jobs:
         working-directory: device
         run: |
           set -euo pipefail
-          bindings=$(find ../build -name bindings.json -path '*native-ufs*' | head -1)
+          # The storage bind step writes into the device repository, not the
+          # build tree (scripts/build-pong-ufs-ipados18-macos.py passes its own
+          # output directory), so look in both places.
+          bindings=$(find . ../build -name bindings.json -path '*native-ufs*' 2>/dev/null | head -1)
           echo "bindings: ${bindings:-<none>}"
+          if [ -z "${bindings}" ]; then
+            echo "no storage bindings found; candidates:"
+            find . ../build -name bindings.json 2>/dev/null | head -5
+            exit 1
+          fi
           cache=apple/ipados18-22H374/components/kernelcache.release.ipad7c.decompressed/kernelcache.release.ipad7c.decompressed
           native=$(find ../build -path '*/kernel/mach.development.pong' -type f | head -1)
           out=$(dirname "$native")/kernel.macho

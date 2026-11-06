@@ -118,7 +118,12 @@ kernel_args = [
   # compiles far fewer kalloc_type users than the shipping one, so the
   # default budget (120) concentrates in a single class and panics; 24 keeps
   # every class under the bound.
-  "kt_fixed_zones=24",
+  # arm64 has 29 size classes and each needs at least 2 signature zones, so the
+  # signature share (7/10 of the budget) must reach 58 - below that the kernel
+  # asserts "remaining_zones >= min_sig".  The type share (3/10) must in turn
+  # stay under 29, or a single class exceeds the 32-zone array.  83 is the only
+  # value that satisfies both: 58 signature zones, 25 type zones.
+  "kt_fixed_zones=83",
   "keepsyms=1",
   "cpus=1",
   "pong_allow_unauthenticated_root=1",

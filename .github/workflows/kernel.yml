@@ -162,7 +162,8 @@ jobs:
           import json, sys
           from pathlib import Path
           sys.path.insert(0, 'kits/NativePrelink')
-          from native_prelink import macho, COALESCED
+          from native_prelink import macho
+          from emit_prelink import COALESCED
           board = json.loads(Path(sys.argv[1]).read_text())
           image = macho(Path(sys.argv[2]).read_bytes())
           base = min(s['va'] for s in image['segments'] if s['name'] in COALESCED and s['size'])

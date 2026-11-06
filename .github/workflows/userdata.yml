@@ -71,8 +71,15 @@ jobs:
           done
           sudo -n true || { echo 'the userland chain needs passwordless sudo'; exit 1; }
           # decrypt-ipados18-aea.py speaks HPKE to unwrap the AEA content keys.
-          python3 -m pip install --user --quiet pyhpke
-          python3 -c 'import pyhpke; print("pyhpke", pyhpke.__name__)'
+          # Homebrew's python3 is externally managed and refuses pip, so the
+          # dependency lives in a venv that goes first on PATH: every later step
+          # (and the sys.executable subprocesses the prepare script spawns) then
+          # sees pyhpke.
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install --quiet --upgrade pip
+          "${RUNNER_TEMP}/venv/bin/pip" install --quiet pyhpke
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
+          "${RUNNER_TEMP}/venv/bin/python3" -c 'import pyhpke, sys; print("pyhpke ready", sys.version.split()[0])'
 
       - name: Prepared userland from the IPSW
         # Attaches the restore, decrypts the two AEA payloads and writes the

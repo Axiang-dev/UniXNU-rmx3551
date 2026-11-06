@@ -145,10 +145,11 @@ kernel_args = [
   "pong_ufs_readwrite=1",
   "ignition_level=1",
   "dyld_flags=0x8",
-  "launchd_rd=md0",
+  # launchd_rd=md0 was the reference port's ramdisk handoff: it makes launchd
+  # treat the boot as a restore environment and re-exec launchd_cache_loader,
+  # which aborts on a root that has no dyld cache of its own.  This board's root
+  # and Data are on UFS, so the flag is gone.
   "pong_init_trace=1",
-  "applog=1",
-  "applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd",
   "pong_software_keybag=1",
   "pong_display=1",
   "pong_software_ui=1",

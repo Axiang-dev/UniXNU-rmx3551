@@ -10,27 +10,41 @@ launchd_cache_loader aborts with -67062 (errSecCSUnsigned) before init runs.
 
 This step rebuilds the OS window:
 
-  1. hdiutil creates a larger APFS volume and ditto copies the original root
-     into it (signatures, xattrs and ACLs preserved),
-  2. the cryptex's dyld_shared_cache* files are copied to
+  1. the cryptex is scanned first, so the new volume is sized from the real
+     cache size instead of a guess (a short volume fails 30 minutes into the
+     copy with ENOSPC),
+  2. hdiutil creates an APFS volume of exactly that size and ditto copies the
+     original root into it (signatures, xattrs and ACLs preserved),
+  3. the cryptex's dyld_shared_cache* files are copied to
      /System/Library/Caches/com.apple.dyld/ on the new root,
-  3. the new volume's UUID is rewritten to the original one -- the kernel's
-     root_match_volume_uuid is a compile-time constant and XNU selects the root
-     IOMedia by that UUID -- and the volume superblock checksum is recomputed,
-  4. the result is converted to the raw image the userdata layout consumes.
+  4. the result is converted to the raw image the layout consumes and its
+     volume superblock is retagged with the original UUID *and* name -- the
+     kernel's root_match_volume_uuid is a compile-time constant and XNU selects
+     the root IOMedia by that UUID, so the copy has to answer to it.
 
 Every step fails loudly rather than producing an image that would not boot.
 """
 import argparse
 import hashlib
 import json
+import os
 import plistlib
-import shutil
 import struct
 import subprocess
 import sys
 import uuid
 from pathlib import Path
+
+MIB = 1 << 20
+
+# dyld opens the caches themselves and their numbered subcaches.  The
+# companion files are for symbolication tools; they are gigabytes, they are
+# never read at boot, and every one of them makes the flashed image bigger.
+SKIP_SUFFIXES = ('.symbols', '.map', '.json', '.list', '.txt')
+
+# Name the rebuilt volume wears while it is being filled; retag_volume() writes
+# the original name into the superblock once the original is detached.
+STAGING_NAME = 'RMXRootRebuild'
 
 
 def run(argv, **kwargs):
@@ -46,11 +60,6 @@ def run(argv, **kwargs):
                 print(text[-4000:], file=sys.stderr)
         raise SystemExit(f'{argv[0]} failed with exit status {result.returncode}')
     return result
-
-
-def hdiutil_info(image):
-    out = run(['hdiutil', 'imageinfo', '-plist', image]).stdout
-    return plistlib.loads(out)
 
 
 def attach(image, readwrite=False):
@@ -69,9 +78,27 @@ def detach(device):
     subprocess.run(['hdiutil', 'detach', '-force', str(device)], capture_output=True)
 
 
-def volume_uuid(mount_point):
-    doc = plistlib.loads(run(['diskutil', 'info', '-plist', mount_point]).stdout)
-    return doc['VolumeUUID']
+def free_mib(mount_point):
+    stats = os.statvfs(mount_point)
+    return stats.f_bavail * stats.f_frsize // MIB
+
+
+def cache_files(cryptex_mount):
+    """The caches dyld needs, as (path, bytes) pairs, largest first.
+
+    Returns the skipped names too, so the report can say what stayed out.
+    """
+    found = []
+    skipped = []
+    for path in sorted(Path(cryptex_mount).rglob('dyld_shared_cache*')):
+        if not path.is_file():
+            continue
+        if path.name.endswith(SKIP_SUFFIXES):
+            skipped.append(path.name)
+            continue
+        found.append((path, path.stat().st_size))
+    found.sort(key=lambda item: item[1], reverse=True)
+    return found, skipped
 
 
 # ---------------------------------------------------------------- fletcher
@@ -90,43 +117,58 @@ def fletcher64(buf):
     return (c2 << 32) | c1
 
 
-def retag_volume(image, wanted, volume_name):
-    """Rewrite the APFS volume UUID and refresh its Fletcher-64, in place.
+def retag_volume(image, wanted_uuid, wanted_name):
+    """Rewrite the APFS volume UUID and name, in place, streaming.
 
-    The volume superblock is an `APSB` object; its uuid sits 0xF0 bytes into
-    the block and apfs_volname at 0x2C0 (the offsets tools/apfs/apfs.py reads),
-    which is why the copy keeps the whole block and only touches sixteen bytes."""
-    blob = bytearray(Path(image).read_bytes())
-    wanted_bytes = uuid.UUID(wanted).bytes
-    patched = []
-    offset = 0
-    while True:
-        at = blob.find(b'APSB', offset)
-        if at < 0:
-            break
-        offset = at + 4
-        block_start = at - 32                     # obj_phys_t header precedes the magic
-        if block_start < 0:
-            continue
-        block = bytes(blob[block_start:block_start + 4096])
-        if len(block) < 4096 or fletcher64(block[8:]) != int.from_bytes(block[:8], 'little'):
-            continue                              # not a live metadata block
-        name = block[0x2C0:0x3C0].split(b'\0', 1)[0].decode('utf-8', 'replace')
-        if volume_name and name != volume_name:
-            continue
-        if block[0xF0:0x100] == wanted_bytes:
-            patched.append(('already', block_start))
-            break
-        blob[block_start + 0xF0:block_start + 0x100] = wanted_bytes
-        block = bytearray(blob[block_start:block_start + 4096])
-        block[0:8] = fletcher64(bytes(block[8:])).to_bytes(8, 'little')
-        blob[block_start:block_start + 4096] = block
-        patched.append((name, block_start))
-        break
+    The volume superblock is an `APSB` object: obj_phys_t header (32 bytes),
+    then uuid at 0xF0 and apfs_volname at 0x2C0 -- the offsets tools/apfs/apfs.py
+    reads.  Its Fletcher-64 covers the block from offset 8 on, so both edits are
+    followed by a checksum refresh.  The image is 10 GiB; it is walked 8 MiB at
+    a time (a multiple of the block size, so the magic never straddles a chunk)
+    instead of being read into memory.
+    """
+    wanted_bytes = uuid.UUID(wanted_uuid).bytes
+    name_bytes = wanted_name.encode('utf-8')[:255]
+    patched = 0
+    with open(image, 'r+b') as handle:
+        handle.seek(0, os.SEEK_END)
+        end = handle.tell()
+        position = 0
+        while position < end:
+            handle.seek(position)
+            chunk = handle.read(8 * MIB)
+            if not chunk:
+                break
+            search = 0
+            while True:
+                at = chunk.find(b'APSB', search)
+                if at < 0:
+                    break
+                search = at + 4
+                block_start = position + at - 32       # obj_phys_t precedes the magic
+                if block_start < 0 or block_start % 4096:
+                    continue
+                handle.seek(block_start)
+                block = bytearray(handle.read(4096))
+                if len(block) < 4096:
+                    continue
+                if fletcher64(bytes(block[8:])) != int.from_bytes(block[:8], 'little'):
+                    continue                            # not a live metadata block
+                name = block[0x2C0:0x3C0].split(b'\0', 1)[0].decode('utf-8', 'replace')
+                if name not in (wanted_name, STAGING_NAME):
+                    continue
+                block[0xF0:0x100] = wanted_bytes
+                block[0x2C0:0x2C0 + 256] = name_bytes.ljust(256, b'\0')
+                block[0:8] = fletcher64(bytes(block[8:])).to_bytes(8, 'little')
+                handle.seek(block_start)
+                handle.write(bytes(block))
+                patched += 1
+                print(f'retag: block {block_start:#x} {name!r} -> '
+                      f'{wanted_name!r} {wanted_uuid}', file=sys.stderr)
+            position += len(chunk)
     if not patched:
-        raise SystemExit(f'{image}: no APFS volume superblock named {volume_name!r} to retag')
-    Path(image).write_bytes(blob)
-    print(f'retag: {patched[0]}', file=sys.stderr)
+        raise SystemExit(f'{image}: no APFS volume superblock to retag (looked for '
+                         f'{wanted_name!r} / {STAGING_NAME!r})')
 
 
 def main():
@@ -136,84 +178,125 @@ def main():
     parser.add_argument('--cryptex', type=Path, required=True,
                         help='SystemOS image that carries the dyld cache')
     parser.add_argument('--work', type=Path, required=True)
-    parser.add_argument('--extra-mib', type=int, default=3072,
-                        help='headroom over the original root for the caches')
+    parser.add_argument('--slack-mib', type=int, default=512,
+                        help='room left over for APFS metadata once the cache is in')
+    parser.add_argument('--keep-original', action='store_true',
+                        help='keep a .orig.cdr copy next to the root (6.4 GiB)')
     parser.add_argument('--report', type=Path, default=None)
     args = parser.parse_args()
 
     original_bytes = args.root.stat().st_size
     args.work.mkdir(parents=True, exist_ok=True)
     scratch = args.work / 'root-rebuild.sparseimage'
+    staging = args.work / 'root-rebuild.cdr'
+    for stale in (scratch, staging):
+        if stale.exists():
+            stale.unlink()
 
-    # The original stays mounted until ditto has copied it; only then is its
-    # name handed to the rebuilt volume.
-    root_device, root_mount = attach(args.root)
-    info = plistlib.loads(run(['diskutil', 'info', '-plist', root_mount]).stdout)
-    wanted_uuid = info['VolumeUUID']
-    name = info['VolumeName']
-    size_mib = (original_bytes >> 20) + args.extra_mib
-    print(f'root: {original_bytes} bytes, uuid {wanted_uuid}, name {name!r}; '
-          f'new volume {size_mib} MiB', file=sys.stderr)
-
-    # A distinct volume name: two volumes with the same name land on the same
-    # /Volumes path and ditto would copy the root onto itself.  The real name is
-    # restored after the original is detached.
-    staging_name = 'RMXRootRebuild'
-    run(['hdiutil', 'create', '-size', f'{size_mib}m', '-fs', 'APFS',
-         '-volname', staging_name, '-type', 'SPARSE', '-quiet', scratch])
-    new_device, new_mount = attach(scratch, readwrite=True)
+    # The caches are measured before anything is created: sizing the volume from
+    # a guess is what turns a 40 minute copy into a 40 minute failure.
+    cryptex_device, cryptex_mount = attach(args.cryptex)
     try:
-        # ditto keeps signatures, xattrs and ACLs; the root is a sealed system
-        # volume whose files must stay byte identical.
-        # The root carries root-only directories (700); the runner is not root.
-        run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', root_mount, new_mount])
-        target = str(Path(new_mount) / 'System/Library/Caches/com.apple.dyld')
-        # A sealed root points this directory at preboot; the rebuilt volume
-        # carries the real files here instead, so the link has to go.
-        run(['sudo', 'sh', '-c', f'rm -rf {target} && mkdir -p {target}'])
-        cryptex_device, cryptex_mount = attach(args.cryptex)
+        caches, skipped = cache_files(cryptex_mount)
+        if not caches:
+            raise SystemExit(f'{args.cryptex}: no dyld_shared_cache* anywhere in the cryptex')
+        cache_bytes = sum(size for _, size in caches)
+        for path, size in caches:
+            print(f'cache: {path.name} {size} bytes ({size / MIB:.0f} MiB)', file=sys.stderr)
+        size_mib = -(-(original_bytes + cache_bytes) // MIB) + args.slack_mib
+        print(f'cache total {cache_bytes / MIB:.0f} MiB in {len(caches)} files; '
+              f'new volume {size_mib} MiB', file=sys.stderr)
+
+        root_device, root_mount = attach(args.root)
+        info = plistlib.loads(run(['diskutil', 'info', '-plist', root_mount]).stdout)
+        wanted_uuid = info['VolumeUUID']
+        wanted_name = info['VolumeName']
+        print(f'root: {original_bytes} bytes, uuid {wanted_uuid}, '
+              f'name {wanted_name!r}', file=sys.stderr)
+
+        # A distinct volume name while the copy runs: the rebuilt volume must not
+        # answer to the original name until the original is detached.  The real
+        # name is written into the superblock by retag_volume() afterwards.
+        run(['hdiutil', 'create', '-size', f'{size_mib}m', '-fs', 'APFS',
+             '-volname', STAGING_NAME, '-type', 'SPARSE', '-quiet', scratch])
+        new_device, new_mount = attach(scratch, readwrite=True)
         try:
-            found = sorted(Path(cryptex_mount).rglob('dyld_shared_cache*'))
-            if not found:
-                raise SystemExit(f'{args.cryptex}: no dyld_shared_cache* anywhere in the cryptex')
+            before = free_mib(new_mount)
+            print(f'new volume free: {before} MiB, cache needs {cache_bytes / MIB:.0f} MiB',
+                  file=sys.stderr)
+            if before < cache_bytes // MIB + 128:
+                raise SystemExit(f'{scratch}: only {before} MiB free for '
+                                 f'{cache_bytes / MIB:.0f} MiB of cache')
+            # ditto keeps signatures, xattrs and ACLs; the root is a sealed
+            # system volume whose files must stay byte identical.  The root
+            # carries root-only directories (700) and the runner is not root.
+            run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', root_mount, new_mount])
+            target = Path(new_mount) / 'System/Library/Caches/com.apple.dyld'
+            # The stock root points this directory at the cryptex it cannot see;
+            # the rebuilt volume carries the real files here instead.
+            run(['sudo', 'sh', '-c', f'rm -rf {target} && mkdir -p {target}'])
             copied = []
-            for source in found:
-                if not source.is_file():
-                    continue
-                destination = Path(target) / source.name
-                run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl', source, destination])
-                # Size only: the layout step hashes the whole window afterwards,
-                # and hashing 1.6 GiB here would double the step's runtime.
-                copied.append({'name': source.name, 'bytes': Path(destination).stat().st_size})
-            print(f'cache: {len(copied)} files, '
-                  f'{sum(item["bytes"] for item in copied)} bytes', file=sys.stderr)
+            for source, size in caches:
+                destination = target / source.name
+                run(['sudo', 'ditto', '--rsrc', '--extattr', '--acl',
+                     str(source), str(destination)])
+                landed = Path(destination).stat().st_size
+                if landed != size:
+                    raise SystemExit(f'{destination}: {landed} bytes landed, {size} expected')
+                copied.append({'name': source.name, 'bytes': landed})
+            print(f'copied {len(copied)} cache files, '
+                  f'{sum(item["bytes"] for item in copied)} bytes, '
+                  f'{free_mib(new_mount)} MiB left', file=sys.stderr)
+            # Proves the volume really carries a cache, not an empty directory.
+            probe = run(['sudo', 'sh', '-c',
+                         f'head -c 16 {target}/dyld_shared_cache_* | od -An -c'])
+            print(f'cache header: {probe.stdout.decode("utf-8", "replace").strip()}',
+                  file=sys.stderr)
         finally:
-            detach(cryptex_device)
-        # The original root is no longer needed: free its name, give it back to
-        # the rebuilt volume so the superblock lookup and the system volume name
-        # stay identical to a stock install.
+            detach(new_device)
         detach(root_device)
-        run(['diskutil', 'rename', new_mount, name])
     finally:
-        detach(new_device)
+        detach(cryptex_device)
 
-    raw = args.work / 'root-rebuild.cdr'
-    run(['hdiutil', 'convert', '-quiet', '-format', 'UDTO', '-o', raw.with_suffix(''), scratch])
-    product = raw if raw.is_file() else raw.with_name(raw.name + '.cdr')
+    run(['hdiutil', 'convert', '-quiet', '-format', 'UDTO',
+         '-o', str(staging.with_suffix('')), str(scratch)])
+    product = staging if staging.is_file() else staging.with_name(staging.name + '.cdr')
     if not product.is_file():
-        raise SystemExit(f'convert produced no image next to {raw}')
+        raise SystemExit(f'convert produced no image next to {staging}')
 
-    retag_volume(product, wanted_uuid, name)
+    retag_volume(product, wanted_uuid, wanted_name)
 
     rebuilt_bytes = product.stat().st_size
-    backup = args.root.with_suffix('.orig.cdr')
-    if not backup.exists():
-        shutil.copyfile(args.root, backup)
-    shutil.copyfile(product, args.root)
-    report = {'os_uuid': wanted_uuid, 'volume_name': name,
+    if rebuilt_bytes < original_bytes:
+        raise SystemExit(f'rebuilt root shrank: {original_bytes} -> {rebuilt_bytes} bytes')
+    digest = hashlib.sha256()
+    with open(product, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(16 * MIB), b''):
+            digest.update(chunk)
+    root_sha256 = digest.hexdigest()
+
+    if args.keep_original:
+        backup = args.root.with_suffix('.orig.cdr')
+        if not backup.exists():
+            print(f'+ keeping a copy of the original at {backup}', file=sys.stderr)
+            with open(args.root, 'rb') as src, open(backup, 'wb') as dst:
+                for chunk in iter(lambda: src.read(16 * MIB), b''):
+                    dst.write(chunk)
+    # The rebuilt image lives on the same filesystem as the root, so this is a
+    # rename instead of a 10 GiB copy.
+    try:
+        os.replace(product, args.root)
+    except OSError as error:
+        print(f'rename failed ({error}); copying instead', file=sys.stderr)
+        with open(product, 'rb') as src, open(args.root, 'wb') as dst:
+            for chunk in iter(lambda: src.read(16 * MIB), b''):
+                dst.write(chunk)
+        product.unlink()
+
+    report = {'os_uuid': wanted_uuid, 'volume_name': wanted_name,
               'original_bytes': original_bytes, 'rebuilt_bytes': rebuilt_bytes,
-              'cache': copied,
-              'root_sha256': hashlib.sha256(Path(args.root).read_bytes()).hexdigest()}
+              'cache': copied, 'skipped': skipped,
+              'root_sha256': root_sha256}
     text = json.dumps(report, indent=2) + '\n'
     (args.report or (args.work / 'root-rebuild.json')).write_text(text)
     print(f'rebuilt root: {rebuilt_bytes} bytes, uuid kept {wanted_uuid}', file=sys.stderr)

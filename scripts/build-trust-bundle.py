@@ -80,6 +80,10 @@ def main():
         modules.append(module)
         print(f'{path.name}: module {len(module)} bytes, '
               f'{struct.unpack_from("<I", module, 20)[0]} entries', file=sys.stderr)
+    # Bundle order must not depend on how the shell expanded a glob: the payload
+    # step records the bundle digest in board.toml.  Smallest module first is
+    # also the order the reference bundle uses (static trust cache, then system).
+    modules.sort(key=len)
     cursor, starts = 4 + 4 * len(modules), []
     for module in modules:
         starts.append(cursor)

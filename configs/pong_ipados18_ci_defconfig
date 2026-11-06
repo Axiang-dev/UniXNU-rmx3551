@@ -52,7 +52,10 @@ CONFIG_XNU_OWNER_DATA_VOLUME_UUID=""
 CONFIG_XNU_OWNER_CACHE_VOLUME_UUID=""
 CONFIG_XNU_OWNER_ROOT_AUDIT=n
 CONFIG_XNU_OWNER_ROOT_TRUST=n
-CONFIG_XNU_OWNER_UNION_SYSTEMOS=n
+# The dyld shared cache lives in the SystemOS cryptex; the OS volume has none
+# (verified: no dyld_v1 in the OS window).  Compose SystemOS over the root so
+# launchd's default cache path resolves to the cryptex's own cache.
+CONFIG_XNU_OWNER_UNION_SYSTEMOS=y
 CONFIG_XNU_PONG_APFS_DEBUG=y
 CONFIG_XNU_PONG_ADRENO_PLATFORM=n
 CONFIG_XNU_PONG_BACKLIGHT=n

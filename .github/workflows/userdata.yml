@@ -41,9 +41,11 @@ jobs:
           fetch-depth: 1
 
       - name: Reclaim disk
-        # Peak is about 37 GiB: the 7.4 GiB download, the expanded restore, two
-        # AEA decryptions, a 5 GiB SystemOS and 8 GiB Data volume and the final
-        # 19 GiB image.  The runner's unused Xcode copies are what buys the room.
+        # Peak is about 45 GiB: the 7.4 GiB download, the expanded restore, two
+        # AEA decryptions, a 5 GiB SystemOS and 8 GiB Data volume, the 10 GiB
+        # rebuilt root next to the 6.4 GiB original, and the final image.  The
+        # IPSW working tree is deleted as soon as the userland exists, and the
+        # runner's unused Xcode copies are what buys the rest of the room.
         run: |
           set -euo pipefail
           selected="$(xcode-select -p)"
@@ -113,6 +115,9 @@ jobs:
           for name in ('os', 'systemos', 'data'):
               print(' ', name, layout[name]['uuid'])
           PY
+          # The restore download and its expansion are ~15 GiB and nothing after
+          # this step reads them; the rebuilt root needs the room.
+          rm -rf "${RUNNER_TEMP}/pong-ipsw-work"
           df -h
 
       - name: Put the dyld shared cache on the root volume
@@ -138,9 +143,11 @@ jobs:
           if not report['cache']:
               raise SystemExit('the rebuilt root carries no dyld cache')
           print('root bytes', report['original_bytes'], '->', report['rebuilt_bytes'])
-          print('uuid kept', report['os_uuid'])
+          print('uuid kept', report['os_uuid'], 'name kept', report['volume_name'])
           for item in report['cache']:
               print(' ', item['name'], item['bytes'])
+          if report['skipped']:
+              print('left out (symbolication only):', ', '.join(report['skipped']))
           PY
           df -h
 
@@ -181,7 +188,7 @@ jobs:
             --layout out/ipados18/ufs/ufs-layout.json \
             --header out/ipados18/ufs/shngroot-ipados18.bin \
             --output out/ipados18/ufs/pong-ipados18-userdata.img \
-            --max-parts 12 \
+            --max-parts 20 \
             --part-max-mib 1900 \
             --delete-sources \
             --delete-root "${prepared}" \

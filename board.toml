@@ -113,6 +113,12 @@ kernel_args = [
   # The documented on-screen diagnostic page: it draws its own overlay into the
   # XNU framebuffer mapping, so it works before the text console is alive.
   "boot-progress=1",
+  # kalloc_type splits this budget 70/30 between signature and type zones
+  # and asserts that one size class never needs 32 of them.  The CI profile
+  # compiles far fewer kalloc_type users than the shipping one, so the
+  # default budget (120) concentrates in a single class and panics; 24 keeps
+  # every class under the bound.
+  "kt_fixed_zones=24",
   "keepsyms=1",
   "cpus=1",
   "pong_allow_unauthenticated_root=1",

@@ -192,6 +192,18 @@ jobs:
             2>&1 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           ls -l "$out"
 
+      - name: Keep Apple's CPU driver out of the boot path
+        # apfs -> AppleARMWatchdogTimer -> AppleARMPlatform drags that kext into
+        # the prelink, and its AppleARMCPU personality (IONameMatch "cpu")
+        # attaches to the /cpus nubs and panics on a Qualcomm ADT.  ArmCpu is
+        # this board's CPU driver; the kext stays for its symbols, only the
+        # match string is renamed.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          kernel=$(find ../build -path '*/kernel/kernel.macho' -type f | head -1)
+          python3 scripts/pong-prelink-prune-personality.py "$kernel"
+
       - name: Build the boot payload volume
         # Stage 3->4: the FAT volume UniXNU reads (kernel, ADT, config).  The
         # trust cache and the Data seed are optional and stay out: this is the

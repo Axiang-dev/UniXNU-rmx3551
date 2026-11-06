@@ -1,13 +1,13 @@
 {
-  "ci_placeholder": true,
-  "note": "Placeholder volume UUIDs for compiling the kernel before any userdata image exists. A kernel built against these mounts nothing: replace this file with the layout read out of the real 22H374 images (scripts/prepare-pong-userland-from-ipsw.py --volume-layout-out) before flashing.",
+  "ci_placeholder": false,
+  "note": "Volume UUIDs of the 22H374 images this board installs, uppercase as diskutil and IOMedia print them, read from the APFS volume headers of the flashed userdata image (scripts/prepare-pong-userland-from-ipsw.py --volume-layout-out). The kernel binds the OS, SystemOS and Data volumes to these; the ADT /chosen/root-matching dictionary names the OS one as well.",
   "os": {
-    "uuid": "C62E4369-C178-5816-8767-28F6C449F221"
+    "uuid": "B07DF049-7AD9-47B5-9F8F-9EE728056398"
   },
   "systemos": {
-    "uuid": "A3E08D77-1CF1-5AEB-AD95-742C10950623"
+    "uuid": "B57C18AA-9E49-44A4-B94A-ED191CFB4B0F"
   },
   "data": {
-    "uuid": "1983B021-9723-5253-95B5-B23ACF99B49E"
+    "uuid": "47C0F5C3-B8C7-47AC-B9D9-F230BAED1576"
   }
 }

@@ -67,6 +67,16 @@ jobs:
           python3 device/scripts/loosen-pong-usb-gate.py \
             --source device/drivers/PongPower/PongPower.cpp
 
+      - name: Instrument the USB transport
+        # Its handoff/PMIC lines print once, seconds before launchd floods the
+        # console, so a photo of a later panic cannot show them. This adds an
+        # entry line, the handoff/DMA/PHY results, and a 96-second status
+        # reprint so the last screen always carries the USB state.
+        run: |
+          set -euo pipefail
+          python3 device/scripts/instrument-pong-usb.py \
+            --source device/drivers/PongUsb/PongUsbDevice.h
+
       - name: Checkout UniXNU toolchain
         uses: actions/checkout@v4
         with:

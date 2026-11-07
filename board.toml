@@ -170,6 +170,12 @@ kernel_args = [
   "pong_usb_mux=1",
   "pong_usb_iphone=1",
   "pong_rootful=1",
+  # The stock loader refuses a launchd.plist that does not match the factory
+  # signature and exits, which the kernel treats as a fatal child and panics on
+  # (launchd_cache_loader[22] exited -- -67062 errSecCSUnsigned). This is the
+  # loader's own development switch: it accepts the locally adapted cache and
+  # stops pairing the modified plist with the stock signature.
+  "launchd_unsecure_cache=1",
 ]
 
 [payload.adt]

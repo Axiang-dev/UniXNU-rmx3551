@@ -11,6 +11,7 @@
 #include <IOKit/IOLib.h>
 #include <vm/vm_kern.h>
 #include <kern/clock.h>
+#include <kern/thread.h>
 #include <mach/mach_time.h>
 #include <libkern/c++/OSBoolean.h>
 #include <libkern/c++/OSDictionary.h>
@@ -548,6 +549,7 @@ IOReturn PongUfsBlock::doAsyncReadWrite(IOMemoryDescriptor *buffer, UInt64 block
   completion->action(completion->target, completion->parameter, result, done);
   return kIOReturnSuccess;
 }
+#include "PongBootLog.h"
 extern "C" bool pong_ufs_transport_start(IOService *provider) {
   if (gTransportAttempted) {
     IOLog("PONG_UFS: transport attempt already completed; skip duplicate match\n");
@@ -621,6 +623,27 @@ extern "C" bool pong_ufs_transport_start(IOService *provider) {
       continue;
     }
     if (!strcmp(gRootWindows[index].name, "OS")) rootPublished = true;
+  }
+  /* Optional: mirror the kernel's ramoops console into the spare tail of the
+   * userdata partition, so a recovery reader can pull the last ten seconds of
+   * log with dd. The region starts at the first 1 MiB boundary past the
+   * flashed image: inside the partition, outside every window, and never part
+   * of the image. Absent the boot argument nothing is written. */
+  if (layout.imageBytes) {
+    unsigned bootLog = 0;
+    if (PE_parse_boot_argn("pong_bootlog", &bootLog, sizeof(bootLog)) && bootLog == 1) {
+      const uint64_t mib = 1ULL << 20;
+      const uint64_t regionOffset = (layout.imageBytes + mib - 1) & ~(mib - 1);
+      const uint64_t partitionBytes = (layout.userdataLast - layout.userdataFirst + 1) * 4096ULL;
+      if (regionOffset + PongBootLog::kRegionBytes <= partitionBytes) {
+        PongBootLog::start(layout.userdataFirst + regionOffset / 4096,
+                           PongBootLog::kRegionBytes);
+      } else {
+        IOLog("PongBootLog: no room past the image: %llu + %llu > %llu\n",
+              regionOffset, (unsigned long long)PongBootLog::kRegionBytes,
+              (unsigned long long)partitionBytes);
+      }
+    }
   }
   return rootPublished;
 }

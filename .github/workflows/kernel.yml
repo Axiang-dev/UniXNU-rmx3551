@@ -55,6 +55,18 @@ jobs:
           submodules: recursive
           fetch-depth: 1
 
+      - name: Let the USB console start without the audio classes
+        # PongPower gates PongUsb::start() on pong_audio_service_classes_ready(),
+        # so a board whose audio meta-classes failed gets no USB console and no
+        # diagnostic explaining why. The transport needs nothing from audio, and
+        # on this board the CDC console is the only live log channel there is.
+        # The driver is a pinned submodule, so the edit is applied to the
+        # checkout; the step stops the build if the expected line is gone.
+        run: |
+          set -euo pipefail
+          python3 device/scripts/loosen-pong-usb-gate.py \
+            --source device/drivers/PongPower/PongPower.cpp
+
       - name: Checkout UniXNU toolchain
         uses: actions/checkout@v4
         with:

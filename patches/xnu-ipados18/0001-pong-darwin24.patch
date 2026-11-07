@@ -2,8 +2,7 @@ diff --git a/EXTERNAL_HEADERS/CoreEntitlements/CoreEntitlements.h b/EXTERNAL_HEA
 index 60e7e8f..e3d76ea 100644
 --- a/EXTERNAL_HEADERS/CoreEntitlements/CoreEntitlements.h
 +++ b/EXTERNAL_HEADERS/CoreEntitlements/CoreEntitlements.h
-@@ -92,3 +92,11 @@ OS_CLOSED_ENUM(CEType, uint32_t,
- #endif
+@@ -92,3 +92,11 @@ OS_CLOSED_ENUM(CEType, uint32_t, #endif
  
  #endif
 +
@@ -18,8 +17,7 @@ diff --git a/bsd/conf/Makefile.template b/bsd/conf/Makefile.template
 index 1b3361e..554272c 100644
 --- a/bsd/conf/Makefile.template
 +++ b/bsd/conf/Makefile.template
-@@ -590,7 +590,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -590,7 +590,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -31,8 +29,7 @@ diff --git a/bsd/conf/files b/bsd/conf/files
 index 1c599f1..ce43b9d 100644
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -398,6 +398,11 @@ bsd/kern/kern_debug.c			standard
- bsd/kern/kern_symfile.c			standard
+@@ -398,6 +398,11 @@ bsd/kern/kern_debug.c			standard bsd/kern/kern_symfile.c			standard
  bsd/kern/kern_descrip.c			standard
  bsd/kern/kern_guarded.c			standard
 +bsd/kern/kern_minimac.c			optional config_macf
@@ -47,8 +44,7 @@ diff --git a/bsd/dev/arm/km.c b/bsd/dev/arm/km.c
 index 3acfc7b..eb6f3b6 100644
 --- a/bsd/dev/arm/km.c
 +++ b/bsd/dev/arm/km.c
-@@ -9,6 +9,10 @@
-  * HISTORY
+@@ -9,5 +9,9 @@  * HISTORY
   */
  #include <sys/param.h>
 +#if defined(ARM64_BOARD_CONFIG_PONG)
@@ -58,8 +54,7 @@ index 3acfc7b..eb6f3b6 100644
  #include <sys/tty.h>
  
  #include <machine/cons.h>
-@@ -74,6 +78,9 @@ kmopen(dev_t dev, __unused int flag, __unused int devtype, proc_t pp)
- 
+@@ -74,5 +78,8 @@ kmopen(dev_t dev, __unused int flag, __unused int devtype, proc_t pp) 
  	tp = km_tty[unit];
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -68,8 +63,7 @@ index 3acfc7b..eb6f3b6 100644
  	tty_lock(tp);
  
  	tp->t_oproc = kmstart;
-@@ -133,6 +140,9 @@ kmopen(dev_t dev, __unused int flag, __unused int devtype, proc_t pp)
- out:
+@@ -133,5 +140,8 @@ kmopen(dev_t dev, __unused int flag, __unused int devtype, proc_t pp) out:
  	tty_unlock(tp);
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -78,8 +72,7 @@ index 3acfc7b..eb6f3b6 100644
  	return ret;
  }
  
-@@ -199,6 +209,13 @@ kmioctl(dev_t dev, u_long cmd, caddr_t data, int flag, proc_t p)
- 		error = EINVAL;
+@@ -199,6 +209,13 @@ kmioctl(dev_t dev, u_long cmd, caddr_t data, int flag, proc_t p) 		error = EINVAL;
  		break;
  
 +#if defined(PONG)
@@ -96,8 +89,7 @@ diff --git a/bsd/dev/arm/systemcalls.c b/bsd/dev/arm/systemcalls.c
 index 0906700..9d96541 100644
 --- a/bsd/dev/arm/systemcalls.c
 +++ b/bsd/dev/arm/systemcalls.c
-@@ -178,6 +178,17 @@ unix_syscall(
- #endif /* CONFIG_DEBUG_SYSCALL_REJECTION */
+@@ -178,6 +178,17 @@ unix_syscall( #endif /* CONFIG_DEBUG_SYSCALL_REJECTION */
  
  	AUDIT_SYSCALL_ENTER(code, proc, uthread);
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -119,8 +111,7 @@ new file mode 100644
 index 0000000..7c6c450
 --- /dev/null
 +++ b/bsd/dev/pong_buttons.c
-@@ -0,0 +1,246 @@
-+/* Pong SM8475 PMIC keys. Read-only peripheral access, adapted from the earlier
+@@ -0,1 +1,246 @@+/* Pong SM8475 PMIC keys. Read-only peripheral access, adapted from the earlier
 + * redwood_buttons.c (APSL 2.0) and NothingOSS spmi-pmic-arb.c register layouts.
 + * No PMIC configuration/reset/supply writes and no display/GPU dependency. */
 +#include <pexpert/arm64/board_config.h>
@@ -371,8 +362,7 @@ new file mode 100644
 index 0000000..00feebd
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,914 @@
-+/* Goodix Berlin-D / Pong SM8475. Adapted from the earlier redwood_goodix.c
+@@ -0,1 +1,914 @@+/* Goodix Berlin-D / Pong SM8475. Adapted from the earlier redwood_goodix.c
 + * (APSL 2.0). Hardware resources are the Pong live DT, checked against the
 + * NothingOSS cape pinctrl and waipio GCC source. No Redwood peripherals. */
 +#include <pexpert/arm64/board_config.h>
@@ -1291,8 +1281,7 @@ new file mode 100644
 index 0000000..f601a0b
 --- /dev/null
 +++ b/bsd/dev/pong_input.c
-@@ -0,0 +1,107 @@
-+/* Blocking touch queue, adapted from the earlier redwood_input.c (APSL 2.0).
+@@ -0,1 +1,107 @@+/* Blocking touch queue, adapted from the earlier redwood_input.c (APSL 2.0).
 + * Real Goodix and PMIC producers have separate queues and prerequisite gates. */
 +#include <pexpert/arm64/board_config.h>
 +#if defined(PONG)
@@ -1403,8 +1392,7 @@ diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
 index fc185bb..131a47d 100644
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -478,6 +478,91 @@ bsd_rooted_ramdisk(void)
-  * of the tro_ucred field so that the uthread structure can be
+@@ -478,5 +478,90 @@ bsd_rooted_ramdisk(void)  * of the tro_ucred field so that the uthread structure can be
   * used like any other.
   */
 +#if DEVELOPMENT || DEBUG
@@ -1495,8 +1483,7 @@ index fc185bb..131a47d 100644
  void
  bsd_init(void)
  {
-@@ -688,6 +773,11 @@ bsd_init(void)
- 	bsd_init_kprintf("calling bsd_bufferinit\n");
+@@ -688,5 +773,10 @@ bsd_init(void) 	bsd_init_kprintf("calling bsd_bufferinit\n");
  	bsd_bufferinit();
  
 +#if defined(XNU_SHENG_PMGR) && XNU_SHENG_PMGR
@@ -1507,8 +1494,7 @@ index fc185bb..131a47d 100644
  	/*
  	 * Initialize the calendar.
  	 */
-@@ -697,6 +787,27 @@ bsd_init(void)
- 	/* Initialize the file systems. */
+@@ -697,5 +787,26 @@ bsd_init(void) 	/* Initialize the file systems. */
  	bsd_init_kprintf("calling vfsinit\n");
  	vfsinit();
 +#if DEVELOPMENT || DEBUG
@@ -1535,8 +1521,7 @@ index fc185bb..131a47d 100644
  
  #if CONFIG_PROC_UUID_POLICY
  	/* Initial proc_uuid_policy subsystem */
-@@ -798,6 +909,15 @@ bsd_init(void)
- 
+@@ -798,5 +909,14 @@ bsd_init(void) 
  	bsd_init_kprintf("calling sysctl_mib_init\n");
  	sysctl_mib_init();
 +#if defined(XNU_VERIFIED_ROOT_PROBE) && XNU_VERIFIED_ROOT_PROBE
@@ -1551,8 +1536,7 @@ index fc185bb..131a47d 100644
  
  	bsd_init_kprintf("calling bsd_autoconf\n");
  	bsd_autoconf();
-@@ -805,6 +925,10 @@ bsd_init(void)
- #if CONFIG_DTRACE
+@@ -805,5 +925,9 @@ bsd_init(void) #if CONFIG_DTRACE
  	dtrace_postinit();
  #endif
 +#if (DEVELOPMENT || DEBUG) && defined(XNU_NATIVE_OFFLINE_GPU) && XNU_NATIVE_OFFLINE_GPU
@@ -1562,8 +1546,7 @@ index fc185bb..131a47d 100644
  
  	/*
  	 * We attach the loopback interface *way* down here to ensure
-@@ -942,9 +1066,55 @@ bsd_init(void)
- 		if (require_rootauth) {
+@@ -942,8 +1066,54 @@ bsd_init(void) 		if (require_rootauth) {
  			/* enforce sealedness */
  			int autherr = VNOP_IOCTL(rootvnode, FSIOC_KERNEL_ROOTAUTH, NULL, 0, vfs_context_kernel());
 -			if (autherr) {
@@ -1619,8 +1602,7 @@ index fc185bb..131a47d 100644
  		}
  	}
  
-@@ -998,6 +1168,12 @@ bsd_init(void)
- 		bsd_init_kprintf("calling devfs_kernel_mount\n");
+@@ -998,5 +1168,11 @@ bsd_init(void) 		bsd_init_kprintf("calling devfs_kernel_mount\n");
  		devfs_kernel_mount(mounthere);
  	}
 +#if defined(PONG)
@@ -1632,8 +1614,7 @@ index fc185bb..131a47d 100644
  #endif /* DEVFS */
  
  #if CONFIG_BASESYSTEMROOT
-@@ -1070,6 +1246,32 @@ bsd_init(void)
- 	bsd_init_kprintf("done\n");
+@@ -1070,5 +1246,31 @@ bsd_init(void) 	bsd_init_kprintf("done\n");
  }
  
 +#if defined(XNU_OWNER_ROOT_AUDIT) && XNU_OWNER_ROOT_AUDIT
@@ -1665,8 +1646,7 @@ index fc185bb..131a47d 100644
  void
  bsdinit_task(void)
  {
-@@ -1096,7 +1298,16 @@ bsdinit_task(void)
- 
+@@ -1096,6 +1298,15 @@ bsdinit_task(void) 
  	bsd_init_kprintf("bsd_do_post - done");
  
 +#if defined(PONG) && CONFIG_PERSONAS && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
@@ -1682,8 +1662,7 @@ index fc185bb..131a47d 100644
  	lock_trace = 1;
  }
  
-@@ -1117,7 +1328,21 @@ bsd_autoconf(void)
- 		}
+@@ -1117,7 +1328,21 @@ bsd_autoconf(void) 		}
  	}
  
 -	return IOKitBSDInit();
@@ -1709,8 +1688,7 @@ diff --git a/bsd/kern/kern_cs.c b/bsd/kern/kern_cs.c
 index c1c3929..9eb3c8b 100644
 --- a/bsd/kern/kern_cs.c
 +++ b/bsd/kern/kern_cs.c
-@@ -169,6 +169,9 @@ cs_init(void)
- 	if (disable_cs_enforcement && PE_i_can_has_debugger(NULL) != 0) {
+@@ -169,5 +169,8 @@ cs_init(void) 	if (disable_cs_enforcement && PE_i_can_has_debugger(NULL) != 0) {
  		cs_system_enforcement_enable = 0;
  		cs_process_enforcement_enable = 0;
 +#if defined(PONG)
@@ -1719,8 +1697,7 @@ index c1c3929..9eb3c8b 100644
  	} else {
  		int panic = 0;
  		PE_parse_boot_argn("cs_enforcement_panic", &panic, sizeof(panic));
-@@ -181,9 +184,21 @@ cs_init(void)
- 
+@@ -181,8 +184,20 @@ cs_init(void) 
  	PE_parse_boot_argn("cs_debug", &cs_debug, sizeof(cs_debug));
  
 -#if !CONFIG_ENFORCE_LIBRARY_VALIDATION
@@ -1744,8 +1721,7 @@ index c1c3929..9eb3c8b 100644
  #endif
  #endif /* !SECURE_KERNEL */
  }
-@@ -510,7 +525,8 @@ csblob_invalidate_flags(struct cs_blob *csblob)
- 		csblob->csb_flags = updated_flags;
+@@ -510,6 +525,7 @@ csblob_invalidate_flags(struct cs_blob *csblob) 		csblob->csb_flags = updated_flags;
  	}
  
 -	if (csblob->csb_entitlements != NULL) {
@@ -1754,8 +1730,7 @@ index c1c3929..9eb3c8b 100644
  		amfi->OSEntitlements_invalidate(csblob->csb_entitlements);
  	}
  
-@@ -789,8 +805,8 @@ csblob_entitlements_dictionary_copy(struct cs_blob *csblob)
- 	if (!csblob->csb_entitlements) {
+@@ -789,8 +805,8 @@ csblob_entitlements_dictionary_copy(struct cs_blob *csblob) 	if (!csblob->csb_entitlements) {
  		return NULL;
  	}
 -	if (!amfi) {
@@ -1769,8 +1744,7 @@ diff --git a/bsd/kern/kern_exec.c b/bsd/kern/kern_exec.c
 index 240bbf6..400dba5 100644
 --- a/bsd/kern/kern_exec.c
 +++ b/bsd/kern/kern_exec.c
-@@ -186,7 +186,7 @@
- 
+@@ -186,6 +186,6 @@ 
  #include "kern_exec_internal.h"
  
 -#include <CodeSignature/Entitlements.h>
@@ -1778,8 +1752,7 @@ index 240bbf6..400dba5 100644
  
  #include <mach/exclaves.h>
  
-@@ -2849,6 +2849,44 @@ exec_handle_exception_port_actions(const struct image_params *imgp,
- 	return 0;
+@@ -2849,5 +2849,43 @@ exec_handle_exception_port_actions(const struct image_params *imgp, 	return 0;
  }
  
 +#if defined(ARM64_BOARD_CONFIG_PONG) && (DEVELOPMENT || DEBUG)
@@ -1823,8 +1796,7 @@ index 240bbf6..400dba5 100644
  
  /*
   * exec_handle_file_actions
-@@ -2920,7 +2958,11 @@ exec_handle_file_actions(struct image_params *imgp, short psa_flags)
- 			AUDIT_SUBCALL_ENTER(OPEN, p, uthread);
+@@ -2920,6 +2958,10 @@ exec_handle_file_actions(struct image_params *imgp, short psa_flags) 			AUDIT_SUBCALL_ENTER(OPEN, p, uthread);
  
  			NDINIT(ndp, LOOKUP, OP_OPEN, FOLLOW | AUDITVNPATH1, UIO_SYSSPACE,
 +#if defined(ARM64_BOARD_CONFIG_PONG) && (DEVELOPMENT || DEBUG)
@@ -1835,8 +1807,7 @@ index 240bbf6..400dba5 100644
  			    imgp->ip_vfs_context);
  
  			error = open1(imgp->ip_vfs_context, ndp,
-@@ -5927,6 +5969,71 @@ bad:
-  * Note:	The argument and environment vectors are user space pointers
+@@ -5927,5 +5969,70 @@ bad:  * Note:	The argument and environment vectors are user space pointers
   *		to arrays of user space pointers.
   */
 +#if defined(ARM64_BOARD_CONFIG_PONG) && (DEVELOPMENT || DEBUG)
@@ -1907,8 +1878,7 @@ index 240bbf6..400dba5 100644
  __attribute__((noinline))
  static int
  exec_extract_strings(struct image_params *imgp)
-@@ -6101,6 +6208,32 @@ exec_extract_strings(struct image_params *imgp)
- 	}
+@@ -6101,5 +6208,31 @@ exec_extract_strings(struct image_params *imgp) 	}
  
  	/* Save space for envv[] NULL terminator */
 +#if defined(ARM64_BOARD_CONFIG_PONG) && (DEVELOPMENT || DEBUG)
@@ -1940,8 +1910,7 @@ index 240bbf6..400dba5 100644
  	if (imgp->ip_argspace < new_ptr_size) {
  		error = E2BIG;
  		goto bad;
-@@ -7132,8 +7265,381 @@ create_unix_stack(vm_map_t map, load_result_t* load_result,
-  *		word width of the kernel. Once the self-exec completes, the
+@@ -7132,7 +7265,380 @@ create_unix_stack(vm_map_t map, load_result_t* load_result,  *		word width of the kernel. Once the self-exec completes, the
   *		initproc might be different.
   */
 +#if defined(XNU_OWNER_CACHE_MOUNT) && XNU_OWNER_CACHE_MOUNT
@@ -2323,8 +2292,7 @@ index 240bbf6..400dba5 100644
  {
  	int retval[2];
  	int error;
-@@ -7205,7 +7709,7 @@ load_init_program_at_path(proc_t p, user_addr_t scratch_addr, const char* path)
- 	 */
+@@ -7205,6 +7709,6 @@ load_init_program_at_path(proc_t p, user_addr_t scratch_addr, const char* path) 	 */
  	init_exec_args.fname = argv0;
  	init_exec_args.argp = scratch_addr;
 -	init_exec_args.envp = USER_ADDR_NULL;
@@ -2332,8 +2300,7 @@ index 240bbf6..400dba5 100644
  
  	/*
  	 * So that init task is set with uid,gid 0 token
-@@ -7219,10 +7723,10 @@ load_init_program_at_path(proc_t p, user_addr_t scratch_addr, const char* path)
- }
+@@ -7219,9 +7723,9 @@ load_init_program_at_path(proc_t p, user_addr_t scratch_addr, const char* path) }
  
  static const char * init_programs[] = {
 -#if DEBUG
@@ -2345,8 +2312,7 @@ index 240bbf6..400dba5 100644
  	"/usr/appleinternal/sbin/launchd.development",
  #endif
  	"/sbin/launchd",
-@@ -7271,12 +7775,52 @@ load_init_program(proc_t p)
- 	exec_log_handle = os_log_create("com.apple.xnu.bsd", "exec");
+@@ -7271,11 +7775,51 @@ load_init_program(proc_t p) 	exec_log_handle = os_log_create("com.apple.xnu.bsd", "exec");
  #endif /* DEVELOPMENT || DEBUG */
  
 -	(void) mach_vm_allocate_kernel(map, &scratch_addr, map_page_size,
@@ -2399,8 +2365,7 @@ index 240bbf6..400dba5 100644
  #if DEBUG || DEVELOPMENT
  	/* Check for boot-arg suffix first */
  	char launchd_suffix[64];
-@@ -7287,7 +7831,7 @@ load_init_program(proc_t p)
- 
+@@ -7287,6 +7831,6 @@ load_init_program(proc_t p) 
  		if (is_release_suffix) {
  			printf("load_init_program: attempting to load /sbin/launchd\n");
 -			error = load_init_program_at_path(p, (user_addr_t)scratch_addr, "/sbin/launchd");
@@ -2408,8 +2373,7 @@ index 240bbf6..400dba5 100644
  			if (!error) {
  				return;
  			}
-@@ -7298,7 +7842,7 @@ load_init_program(proc_t p)
- 			strlcat(launchd_path, launchd_suffix, sizeof(launchd_path));
+@@ -7298,6 +7842,6 @@ load_init_program(proc_t p) 			strlcat(launchd_path, launchd_suffix, sizeof(launchd_path));
  
  			printf("load_init_program: attempting to load %s\n", launchd_path);
 -			error = load_init_program_at_path(p, (user_addr_t)scratch_addr, launchd_path);
@@ -2417,8 +2381,7 @@ index 240bbf6..400dba5 100644
  			if (!error) {
  				return;
  			} else if (error != ENOENT) {
-@@ -7308,10 +7852,25 @@ load_init_program(proc_t p)
- 	}
+@@ -7308,10 +7852,25 @@ load_init_program(proc_t p) 	}
  #endif
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
@@ -2448,16 +2411,14 @@ diff --git a/bsd/kern/kern_exit.c b/bsd/kern/kern_exit.c
 index d5d5b16..5372d98 100644
 --- a/bsd/kern/kern_exit.c
 +++ b/bsd/kern/kern_exit.c
-@@ -78,6 +78,7 @@
- 
+@@ -78,5 +78,6 @@ 
  #include <sys/param.h>
  #include <sys/systm.h>
 +#include <sys/sysctl.h>
  #include <sys/ioctl.h>
  #include <sys/proc_internal.h>
  #include <sys/proc.h>
-@@ -139,6 +140,38 @@
- 
+@@ -139,5 +140,37 @@ 
  #include <pexpert/pexpert.h>
  
 +#if defined(PONG)
@@ -2495,8 +2456,7 @@ index d5d5b16..5372d98 100644
  #include <kdp/kdp_dyld.h>
  
  #if SYSV_SHM
-@@ -1892,6 +1925,20 @@ proc_prepareexit(proc_t p, int rv, boolean_t perf_notify)
- 	task_t task = proc_task(p);
+@@ -1892,6 +1925,20 @@ proc_prepareexit(proc_t p, int rv, boolean_t perf_notify) 	task_t task = proc_task(p);
  
  
 +#if defined(PONG)
@@ -2520,8 +2480,7 @@ diff --git a/bsd/kern/kern_ktrace.c b/bsd/kern/kern_ktrace.c
 index 57795c7..5856cc7 100644
 --- a/bsd/kern/kern_ktrace.c
 +++ b/bsd/kern/kern_ktrace.c
-@@ -208,7 +208,9 @@ ktrace_reset_internal(uint32_t reset_mask)
- 	}
+@@ -208,6 +208,8 @@ ktrace_reset_internal(uint32_t reset_mask) 	}
  
  	if (reset_mask & KTRACE_KPERF) {
 +	#if KPERF
@@ -2530,8 +2489,7 @@ index 57795c7..5856cc7 100644
  	}
  	if (reset_mask & KTRACE_KDEBUG) {
  		kdebug_reset();
-@@ -366,7 +368,9 @@ ktrace_disable(ktrace_state_t state_to_match)
- {
+@@ -366,6 +368,8 @@ ktrace_disable(ktrace_state_t state_to_match) {
  	if (ktrace_state == state_to_match) {
  		kernel_debug_disable();
 +	#if KPERF
@@ -2540,8 +2498,7 @@ index 57795c7..5856cc7 100644
  	}
  }
  
-@@ -391,7 +395,9 @@ ktrace_kernel_configure(uint32_t config_mask)
- 
+@@ -391,6 +395,8 @@ ktrace_kernel_configure(uint32_t config_mask) 
  	if (ktrace_state != KTRACE_STATE_OFF) {
  		if (ktrace_active_mask & config_mask & KTRACE_KPERF) {
 +		#if KPERF
@@ -2550,8 +2507,7 @@ index 57795c7..5856cc7 100644
  		}
  		if (ktrace_active_mask & config_mask & KTRACE_KDEBUG) {
  			kdebug_reset();
-@@ -503,7 +509,9 @@ ktrace_set_owning_proc(proc_t p)
- 		} else {
+@@ -503,7 +509,9 @@ ktrace_set_owning_proc(proc_t p) 		} else {
  			if (ktrace_state == KTRACE_STATE_BG) {
  				if (ktrace_active_mask & KTRACE_KPERF) {
 +				#if KPERF
@@ -2564,8 +2520,7 @@ diff --git a/bsd/kern/kern_mib.c b/bsd/kern/kern_mib.c
 index c521960..25fcabb 100644
 --- a/bsd/kern/kern_mib.c
 +++ b/bsd/kern/kern_mib.c
-@@ -525,7 +525,7 @@ sysctl_hw_generic(__unused struct sysctl_oid *oidp, void *arg1,
- 		 * Deprecated variables.  We still support these for
+@@ -525,7 +525,7 @@ sysctl_hw_generic(__unused struct sysctl_oid *oidp, void *arg1, 		 * Deprecated variables.  We still support these for
  		 * backwards compatibility purposes only.
  		 */
 -#if XNU_TARGET_OS_OSX && defined(__arm64__)
@@ -2578,8 +2533,7 @@ new file mode 100644
 index 0000000..3b91bab
 --- /dev/null
 +++ b/bsd/kern/kern_minimac.c
-@@ -0,0 +1,482 @@
-+#include <pexpert/arm64/board_config.h>
+@@ -0,1 +1,482 @@+#include <pexpert/arm64/board_config.h>
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
 +/*
 + * Stand-ins for the two closed security policies user space cannot do
@@ -3065,8 +3019,7 @@ diff --git a/bsd/kern/kern_persona.c b/bsd/kern/kern_persona.c
 index 44f92f5..7409c02 100644
 --- a/bsd/kern/kern_persona.c
 +++ b/bsd/kern/kern_persona.c
-@@ -503,6 +503,54 @@ persona_find_all(const char *login, uid_t uid, persona_type_t persona_type,
- 	return 0;
+@@ -503,6 +503,54 @@ persona_find_all(const char *login, uid_t uid, persona_type_t persona_type, 	return 0;
  }
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
@@ -3124,8 +3077,7 @@ diff --git a/bsd/kern/kern_priv.c b/bsd/kern/kern_priv.c
 index 88adf2d..05e7679 100644
 --- a/bsd/kern/kern_priv.c
 +++ b/bsd/kern/kern_priv.c
-@@ -82,6 +82,16 @@ priv_check_cred(kauth_cred_t cred, int priv, int flags)
- #endif
+@@ -82,6 +82,16 @@ priv_check_cred(kauth_cred_t cred, int priv, int flags) #endif
  	int error;
  
 +	/*
@@ -3145,8 +3097,7 @@ diff --git a/bsd/kern/kern_proc.c b/bsd/kern/kern_proc.c
 index 060913a..6c66e6b 100644
 --- a/bsd/kern/kern_proc.c
 +++ b/bsd/kern/kern_proc.c
-@@ -3531,7 +3531,19 @@ csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user
- 		}
+@@ -3531,6 +3531,18 @@ csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user 		}
  
  		void* osent = csblob_os_entitlements_get(blob);
 -		if (!osent) {
@@ -3166,8 +3117,7 @@ index 060913a..6c66e6b 100644
  			goto out;
  		}
  		CS_GenericBlob* xmlblob = NULL;
-@@ -3567,7 +3579,8 @@ csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user
- 
+@@ -3567,7 +3579,8 @@ csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user 
  		error = csblob_get_der_entitlements(blob, (const CS_GenericBlob **)&start, &length);
  		if (error || start == NULL) {
 -			if (amfi && csblob_os_entitlements_get(blob)) {
@@ -3180,8 +3130,7 @@ diff --git a/bsd/kern/kern_sig.c b/bsd/kern/kern_sig.c
 index d32c03c..404814b 100644
 --- a/bsd/kern/kern_sig.c
 +++ b/bsd/kern/kern_sig.c
-@@ -89,6 +89,7 @@
- #include <sys/lock.h>
+@@ -89,6 +89,7 @@ #include <sys/lock.h>
  #include <sys/kdebug.h>
  #include <sys/reason.h>
 +#include <os/atomic_private.h>
@@ -3192,8 +3141,7 @@ diff --git a/bsd/kern/mach_loader.c b/bsd/kern/mach_loader.c
 index 6450d5c..8ae6556 100644
 --- a/bsd/kern/mach_loader.c
 +++ b/bsd/kern/mach_loader.c
-@@ -505,8 +505,12 @@ load_machfile(
- 
+@@ -505,8 +505,12 @@ load_machfile( 
  #if defined(__arm64__)
  	if (result->is_64bit_addr) {
 +#if !defined(APPLE_ARM64_ARCH_FAMILY) && !__ARM_16K_PG__
@@ -3210,8 +3158,7 @@ new file mode 100644
 index 0000000..9257df6
 --- /dev/null
 +++ b/bsd/kern/pong_userland.c
-@@ -0,0 +1,24 @@
-+#include <pexpert/arm64/board_config.h>
+@@ -0,1 +1,24 @@+#include <pexpert/arm64/board_config.h>
 +/* Bounded kernel-side progress, without a private sysctl or user copy. */
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
 +#include <sys/param.h>
@@ -3240,8 +3187,7 @@ new file mode 100644
 index 0000000..86a48e9
 --- /dev/null
 +++ b/bsd/kern/source_pthread_bootstrap.c
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: BSD-2-Clause-Patent */
+@@ -0,1 +1,23 @@+/* SPDX-License-Identifier: BSD-2-Clause-Patent */
 +#include <kern/startup.h>
 +#include <kern/debug.h>
 +#include <libkern/section_keywords.h>
@@ -3268,8 +3214,7 @@ diff --git a/bsd/kern/sys_work_interval.c b/bsd/kern/sys_work_interval.c
 index b544bf3..9d459e5 100644
 --- a/bsd/kern/sys_work_interval.c
 +++ b/bsd/kern/sys_work_interval.c
-@@ -265,8 +265,18 @@ work_interval_ctl(__unused proc_t p, struct work_interval_ctl_args *uap,
- 
+@@ -265,8 +265,18 @@ work_interval_ctl(__unused proc_t p, struct work_interval_ctl_args *uap, 
  		break;
  
 -	default:
@@ -3293,16 +3238,14 @@ diff --git a/bsd/kern/ubc_subr.c b/bsd/kern/ubc_subr.c
 index 69b9d1f..6f7af7d 100644
 --- a/bsd/kern/ubc_subr.c
 +++ b/bsd/kern/ubc_subr.c
-@@ -70,6 +70,7 @@
- #include <vm/pmap.h>
+@@ -70,5 +70,6 @@ #include <vm/pmap.h>
  #include <vm/vm_pageout.h>
  #include <vm/vm_map.h>
 +#include <vm/vm_map_xnu.h>
  #include <vm/vm_upl.h>
  #include <vm/vm_kern_xnu.h>
  #include <vm/vm_protos.h> /* last */
-@@ -103,6 +104,9 @@ static void ubc_cs_free(struct ubc_info *uip);
- 
+@@ -103,5 +104,8 @@ static void ubc_cs_free(struct ubc_info *uip); 
  static boolean_t ubc_cs_supports_multilevel_hash(struct cs_blob *blob);
  static kern_return_t ubc_cs_convert_to_multilevel_hash(struct cs_blob *blob);
 +#if defined(XNU_NATIVE_CS_HASH_CACHE) && XNU_NATIVE_CS_HASH_CACHE
@@ -3311,8 +3254,7 @@ index 69b9d1f..6f7af7d 100644
  
  ZONE_DEFINE_TYPE(ubc_info_zone, "ubc_info zone", struct ubc_info,
      ZC_ZFREE_CLEARMEM);
-@@ -366,7 +370,11 @@ cs_validate_codedirectory(const CS_CodeDirectory *cd, size_t length)
- 	if (ntohl(cd->magic) != CSMAGIC_CODEDIRECTORY) {
+@@ -366,6 +370,10 @@ cs_validate_codedirectory(const CS_CodeDirectory *cd, size_t length) 	if (ntohl(cd->magic) != CSMAGIC_CODEDIRECTORY) {
  		return EBADEXEC;
  	}
 -	if ((cd->pageSize != PAGE_SHIFT_4K) && (cd->pageSize != PAGE_SHIFT)) {
@@ -3324,8 +3266,7 @@ index 69b9d1f..6f7af7d 100644
  		printf("disallowing unsupported code signature page shift: %u\n", cd->pageSize);
  		return EBADEXEC;
  	}
-@@ -3948,8 +3956,17 @@ ubc_cs_convert_to_multilevel_hash(struct cs_blob *blob)
- static void
+@@ -3948,7 +3956,16 @@ ubc_cs_convert_to_multilevel_hash(struct cs_blob *blob) static void
  cs_blob_cleanup(struct cs_blob *blob)
  {
 +	if (blob->csb_native4k_hashes != NULL) {
@@ -3343,8 +3284,7 @@ index 69b9d1f..6f7af7d 100644
  		osobject_release(blob->csb_entitlements);
  		blob->csb_entitlements = NULL;
  	}
-@@ -4466,6 +4483,31 @@ accelerate_entitlement_queries(
- 	 */
+@@ -4466,5 +4483,30 @@ accelerate_entitlement_queries( 	 */
  	assert(ret == KERN_NOT_SUPPORTED);
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
@@ -3375,8 +3315,7 @@ index 69b9d1f..6f7af7d 100644
  	ret = amfi->OSEntitlements.adjustContextWithoutMonitor(
  		cs_blob->csb_entitlements,
  		cs_blob);
-@@ -4945,6 +4987,14 @@ ubc_cs_blob_add(
- 		goto out;
+@@ -4945,5 +4987,13 @@ ubc_cs_blob_add( 		goto out;
  	}
  
 +#if defined(XNU_NATIVE_CS_HASH_CACHE) && XNU_NATIVE_CS_HASH_CACHE
@@ -3390,8 +3329,7 @@ index 69b9d1f..6f7af7d 100644
  	/*
  	 * The vnode_lock, linked list traversal, and marking of the memory object as
  	 * signed can all be blocking operations. Compute a PAC over the tmp_blob.
-@@ -5812,6 +5862,125 @@ ubc_get_cs_mtime(
- 
+@@ -5812,5 +5862,124 @@ ubc_get_cs_mtime( 
  unsigned long cs_validate_page_no_hash = 0;
  unsigned long cs_validate_page_bad_hash = 0;
 +
@@ -3516,16 +3454,14 @@ index 69b9d1f..6f7af7d 100644
  static boolean_t
  cs_validate_hash(
  	struct cs_blob          *blobs,
-@@ -5835,6 +6004,7 @@ cs_validate_hash(
- 	off_t                   codeLimit = 0;
+@@ -5835,5 +6004,6 @@ cs_validate_hash( 	off_t                   codeLimit = 0;
  	const char              *lower_bound, *upper_bound;
  	vm_offset_t             kaddr, blob_addr;
 +	boolean_t               native4k_cached = FALSE;
  
  	/* retrieve the expected hash */
  	found_hash = FALSE;
-@@ -5870,15 +6040,31 @@ cs_validate_hash(
- 			if (hashtype->cs_digest_size > sizeof(actual_hash)) {
+@@ -5870,14 +6040,30 @@ cs_validate_hash( 			if (hashtype->cs_digest_size > sizeof(actual_hash)) {
  				panic("hash size too large");
  			}
 -			if (offset & ((1U << blob->csb_hash_pageshift) - 1)) {
@@ -3564,8 +3500,7 @@ index 69b9d1f..6f7af7d 100644
  			if (hash != NULL) {
  				bcopy(hash, expected_hash, hashtype->cs_size);
  				found_hash = TRUE;
-@@ -5908,7 +6094,7 @@ cs_validate_hash(
- 	} else {
+@@ -5908,6 +6094,6 @@ cs_validate_hash( 	} else {
  		*tainted = 0;
  
 -		size = (1U << blob->csb_hash_pageshift);
@@ -3573,8 +3508,7 @@ index 69b9d1f..6f7af7d 100644
  		*bytes_processed = size;
  
  		const uint32_t *asha1, *esha1;
-@@ -5974,6 +6160,7 @@ cs_validate_hash(
- 	return validated;
+@@ -5974,6 +6160,7 @@ cs_validate_hash( 	return validated;
  }
  
 +
@@ -3585,8 +3519,7 @@ diff --git a/bsd/miscfs/bindfs/bind_vfsops.c b/bsd/miscfs/bindfs/bind_vfsops.c
 index 412f9ec..5a55376 100644
 --- a/bsd/miscfs/bindfs/bind_vfsops.c
 +++ b/bsd/miscfs/bindfs/bind_vfsops.c
-@@ -78,6 +78,9 @@
- 
+@@ -78,5 +78,8 @@ 
  #include "bindfs.h"
  
 +/* Explicit boot overlay option; ordinary mounts retain entitlement checks. */
@@ -3595,8 +3528,7 @@ index 412f9ec..5a55376 100644
  #define BINDFS_ENTITLEMENT "com.apple.private.bindfs-allow"
  
  #define SIZEOF_MEMBER(type, member) (sizeof(((type *)0)->member))
-@@ -140,7 +143,7 @@ bindfs_mount(struct mount * mp, __unused vnode_t devvp, user_addr_t user_data, v
- 	}
+@@ -140,6 +143,6 @@ bindfs_mount(struct mount * mp, __unused vnode_t devvp, user_addr_t user_data, v 	}
  
  	/* check entitlement */
 -	if (!IOCurrentTaskHasEntitlement(BINDFS_ENTITLEMENT)) {
@@ -3604,8 +3536,7 @@ index 412f9ec..5a55376 100644
  		return EPERM;
  	}
  
-@@ -230,6 +233,9 @@ bindfs_mount(struct mount * mp, __unused vnode_t devvp, user_addr_t user_data, v
- 	sp->f_flags = flags;
+@@ -230,6 +233,9 @@ bindfs_mount(struct mount * mp, __unused vnode_t devvp, user_addr_t user_data, v 	sp->f_flags = flags;
  
  	xmp->bindm_flags = BINDM_CASEINSENSITIVE; /* default to case insensitive */
 +	if (native_bindfs_boot_mount) {
@@ -3618,8 +3549,7 @@ diff --git a/bsd/miscfs/bindfs/bind_vnops.c b/bsd/miscfs/bindfs/bind_vnops.c
 index 8609009..0c659c7 100644
 --- a/bsd/miscfs/bindfs/bind_vnops.c
 +++ b/bsd/miscfs/bindfs/bind_vnops.c
-@@ -105,6 +105,14 @@ bindfs_getattr(struct vnop_getattr_args * args)
- 		vnode_put(lowervp);
+@@ -105,6 +105,14 @@ bindfs_getattr(struct vnop_getattr_args * args) 		vnode_put(lowervp);
  
  		if (error == 0) {
 +			if (MOUNTTOBINDMOUNT(vnode_mount(args->a_vp))->bindm_flags & BINDM_FORCE_ROOT) {
@@ -3637,8 +3567,7 @@ diff --git a/bsd/miscfs/bindfs/bindfs.h b/bsd/miscfs/bindfs/bindfs.h
 index c3bebc8..5243b5c 100644
 --- a/bsd/miscfs/bindfs/bindfs.h
 +++ b/bsd/miscfs/bindfs/bindfs.h
-@@ -81,6 +81,8 @@
- //#define BINDFS_DEBUG 0
+@@ -81,6 +81,8 @@ //#define BINDFS_DEBUG 0
  
  #define BINDM_CACHE 0x0001
 +/* Root ownership for explicitly selected boot overlays; mode bits unchanged. */
@@ -3650,16 +3579,14 @@ diff --git a/bsd/miscfs/mockfs/mockfs_fsnode.c b/bsd/miscfs/mockfs/mockfs_fsnode
 index e000126..70b6bcb 100644
 --- a/bsd/miscfs/mockfs/mockfs_fsnode.c
 +++ b/bsd/miscfs/mockfs/mockfs_fsnode.c
-@@ -74,6 +74,7 @@ mockfs_fsnode_create(mount_t mp, uint8_t type, mockfs_fsnode_t * fsnpp)
- 	case MOCKFS_DEV:
+@@ -74,5 +74,6 @@ mockfs_fsnode_create(mount_t mp, uint8_t type, mockfs_fsnode_t * fsnpp) 	case MOCKFS_DEV:
  		break;
  	case MOCKFS_FILE:
 +	case MOCKFS_TEST_FILE:
  		/*
  		 * For a regular file, size is meaningful, but it will always be equal to the
  		 * size of the backing device.
-@@ -85,7 +86,7 @@ mockfs_fsnode_create(mount_t mp, uint8_t type, mockfs_fsnode_t * fsnpp)
- 		goto done;
+@@ -85,6 +86,6 @@ mockfs_fsnode_create(mount_t mp, uint8_t type, mockfs_fsnode_t * fsnpp) 		goto done;
  	}
  
 -	*fsnpp = kalloc_type(mockfs_fsnode_t, Z_WAITOK | Z_ZERO | Z_NOFAIL);
@@ -3667,8 +3594,7 @@ index e000126..70b6bcb 100644
  	(*fsnpp)->size = new_size;
  	(*fsnpp)->type = type;
  	(*fsnpp)->mnt = mp;
-@@ -145,6 +146,12 @@ mockfs_fsnode_destroy(mockfs_fsnode_t fsnp)
- 		}
+@@ -145,5 +146,11 @@ mockfs_fsnode_destroy(mockfs_fsnode_t fsnp) 		}
  	}
  
 +	if (fsnp->child_c) {
@@ -3680,8 +3606,7 @@ index e000126..70b6bcb 100644
  	/*
  	 * We need to orphan this node before we destroy it.
  	 */
-@@ -154,7 +161,7 @@ mockfs_fsnode_destroy(mockfs_fsnode_t fsnp)
- 		}
+@@ -154,6 +161,6 @@ mockfs_fsnode_destroy(mockfs_fsnode_t fsnp) 		}
  	}
  
 -	kfree_type(mockfs_fsnode_t, fsnp);
@@ -3689,8 +3614,7 @@ index e000126..70b6bcb 100644
  done:
  	return rvalue;
  }
-@@ -202,6 +209,9 @@ mockfs_fsnode_adopt(mockfs_fsnode_t parent, mockfs_fsnode_t child)
- 	} else if (!parent->child_b) {
+@@ -202,5 +209,8 @@ mockfs_fsnode_adopt(mockfs_fsnode_t parent, mockfs_fsnode_t child) 	} else if (!parent->child_b) {
  		parent->child_b = child;
  		child->parent = parent;
 +	} else if (!parent->child_c) {
@@ -3699,8 +3623,7 @@ index e000126..70b6bcb 100644
  	} else {
  		rvalue = ENOMEM;
  	}
-@@ -243,6 +253,9 @@ mockfs_fsnode_orphan(mockfs_fsnode_t fsnp)
- 	} else if (parent->child_b == fsnp) {
+@@ -243,5 +253,8 @@ mockfs_fsnode_orphan(mockfs_fsnode_t fsnp) 	} else if (parent->child_b == fsnp) {
  		parent->child_b = NULL;
  		fsnp->parent = NULL;
 +	} else if (parent->child_c == fsnp) {
@@ -3709,8 +3632,7 @@ index e000126..70b6bcb 100644
  	} else {
  		panic("mockfs_fsnode_orphan insanity, fsnp->parent != parent->child; fsnp = %p (in case gdb is screwing with you)", fsnp);
  	}
-@@ -278,6 +291,8 @@ mockfs_fsnode_child_by_type(mockfs_fsnode_t parent, uint8_t type, mockfs_fsnode_
- 		*child = parent->child_a;
+@@ -278,5 +291,7 @@ mockfs_fsnode_child_by_type(mockfs_fsnode_t parent, uint8_t type, mockfs_fsnode_ 		*child = parent->child_a;
  	} else if ((parent->child_b) && (parent->child_b->type == type)) {
  		*child = parent->child_b;
 +	} else if ((parent->child_c) && (parent->child_c->type == type)) {
@@ -3718,8 +3640,7 @@ index e000126..70b6bcb 100644
  	} else {
  		rvalue = ENOENT;
  	}
-@@ -322,7 +337,7 @@ mockfs_fsnode_vnode(mockfs_fsnode_t fsnp, vnode_t * vpp)
- 		 * We need to create the vnode; this will be unpleasant.
+@@ -322,7 +337,7 @@ mockfs_fsnode_vnode(mockfs_fsnode_t fsnp, vnode_t * vpp) 		 * We need to create the vnode; this will be unpleasant.
  		 */
  		vnfs_param.vnfs_mp = fsnp->mnt;
 -		vnfs_param.vnfs_vtype = (fsnp->type == MOCKFS_FILE) ? VREG : VDIR;
@@ -3731,8 +3652,7 @@ diff --git a/bsd/miscfs/mockfs/mockfs_fsnode.h b/bsd/miscfs/mockfs/mockfs_fsnode
 index f2620bf..fcaf674 100644
 --- a/bsd/miscfs/mockfs/mockfs_fsnode.h
 +++ b/bsd/miscfs/mockfs/mockfs_fsnode.h
-@@ -46,7 +46,8 @@
- enum mockfs_fsnode_type {
+@@ -46,6 +46,7 @@ enum mockfs_fsnode_type {
  	MOCKFS_ROOT,
  	MOCKFS_DEV,
 -	MOCKFS_FILE
@@ -3741,16 +3661,14 @@ index f2620bf..fcaf674 100644
  };
  
  /*
-@@ -58,6 +59,7 @@ enum mockfs_fsnode_type {
-  *   VREG access).
+@@ -58,5 +59,6 @@ enum mockfs_fsnode_type {  *   VREG access).
   */
  struct mockfs_fsnode {
 +	uint64_t               backing_offset; /* Offline two-file image only. */
  	uint64_t               size;    /* Bytes of data; 0 unless type is MOCKFS_FILE */
  	uint8_t                type;    /* Serves as a unique identifier for now */
  	mount_t                mnt;     /* The mount that this node belongs to */
-@@ -66,6 +68,7 @@ struct mockfs_fsnode {
- 	                                /* TODO: Replace child_a/child_b with something more flexible */
+@@ -66,6 +68,7 @@ struct mockfs_fsnode { 	                                /* TODO: Replace child_a/child_b with something more flexible */
  	struct mockfs_fsnode * child_a; /* TEMPORARY */
  	struct mockfs_fsnode * child_b; /* TEMPORARY */
 +	struct mockfs_fsnode * child_c; /* Offline test input. */
@@ -3761,8 +3679,7 @@ diff --git a/bsd/miscfs/mockfs/mockfs_vfsops.c b/bsd/miscfs/mockfs/mockfs_vfsops
 index 325bb06..ed8f041 100644
 --- a/bsd/miscfs/mockfs/mockfs_vfsops.c
 +++ b/bsd/miscfs/mockfs/mockfs_vfsops.c
-@@ -34,6 +34,8 @@
- #include <miscfs/mockfs/mockfs_vnops.h>
+@@ -34,5 +34,7 @@ #include <miscfs/mockfs/mockfs_vnops.h>
  #include <miscfs/specfs/specdev.h>
  #include <sys/disk.h>
 +#include <sys/buf.h>
@@ -3770,8 +3687,7 @@ index 325bb06..ed8f041 100644
  #include <sys/errno.h>
  #include <sys/malloc.h>
  #include <sys/mount_internal.h>
-@@ -41,6 +43,15 @@
- 
+@@ -41,5 +43,14 @@ 
  static LCK_GRP_DECLARE(mockfs_mtx_grp, "mockfs-mutex");
  
 +/* Bounded offline input container, not a deployment filesystem or trust claim.
@@ -3786,8 +3702,7 @@ index 325bb06..ed8f041 100644
  int mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx);
  
  /*
-@@ -68,6 +79,10 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx)
- 	mockfs_fsnode_t root_fsnode = NULL;
+@@ -68,5 +79,9 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx) 	mockfs_fsnode_t root_fsnode = NULL;
  	mockfs_fsnode_t dev_fsnode = NULL;
  	mockfs_fsnode_t file_fsnode = NULL;
 +	mockfs_fsnode_t test_fsnode = NULL;
@@ -3797,8 +3712,7 @@ index 325bb06..ed8f041 100644
  	mockfs_mount_t mockfs_mount_data = NULL;
  	dk_memdev_info_t memdev_info;
  
-@@ -99,9 +114,11 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx)
- 
+@@ -99,8 +114,10 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx) 
  	if (!VNOP_IOCTL(rvp, DKIOCGETMEMDEVINFO, (caddr_t)&memdev_info, 0, NULL)) {
  		/*
 -		 * For the moment, we won't try to optimize when mi_phys is true.
@@ -3811,8 +3725,7 @@ index 325bb06..ed8f041 100644
  			mockfs_mount_data->mockfs_memory_backed = memdev_info.mi_mdev;
  			mockfs_mount_data->mockfs_physical_memory = memdev_info.mi_phys;
  			mockfs_mount_data->mockfs_memdev_base = memdev_info.mi_base;
-@@ -111,6 +128,42 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx)
- 
+@@ -111,5 +128,41 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx) 
  	lck_mtx_init(&mockfs_mount_data->mockfs_mnt_mtx, &mockfs_mtx_grp, LCK_ATTR_NULL);
  
 +	mp->mnt_data = (typeof(mp->mnt_data))mockfs_mount_data;
@@ -3854,8 +3767,7 @@ index 325bb06..ed8f041 100644
  	/*
  	 * All of the needed nodes/structures have been set up; now we just need to establish the relationships
  	 *   between the various mockfs nodes.
-@@ -123,11 +176,18 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx)
- 		goto done;
+@@ -123,10 +176,17 @@ mockfs_mountroot(mount_t mp, vnode_t rvp, __unused vfs_context_t ctx) 		goto done;
  	}
  
 +	if (test_image && (rvalue = mockfs_fsnode_adopt(root_fsnode, test_fsnode))) {
@@ -3873,16 +3785,14 @@ index 325bb06..ed8f041 100644
  		if (file_fsnode) {
  			mockfs_fsnode_destroy(file_fsnode);
  		}
-@@ -140,6 +200,7 @@ done:
- 		if (mockfs_mount_data) {
+@@ -140,5 +200,6 @@ done: 		if (mockfs_mount_data) {
  			lck_mtx_destroy(&mockfs_mount_data->mockfs_mnt_mtx, &mockfs_mtx_grp);
  			kfree_type(struct mockfs_mount, mockfs_mount_data);
 +		mp->mnt_data = NULL;
  		}
  	}
  
-@@ -225,6 +286,27 @@ mockfs_sync(__unused struct mount *mp, __unused int waitfor, __unused vfs_contex
- 	return 0;
+@@ -225,5 +286,26 @@ mockfs_sync(__unused struct mount *mp, __unused int waitfor, __unused vfs_contex 	return 0;
  }
  
 +static int
@@ -3909,8 +3819,7 @@ index 325bb06..ed8f041 100644
  int
  mockfs_init(__unused struct vfsconf * vfsc)
  {
-@@ -235,5 +317,6 @@ struct vfsops mockfs_vfsops = {
- 	.vfs_unmount = mockfs_unmount,
+@@ -235,5 +317,6 @@ struct vfsops mockfs_vfsops = { 	.vfs_unmount = mockfs_unmount,
  	.vfs_root = mockfs_root,
  	.vfs_sync = mockfs_sync,
 +	.vfs_getattr = mockfs_getattr,
@@ -3920,16 +3829,14 @@ diff --git a/bsd/miscfs/mockfs/mockfs_vnops.c b/bsd/miscfs/mockfs/mockfs_vnops.c
 index 5dbbbc6..6cbfce2 100644
 --- a/bsd/miscfs/mockfs/mockfs_vnops.c
 +++ b/bsd/miscfs/mockfs/mockfs_vnops.c
-@@ -29,6 +29,7 @@
- #include <miscfs/mockfs/mockfs.h>
+@@ -29,5 +29,6 @@ #include <miscfs/mockfs/mockfs.h>
  #include <miscfs/mockfs/mockfs_vnops.h>
  #include <sys/ubc.h>
 +#include <sys/fcntl.h>
  #include <sys/mount_internal.h>
  #include <sys/vnode_internal.h>
  #include <vfs/vfs_support.h>
-@@ -46,6 +47,11 @@
-  *   each function does in generic terms.
+@@ -46,5 +47,10 @@  *   each function does in generic terms.
   */
  int mockfs_lookup(struct vnop_lookup_args * ap);
 +static int mockfs_readonly_open(struct vnop_open_args *ap)
@@ -3940,8 +3847,7 @@ index 5dbbbc6..6cbfce2 100644
  int mockfs_getattr(struct vnop_getattr_args * ap);
  int mockfs_read(struct vnop_read_args * ap);
  int mockfs_strategy(struct vnop_strategy_args * ap);
-@@ -103,7 +109,7 @@ mockfs_lookup(struct vnop_lookup_args * ap)
- 	fsnode = (mockfs_fsnode_t) dvp->v_data;
+@@ -103,6 +109,6 @@ mockfs_lookup(struct vnop_lookup_args * ap) 	fsnode = (mockfs_fsnode_t) dvp->v_data;
  	target_fsnode = NULL;
  
 -	if ((op == LOOKUP) && (fsnode->type == MOCKFS_ROOT)) {
@@ -3949,8 +3855,7 @@ index 5dbbbc6..6cbfce2 100644
  		/*
  		 * Okay, we're looking in the root directory, so we aren't necessarily
  		 *   going to fail.  What are we looking for?
-@@ -117,10 +123,15 @@ mockfs_lookup(struct vnop_lookup_args * ap)
- 		 *   accidentally commit a change to the init_process pathname.  We map from name to node type
+@@ -117,9 +123,14 @@ mockfs_lookup(struct vnop_lookup_args * ap) 		 *   accidentally commit a change to the init_process pathname.  We map from name to node type
  		 *   here, as mockfs doesn't current use names; just unique types.
  		 */
 -		if (!strncmp(cnp->cn_nameptr, "sbin", 5)) {
@@ -3966,8 +3871,7 @@ index 5dbbbc6..6cbfce2 100644
  		} else if (!strncmp(cnp->cn_nameptr, "launchd", 8)) {
  			mockfs_fsnode_child_by_type(fsnode, MOCKFS_FILE, &target_fsnode);
  		} else {
-@@ -392,8 +403,12 @@ mockfs_blockmap(struct vnop_blockmap_args * ap)
- 	 *   This also means that their request should always be contiguous, so the run calculation is easy!
+@@ -392,7 +403,11 @@ mockfs_blockmap(struct vnop_blockmap_args * ap) 	 *   This also means that their request should always be contiguous, so the run calculation is easy!
  	 */
  	if (vp->v_type == VREG) {
 -		*bpn = foffset / blksize;
@@ -3981,8 +3885,7 @@ index 5dbbbc6..6cbfce2 100644
  
  		if (ap->a_size > *run) {
  			/* We've been asked for more data than the backing device can provide; we're done. */
-@@ -411,9 +426,9 @@ const struct vnodeopv_entry_desc mockfs_vnodeop_entries[] = {
- 	{ .opve_op = &vnop_default_desc, .opve_impl = (VOPFUNC) vn_default_error }, /* default */
+@@ -411,8 +426,8 @@ const struct vnodeopv_entry_desc mockfs_vnodeop_entries[] = { 	{ .opve_op = &vnop_default_desc, .opve_impl = (VOPFUNC) vn_default_error }, /* default */
  	{ .opve_op = &vnop_lookup_desc, .opve_impl = (VOPFUNC) mockfs_lookup }, /* lookup */
  	{ .opve_op = &vnop_create_desc, .opve_impl = (VOPFUNC) err_create },/* create */
 -	{ .opve_op = &vnop_open_desc, .opve_impl = (VOPFUNC) err_open }, /* open */
@@ -3993,8 +3896,7 @@ index 5dbbbc6..6cbfce2 100644
  	{ .opve_op = &vnop_access_desc, .opve_impl = (VOPFUNC) err_access }, /* access */
  	{ .opve_op = &vnop_getattr_desc, .opve_impl = (VOPFUNC) mockfs_getattr }, /* getattr */
  	{ .opve_op = &vnop_setattr_desc, .opve_impl = (VOPFUNC) err_setattr }, /* setattr */
-@@ -421,7 +436,7 @@ const struct vnodeopv_entry_desc mockfs_vnodeop_entries[] = {
- 	{ .opve_op = &vnop_write_desc, .opve_impl = (VOPFUNC) err_write }, /* write */
+@@ -421,7 +436,7 @@ const struct vnodeopv_entry_desc mockfs_vnodeop_entries[] = { 	{ .opve_op = &vnop_write_desc, .opve_impl = (VOPFUNC) err_write }, /* write */
  	{ .opve_op = &vnop_ioctl_desc, .opve_impl = (VOPFUNC) err_ioctl }, /* ioctl */
  	{ .opve_op = &vnop_select_desc, .opve_impl = (VOPFUNC) err_select }, /* select */
 -	{ .opve_op = &vnop_mmap_desc, .opve_impl = (VOPFUNC) err_mmap }, /* mmap */
@@ -4006,8 +3908,7 @@ diff --git a/bsd/net/necp_client.c b/bsd/net/necp_client.c
 index 9ffc871..a8904d4 100644
 --- a/bsd/net/necp_client.c
 +++ b/bsd/net/necp_client.c
-@@ -68,7 +68,7 @@
- 
+@@ -68,7 +68,7 @@ 
  #include <os/refcnt.h>
  
 -#include <CodeSignature/Entitlements.h>
@@ -4019,8 +3920,7 @@ diff --git a/bsd/sys/make_symbol_aliasing.sh b/bsd/sys/make_symbol_aliasing.sh
 index 24fb244..91b2cf5 100755
 --- a/bsd/sys/make_symbol_aliasing.sh
 +++ b/bsd/sys/make_symbol_aliasing.sh
-@@ -34,7 +34,7 @@ fi
- SDKROOT="$1"
+@@ -34,7 +34,7 @@ fi SDKROOT="$1"
  OUTPUT="$2"
  
 -AVAILABILITY_PL="${SDKROOT}/${DRIVERKITROOT}/usr/local/libexec/availability.pl"
@@ -4033,8 +3933,7 @@ new file mode 100644
 index 0000000..3843c79
 --- /dev/null
 +++ b/bsd/sys/pong_input.h
-@@ -0,0 +1,24 @@
-+/* Pong touch records. Earlier input ABI adapted to the real Pong producer. */
+@@ -0,1 +1,24 @@+/* Pong touch records. Earlier input ABI adapted to the real Pong producer. */
 +#ifndef _SYS_PONG_INPUT_H_
 +#define _SYS_PONG_INPUT_H_
 +#include <stdint.h>
@@ -4062,8 +3961,7 @@ diff --git a/bsd/sys/ubc_internal.h b/bsd/sys/ubc_internal.h
 index 56f0444..923d38b 100644
 --- a/bsd/sys/ubc_internal.h
 +++ b/bsd/sys/ubc_internal.h
-@@ -162,6 +162,13 @@ struct cs_blob {
- 	bool csb_csm_managed;
+@@ -162,6 +162,13 @@ struct cs_blob { 	bool csb_csm_managed;
  	uint32_t csb_csm_trust_level;
  #endif
 +
@@ -4080,8 +3978,7 @@ diff --git a/bsd/vfs/vfs_attrlist.c b/bsd/vfs/vfs_attrlist.c
 index 488969f..f9d2dcf 100644
 --- a/bsd/vfs/vfs_attrlist.c
 +++ b/bsd/vfs/vfs_attrlist.c
-@@ -4280,6 +4280,9 @@ getattrlistbulk(proc_t p, struct getattrlistbulk_args *uap, int32_t *retval)
- 
+@@ -4280,5 +4280,8 @@ getattrlistbulk(proc_t p, struct getattrlistbulk_args *uap, int32_t *retval) 
  	FV_LOCK(fvdata);
  
 +#if CONFIG_UNION_MOUNTS
@@ -4090,8 +3987,7 @@ index 488969f..f9d2dcf 100644
  	/*
  	 * getattrlistbulk(2) maintains its offset in fv_offset. However
  	 * if the offset in the file glob is set (or reset) to 0, the directory
-@@ -4372,6 +4375,52 @@ getattrlistbulk(proc_t p, struct getattrlistbulk_args *uap, int32_t *retval)
- 		ut->uu_flag &= ~UT_KERN_RAGE_VNODES;
+@@ -4372,6 +4375,52 @@ getattrlistbulk(proc_t p, struct getattrlistbulk_args *uap, int32_t *retval) 		ut->uu_flag &= ~UT_KERN_RAGE_VNODES;
  	}
  
 +#if CONFIG_UNION_MOUNTS
@@ -4147,8 +4043,7 @@ diff --git a/bsd/vfs/vfs_lookup.c b/bsd/vfs/vfs_lookup.c
 index 22125b4..7e592af 100644
 --- a/bsd/vfs/vfs_lookup.c
 +++ b/bsd/vfs/vfs_lookup.c
-@@ -1663,7 +1663,16 @@ lookup_traverse_union(vnode_t dvp, vnode_t *new_dvp, vfs_context_t ctx)
- 	nd.ni_dvp = dvp->v_mount->mnt_vnodecovered;
+@@ -1663,7 +1663,16 @@ lookup_traverse_union(vnode_t dvp, vnode_t *new_dvp, vfs_context_t ctx) 	nd.ni_dvp = dvp->v_mount->mnt_vnodecovered;
  	error = namei(&nd);
  	if (error == 0) {
 -		*new_dvp = nd.ni_vp;
@@ -4169,8 +4064,7 @@ diff --git a/bsd/vfs/vfs_syscalls.c b/bsd/vfs/vfs_syscalls.c
 index fe34d1b..eab9b59 100644
 --- a/bsd/vfs/vfs_syscalls.c
 +++ b/bsd/vfs/vfs_syscalls.c
-@@ -72,6 +72,10 @@
-  */
+@@ -72,5 +72,9 @@  */
  
  #include <sys/param.h>
 +#if defined(ARM64_BOARD_CONFIG_PONG)
@@ -4180,8 +4074,7 @@ index fe34d1b..eab9b59 100644
  #include <sys/systm.h>
  #include <sys/syslimits.h> /* For MAXLONGPATHLEN */
  #include <sys/namei.h>
-@@ -4709,6 +4713,10 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags,
- 	if ((error = falloc_withinit(p, p_cred, ctx, &fp, &indx, fp_init, initarg)) != 0) {
+@@ -4709,5 +4713,9 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags, 	if ((error = falloc_withinit(p, p_cred, ctx, &fp, &indx, fp_init, initarg)) != 0) {
  		return error;
  	}
 +
@@ -4191,8 +4084,7 @@ index fe34d1b..eab9b59 100644
  	if (flags & O_CLOEXEC) {
  		fp->fp_flags |= FP_CLOEXEC;
  	}
-@@ -4735,6 +4743,10 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags,
- 		}
+@@ -4735,5 +4743,9 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags, 		}
  	}
  
 +
@@ -4202,8 +4094,7 @@ index fe34d1b..eab9b59 100644
  	if ((error = vn_open_auth(ndp, &flags, vap, authvp))) {
  		if (authvp != NULLVP) {
  			vnode_put(authvp);
-@@ -4756,6 +4768,10 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags,
- 		vnode_put(authvp);
+@@ -4756,5 +4768,9 @@ open1(vfs_context_t ctx, struct nameidata *ndp, int uflags, 		vnode_put(authvp);
  	}
  
 +
@@ -4213,8 +4104,7 @@ index fe34d1b..eab9b59 100644
  	uu->uu_dupfd = 0;
  	vp = ndp->ni_vp;
  
-@@ -5201,7 +5217,15 @@ openat_internal(vfs_context_t ctx, user_addr_t path, int flags, int mode,
- 	int cmode;
+@@ -5201,6 +5217,14 @@ openat_internal(vfs_context_t ctx, user_addr_t path, int flags, int mode, 	int cmode;
  	int error;
  
 +
@@ -4229,8 +4119,7 @@ index fe34d1b..eab9b59 100644
  	vap = &__open_data->va;
  	ndp = &__open_data->nd;
  
-@@ -5223,7 +5247,14 @@ openat_internal(vfs_context_t ctx, user_addr_t path, int flags, int mode,
- int
+@@ -5223,7 +5247,14 @@ openat_internal(vfs_context_t ctx, user_addr_t path, int flags, int mode, int
  open(proc_t p, struct open_args *uap, int32_t *retval)
  {
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -4248,8 +4137,7 @@ diff --git a/bsd/vm/vm_unix.c b/bsd/vm/vm_unix.c
 index 2620af5..b782b15 100644
 --- a/bsd/vm/vm_unix.c
 +++ b/bsd/vm/vm_unix.c
-@@ -1070,6 +1070,128 @@ static void shared_region_map_and_slide_cleanup(
- 	struct _sr_file_mappings *sr_file_mappings,
+@@ -1070,5 +1070,127 @@ static void shared_region_map_and_slide_cleanup( 	struct _sr_file_mappings *sr_file_mappings,
  	struct vm_shared_region  *shared_region);
  
 +#if defined(XNU_OWNER_CACHE_CARRIER) && XNU_OWNER_CACHE_CARRIER && !CONFIG_CSR
@@ -4377,8 +4265,7 @@ index 2620af5..b782b15 100644
  /*
   * Setup part of _shared_region_map_and_slide().
   * It had to be broken out of _shared_region_map_and_slide() to
-@@ -1402,15 +1513,34 @@ after_root_check:
- 		 * is either on the root volume or in the preboot cryptex volume.
+@@ -1402,14 +1513,33 @@ after_root_check: 		 * is either on the root volume or in the preboot cryptex volume.
  		 */
  		assert(rdir_vp != NULL);
 +#if defined(XNU_OWNER_CACHE_CARRIER) && XNU_OWNER_CACHE_CARRIER
@@ -4413,8 +4300,7 @@ index 2620af5..b782b15 100644
  				SHARED_REGION_TRACE_ERROR(
  					("shared_region: %p [%d(%s)] map(%p:'%s'): "
  					"not on process' root volume nor preboot volume\n",
-@@ -1429,7 +1559,11 @@ after_root_check:
- 		}
+@@ -1429,7 +1559,11 @@ after_root_check: 		}
  #endif /* CONFIG_CSR */
  
 -		if (scdir_enforce) {
@@ -4430,8 +4316,7 @@ diff --git a/config/MASTER b/config/MASTER
 index e9170fd..f7d1e8a 100644
 --- a/config/MASTER
 +++ b/config/MASTER
-@@ -331,6 +331,8 @@ options		CONFIG_EXCLAVES			# <config_exclaves>
- # Compile XNU with PPL support.
+@@ -331,6 +331,8 @@ options		CONFIG_EXCLAVES			# <config_exclaves> # Compile XNU with PPL support.
  options   CONFIG_PMAP_PPL			# <config_pmap_ppl>
  
 +options   CONFIG_APPLE_AMCC			# <apple_amcc>
@@ -4444,8 +4329,7 @@ new file mode 100644
 index 0000000..c5c541a
 --- /dev/null
 +++ b/config/MASTER.arm64.pong
-@@ -0,0 +1,97 @@
-+# Pong SM8475 / Darwin24 configuration; topology supplied by the Pong ADT.
+@@ -0,1 +1,97 @@+# Pong SM8475 / Darwin24 configuration; topology supplied by the Pong ADT.
 +#
 +# Mach Operating System
 +# Copyright (c) 1986 Carnegie-Mellon University
@@ -4546,8 +4430,7 @@ diff --git a/iokit/Kernel/IOCPU.cpp b/iokit/Kernel/IOCPU.cpp
 index c7b3a77..1927eaf 100644
 --- a/iokit/Kernel/IOCPU.cpp
 +++ b/iokit/Kernel/IOCPU.cpp
-@@ -63,6 +63,17 @@ static OSSharedPtr<OSArray> gIOCPUs;
- static OSSharedPtr<const OSSymbol> gIOCPUStateKey;
+@@ -63,5 +63,16 @@ static OSSharedPtr<OSArray> gIOCPUs; static OSSharedPtr<const OSSymbol> gIOCPUStateKey;
  static OSSharedPtr<OSString> gIOCPUStateNames[kIOCPUStateCount];
  
 +#if defined(PONG)
@@ -4564,8 +4447,7 @@ index c7b3a77..1927eaf 100644
  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
  #if !USE_APPLEARMSMP
-@@ -736,6 +747,9 @@ IOCPUInterruptController::registerInterrupt(IOService *nub,
- 
+@@ -736,5 +747,8 @@ IOCPUInterruptController::registerInterrupt(IOService *nub, 
  	IOUnlock(vector->interruptLock);
  
 +#if !defined(PONG)
@@ -4574,8 +4456,7 @@ index c7b3a77..1927eaf 100644
  	IOTakeLock(vectors[0].interruptLock);
  	if (enabledCPUs != numCPUs) {
  		assert_wait(this, THREAD_UNINT);
-@@ -744,6 +758,7 @@ IOCPUInterruptController::registerInterrupt(IOService *nub,
- 	} else {
+@@ -744,6 +758,7 @@ IOCPUInterruptController::registerInterrupt(IOService *nub, 	} else {
  		IOUnlock(vectors[0].interruptLock);
  	}
 +#endif
@@ -4586,8 +4467,7 @@ diff --git a/iokit/Kernel/IOMemoryDescriptor.cpp b/iokit/Kernel/IOMemoryDescript
 index 4fa1008..b342f8b 100644
 --- a/iokit/Kernel/IOMemoryDescriptor.cpp
 +++ b/iokit/Kernel/IOMemoryDescriptor.cpp
-@@ -33,6 +33,10 @@
- #include <IOKit/system.h>
+@@ -33,5 +33,9 @@ #include <IOKit/system.h>
  #include <IOKit/IOLib.h>
  #include <IOKit/IOMemoryDescriptor.h>
 +/* Native board kernels map driver-owned (managed) pages through physical descriptors on purpose: GPU buffer views and the
@@ -4597,8 +4477,7 @@ index 4fa1008..b342f8b 100644
  #include <IOKit/IOMapper.h>
  #include <IOKit/IODMACommand.h>
  #include <IOKit/IOKitKeysPrivate.h>
-@@ -5265,7 +5269,7 @@ IOMemoryDescriptor::populateDevicePager(
- 			break;
+@@ -5265,7 +5269,7 @@ IOMemoryDescriptor::populateDevicePager( 			break;
  		}
  
 -#if DEBUG || DEVELOPMENT
@@ -4610,8 +4489,7 @@ diff --git a/iokit/Kernel/IOService.cpp b/iokit/Kernel/IOService.cpp
 index 39f62c7..8cbf96f 100644
 --- a/iokit/Kernel/IOService.cpp
 +++ b/iokit/Kernel/IOService.cpp
-@@ -1609,6 +1609,11 @@ IOService::setPlatform( IOPlatformExpert * platform)
- 	gIOSystemStateNotificationService = IOSystemStateNotification::initialize();
+@@ -1609,5 +1609,10 @@ IOService::setPlatform( IOPlatformExpert * platform) 	gIOSystemStateNotificationService = IOSystemStateNotification::initialize();
  	gIOSystemStateNotificationService->attachToParent(platform, gIOServicePlane);
  	gIOSystemStateNotificationService->registerService();
 +#if defined(PONG)
@@ -4622,8 +4500,7 @@ index 39f62c7..8cbf96f 100644
  
  	static const char * keys[kCpuNumDelayTypes] = {
  		kIOPlatformMaxBusDelay,
-@@ -5024,6 +5029,12 @@ IOService::publishResource( const OSSymbol * key, OSObject * value )
- 	}
+@@ -5024,5 +5029,11 @@ IOService::publishResource( const OSSymbol * key, OSObject * value ) 	}
  
  	gIOResources->setProperty( key, value);
 +#if defined(PONG)
@@ -4635,8 +4512,7 @@ index 39f62c7..8cbf96f 100644
  
  	if (IORecursiveLockHaveLock( gNotificationLock)) {
  		return;
-@@ -5297,14 +5308,16 @@ IOService::setRootMedia(IOService * root)
- 	const OSMetaClass * ioblockstoragedriverClass;
+@@ -5297,14 +5308,16 @@ IOService::setRootMedia(IOService * root) 	const OSMetaClass * ioblockstoragedriverClass;
  	bool unhide;
  
 -	ioblockstoragedriverClass = OSMetaClass::getMetaClassWithName(gIOBlockStorageDriverKey);
@@ -4662,8 +4538,7 @@ diff --git a/iokit/Kernel/IOStartIOKit.cpp b/iokit/Kernel/IOStartIOKit.cpp
 index 95553a0..39e553d 100644
 --- a/iokit/Kernel/IOStartIOKit.cpp
 +++ b/iokit/Kernel/IOStartIOKit.cpp
-@@ -77,8 +77,14 @@ IOKitInitializeTime( void )
- 	t.tv_sec = 30;
+@@ -77,8 +77,14 @@ IOKitInitializeTime( void ) 	t.tv_sec = 30;
  	t.tv_nsec = 0;
  
 +// These bring-up targets have no RTC provider. Use XNU's calendar fallback
@@ -4681,8 +4556,7 @@ diff --git a/iokit/Kernel/IOUserClient.cpp b/iokit/Kernel/IOUserClient.cpp
 index e1d0d4b..6dc68c7 100644
 --- a/iokit/Kernel/IOUserClient.cpp
 +++ b/iokit/Kernel/IOUserClient.cpp
-@@ -1570,6 +1570,9 @@ IOUserClient::copyClientEntitlement( task_t task,
- 	if (task == kernel_task || entitlement == NULL) {
+@@ -1570,5 +1570,8 @@ IOUserClient::copyClientEntitlement( task_t task, 	if (task == kernel_task || entitlement == NULL) {
  		return NULL;
  	}
 +	if (amfi == NULL || amfi->OSEntitlements.copyEntitlementAsOSObjectWithProc == NULL) {
@@ -4691,16 +4565,14 @@ index e1d0d4b..6dc68c7 100644
  	proc_t proc = (proc_t)get_bsdtask_info(task);
  
  	kern_return_t ret = amfi->OSEntitlements.copyEntitlementAsOSObjectWithProc(
-@@ -4068,6 +4071,7 @@ is_io_registry_entry_get_property_bin(
- }
+@@ -4068,5 +4071,6 @@ is_io_registry_entry_get_property_bin( }
  
  
 +static bool native_sandbox_grant(IOService * service);
  /* Routine io_registry_entry_set_properties */
  kern_return_t
  is_io_registry_entry_set_properties
-@@ -4103,7 +4107,10 @@ is_io_registry_entry_set_properties
- 			res = kIOReturnBadArgument;
+@@ -4103,6 +4107,9 @@ is_io_registry_entry_set_properties 			res = kIOReturnBadArgument;
  		}
  #if CONFIG_MACF
 -		else if (0 != mac_iokit_check_set_properties(kauth_cred_get(),
@@ -4711,8 +4583,7 @@ index e1d0d4b..6dc68c7 100644
  		    registry_entry, obj)) {
  			res = kIOReturnNotPermitted;
  		}
-@@ -4340,6 +4347,45 @@ is_io_service_set_authorization_id(
- }
+@@ -4340,5 +4347,44 @@ is_io_service_set_authorization_id( }
  
  /* Routine io_service_open_ndr */
 +/*
@@ -4757,8 +4628,7 @@ index e1d0d4b..6dc68c7 100644
  kern_return_t
  is_io_service_open_extended(
  	io_object_t _service,
-@@ -4368,7 +4414,7 @@ is_io_service_open_extended(
- 	}
+@@ -4368,6 +4414,6 @@ is_io_service_open_extended( 	}
  
  #if CONFIG_MACF
 -	if (mac_iokit_check_open_service(kauth_cred_get(), service, connect_type) != 0) {
@@ -4766,8 +4636,7 @@ index e1d0d4b..6dc68c7 100644
  		return kIOReturnNotPermitted;
  	}
  #endif
-@@ -4527,7 +4573,9 @@ is_io_service_open_extended(
- 				res = kIOReturnNotPrivileged;
+@@ -4527,6 +4573,8 @@ is_io_service_open_extended( 				res = kIOReturnNotPrivileged;
  			}
  #if CONFIG_MACF
 -			else if (0 != mac_iokit_check_open(kauth_cred_get(), client, connect_type)) {
@@ -4777,16 +4646,14 @@ index e1d0d4b..6dc68c7 100644
  				IOLog("IOUC %s failed MACF in process %s\n",
  				    client->getMetaClass()->getClassName(), creatorNameCStr);
  				res = kIOReturnNotPermitted;
-@@ -4535,6 +4583,7 @@ is_io_service_open_extended(
- #endif
+@@ -4535,5 +4583,6 @@ is_io_service_open_extended( #endif
  
  			if ((kIOReturnSuccess == res)
 +			    && !native_sandbox_grant(service)
  			    && gIOUCFilterCallbacks
  			    && gIOUCFilterCallbacks->io_filter_resolver) {
  				io_filter_policy_t filterPolicy;
-@@ -6709,3 +6758,66 @@ OSMetaClassDefineReservedUnused(IOUserClient2022, 0);
- OSMetaClassDefineReservedUnused(IOUserClient2022, 1);
+@@ -6709,3 +6758,66 @@ OSMetaClassDefineReservedUnused(IOUserClient2022, 0); OSMetaClassDefineReservedUnused(IOUserClient2022, 1);
  OSMetaClassDefineReservedUnused(IOUserClient2022, 2);
  OSMetaClassDefineReservedUnused(IOUserClient2022, 3);
 +
@@ -4857,8 +4724,7 @@ new file mode 100644
 index 0000000..0b489ec
 --- /dev/null
 +++ b/iokit/Kernel/MiniAppleKeyStore.cpp
-@@ -0,0 +1,287 @@
-+/*
+@@ -0,1 +1,287 @@+/*
 + * Pong development AppleKeyStore compatibility service, adapted from the
 + * supplied MiniAppleKeyStore from the earlier port.
 + *
@@ -5150,8 +5016,7 @@ new file mode 100644
 index 0000000..fe0dc35
 --- /dev/null
 +++ b/iokit/Kernel/MiniDrivers.h
-@@ -0,0 +1,21 @@
-+/*
+@@ -0,1 +1,21 @@+/*
 + * Stand-ins for Apple's closed kernel extensions: just enough of each for the stock iOS
 + * user space to work on a machine without Apple hardware. The platform expert
 + * (GenericARMPE) starts them once the registry is up.
@@ -5177,8 +5042,7 @@ new file mode 100644
 index 0000000..65a0b78
 --- /dev/null
 +++ b/iokit/Kernel/MiniIOMobileFramebuffer.cpp
-@@ -0,0 +1,1633 @@
-+/*
+@@ -0,1 +1,1640 @@+/*
 + * MiniIOMobileFramebuffer: a stand-in for Apple's display driver family, as seen by
 + * IOMobileFramebuffer.framework (and through it by CoreAnimation's window server).
 + *
@@ -6527,6 +6391,13 @@ index 0000000..65a0b78
 +			return;
 +		}
 +		count = ++fVSyncCount;
++		/* One line about every second at 120 Hz: does the heartbeat run at all,
++		 * and is the compositor only waiting for it, or is it receiving it and
++		 * still not drawing? */
++		if (!(fVSyncCount & 0x7f)) {
++			IOLog("MiniIOMobileFramebuffer: vsync heartbeat count=%llu\n",
++			    (unsigned long long)fVSyncCount);
++		}
 +		/* Registration can replace/release fPorts after this lock drops.
 +		 * Keep our own send right until notification delivery finishes. */
 +		setAsyncReference64(ref, (mach_port_t) port, fCallbacks[kFBNotifyVSync], fRefcons[kFBNotifyVSync], fTask);
@@ -6816,8 +6687,7 @@ new file mode 100644
 index 0000000..9e2008c
 --- /dev/null
 +++ b/iokit/Kernel/MiniIOSurface.cpp
-@@ -0,0 +1,2323 @@
-+/*
+@@ -0,1 +1,2323 @@+/*
 + * MiniIOSurface: a stand-in for Apple's closed IOSurface.kext (see MiniIOSurface.h).
 + *
 + * A surface is a piece of wired kernel memory: one page of state that clients read directly,
@@ -9145,8 +9015,7 @@ new file mode 100644
 index 0000000..29c3e07
 --- /dev/null
 +++ b/iokit/Kernel/MiniIOSurface.h
-@@ -0,0 +1,179 @@
-+/*
+@@ -0,1 +1,179 @@+/*
 + * MiniIOSurface: a stand-in for Apple's closed IOSurface.kext, enough of it for the iOS
 + * window server and its clients to share pixel buffers on a machine without Apple hardware.
 + *
@@ -9329,8 +9198,7 @@ diff --git a/iokit/KernelConfigTables.cpp b/iokit/KernelConfigTables.cpp
 index 559a9db..5a719a8 100644
 --- a/iokit/KernelConfigTables.cpp
 +++ b/iokit/KernelConfigTables.cpp
-@@ -35,6 +35,23 @@
- const char * gIOKernelConfigTables =
+@@ -35,5 +35,22 @@ const char * gIOKernelConfigTables =
      "("
      "   {"
 +    "     'IOClass'         = ArmCpu;"
@@ -9353,8 +9221,7 @@ index 559a9db..5a719a8 100644
      "     'IOClass'         = IOPanicPlatform;"
      "     'IOProviderClass' = IOPlatformExpertDevice;"
      "     'IOProbeScore'    = 0:32;"
-@@ -44,4 +61,21 @@ const char * gIOKernelConfigTables =
-     "     'IOProviderClass' = IOService;"
+@@ -44,4 +61,21 @@ const char * gIOKernelConfigTables =     "     'IOProviderClass' = IOService;"
      "     'IOExclaveProxy'  = 1:32;"
      "   }"
 +#if defined(XNU_NATIVE_UFS) && XNU_NATIVE_UFS
@@ -9379,8 +9246,7 @@ diff --git a/iokit/bsddev/IOKitBSDInit.cpp b/iokit/bsddev/IOKitBSDInit.cpp
 index 86e94c3..7ce8c1b 100644
 --- a/iokit/bsddev/IOKitBSDInit.cpp
 +++ b/iokit/bsddev/IOKitBSDInit.cpp
-@@ -572,6 +572,69 @@ IOGetBootManifestHash(char *hash_data, size_t *hash_data_size)
- 	return result;
+@@ -572,5 +572,68 @@ IOGetBootManifestHash(char *hash_data, size_t *hash_data_size) 	return result;
  }
  
 +#if defined(XNU_OWNER_BOOT_MANIFEST) && XNU_OWNER_BOOT_MANIFEST
@@ -9449,8 +9315,7 @@ index 86e94c3..7ce8c1b 100644
  /*
   * Set NVRAM to boot into the right flavor of Recovery,
   * optionally passing a UUID of a volume that failed to boot.
-@@ -1567,6 +1630,9 @@ IOTaskHasStringEntitlement(task_t task, const char *entitlement, const char *val
- 	if (task == kernel_task || entitlement == NULL || value == NULL) {
+@@ -1567,5 +1630,8 @@ IOTaskHasStringEntitlement(task_t task, const char *entitlement, const char *val 	if (task == kernel_task || entitlement == NULL || value == NULL) {
  		return false;
  	}
 +	if (amfi == NULL || amfi->OSEntitlements.queryEntitlementStringWithProc == NULL) {
@@ -9459,8 +9324,7 @@ index 86e94c3..7ce8c1b 100644
  	proc_t proc = (proc_t)get_bsdtask_info(task);
  
  	kern_return_t ret = amfi->OSEntitlements.queryEntitlementStringWithProc(
-@@ -1598,6 +1664,9 @@ IOTaskHasEntitlement(task_t task, const char *entitlement)
- 	if (task == kernel_task || entitlement == NULL) {
+@@ -1598,5 +1664,8 @@ IOTaskHasEntitlement(task_t task, const char *entitlement) 	if (task == kernel_task || entitlement == NULL) {
  		return false;
  	}
 +	if (amfi == NULL || amfi->OSEntitlements.queryEntitlementBooleanWithProc == NULL) {
@@ -9469,8 +9333,7 @@ index 86e94c3..7ce8c1b 100644
  	proc_t proc = (proc_t)get_bsdtask_info(task);
  
  	kern_return_t ret = amfi->OSEntitlements.queryEntitlementBooleanWithProc(
-@@ -1631,6 +1700,9 @@ IOTaskGetEntitlement(task_t task, const char *entitlement)
- 	if (task == kernel_task || entitlement == NULL) {
+@@ -1631,6 +1700,9 @@ IOTaskGetEntitlement(task_t task, const char *entitlement) 	if (task == kernel_task || entitlement == NULL) {
  		return NULL;
  	}
 +	if (amfi == NULL || amfi->OSEntitlements.copyEntitlementAsOSObjectWithProc == NULL) {
@@ -9483,8 +9346,7 @@ diff --git a/iokit/conf/Makefile.template b/iokit/conf/Makefile.template
 index 2b3b974..c300580 100644
 --- a/iokit/conf/Makefile.template
 +++ b/iokit/conf/Makefile.template
-@@ -209,7 +209,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -209,7 +209,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -9496,8 +9358,7 @@ diff --git a/iokit/conf/files b/iokit/conf/files
 index ab12bab..679caad 100644
 --- a/iokit/conf/files
 +++ b/iokit/conf/files
-@@ -80,6 +80,9 @@ iokit/Kernel/IOSubMemoryDescriptor.cpp			optional iokitcpp
- iokit/Kernel/IOGuardPageMemoryDescriptor.cpp		optional iokitcpp
+@@ -80,6 +80,9 @@ iokit/Kernel/IOSubMemoryDescriptor.cpp			optional iokitcpp iokit/Kernel/IOGuardPageMemoryDescriptor.cpp		optional iokitcpp
  
  iokit/Kernel/IOPlatformExpert.cpp			optional iokitcpp
 +iokit/Kernel/MiniIOSurface.cpp			optional iokitcpp
@@ -9511,8 +9372,7 @@ new file mode 100644
 index 0000000..a4131a8
 --- /dev/null
 +++ b/libkern/amfi/miniamfi.c
-@@ -0,0 +1,272 @@
-+#include <pexpert/arm64/board_config.h>
+@@ -0,1 +1,272 @@+#include <pexpert/arm64/board_config.h>
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
 +/*
 + * Stand-in for the AppleMobileFileIntegrity kext interface.
@@ -9789,8 +9649,7 @@ new file mode 100644
 index 0000000..9b22f8e
 --- /dev/null
 +++ b/libkern/amfi/miniamfi_entitlements.cpp
-@@ -0,0 +1,127 @@
-+#include <pexpert/arm64/board_config.h>
+@@ -0,1 +1,127 @@+#include <pexpert/arm64/board_config.h>
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
 +/*
 + * Entitlement queries for the AMFI stand-in (see miniamfi.c).
@@ -9921,8 +9780,7 @@ diff --git a/libkern/conf/Makefile.template b/libkern/conf/Makefile.template
 index f0c8a72..c382184 100644
 --- a/libkern/conf/Makefile.template
 +++ b/libkern/conf/Makefile.template
-@@ -144,7 +144,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -144,7 +144,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -9934,8 +9792,7 @@ diff --git a/libkern/conf/files b/libkern/conf/files
 index c4684c2..ff8590f 100644
 --- a/libkern/conf/files
 +++ b/libkern/conf/files
-@@ -110,6 +110,8 @@ libkern/img4/interface.c 		standard
- libkern/image4/dlxk.c 		standard
+@@ -110,6 +110,8 @@ libkern/img4/interface.c 		standard libkern/image4/dlxk.c 		standard
  
  libkern/amfi/amfi.c 		standard
 +libkern/amfi/miniamfi.c		standard
@@ -9947,8 +9804,7 @@ diff --git a/libsa/conf/Makefile.template b/libsa/conf/Makefile.template
 index bb36037..3b08b38 100644
 --- a/libsa/conf/Makefile.template
 +++ b/libsa/conf/Makefile.template
-@@ -59,7 +59,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -59,7 +59,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -9960,8 +9816,7 @@ diff --git a/makedefs/MakeInc.def b/makedefs/MakeInc.def
 index 8830671..a980552 100644
 --- a/makedefs/MakeInc.def
 +++ b/makedefs/MakeInc.def
-@@ -29,7 +29,7 @@ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
- else ifneq ($(findstring _host,$(RC_ProjectName)),)
+@@ -29,6 +29,6 @@ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE else ifneq ($(findstring _host,$(RC_ProjectName)),)
  SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
  else
 -SUPPORTED_ARM64_MACHINE_CONFIGS = T6000 T6020 T6030 T6031 T6041 T8101 T8103 T8112 T8122 T8132 VMAPPLE
@@ -9969,16 +9824,14 @@ index 8830671..a980552 100644
  
  SPTM_ENABLED_SOCS_MacOSX = t6041 t8132
  
-@@ -81,6 +81,7 @@ MACHINE_FLAGS_ARM64_T6041 = -DARM64_BOARD_CONFIG_T6041			-mcpu=apple-m4
- MACHINE_FLAGS_ARM64_T8122 = -DARM64_BOARD_CONFIG_T8122_T8130		-mcpu=apple-m3
+@@ -81,5 +81,6 @@ MACHINE_FLAGS_ARM64_T6041 = -DARM64_BOARD_CONFIG_T6041			-mcpu=apple-m4 MACHINE_FLAGS_ARM64_T8122 = -DARM64_BOARD_CONFIG_T8122_T8130		-mcpu=apple-m3
  MACHINE_FLAGS_ARM64_T8132 = -DARM64_BOARD_CONFIG_T8132			-mcpu=apple-m4
  MACHINE_FLAGS_ARM64_VMAPPLE = -DARM64_BOARD_CONFIG_VMAPPLE              -march=armv8.5a+sme2
 +MACHINE_FLAGS_ARM64_PONG = -DARM64_BOARD_CONFIG_PONG -mstrict-align -march=armv8.2-a -Xclang -target-feature -Xclang +pan
  
  
  #
-@@ -813,7 +814,8 @@ LDFLAGS_KERNEL_GEN = \
- 	-Wl,-headerpad,152
+@@ -813,6 +814,7 @@ LDFLAGS_KERNEL_GEN = \ 	-Wl,-headerpad,152
  
  # LDFLAGS_KERNEL_SDK	= -L$(SDKROOT)/usr/local/lib/kernel -lfirehose_kernel
 -LDFLAGS_KERNEL_SDK	= -L$(SDKROOT)/usr/local/lib/kernel -L$(SDKROOT)/usr/local/lib/kernel/platform
@@ -9987,8 +9840,7 @@ index 8830671..a980552 100644
  ifneq ($(KDKROOT),)
  LDFLAGS_KERNEL_SDK     += -L$(KDKROOT)/usr/local/lib/kernel/platform
  endif
-@@ -1107,8 +1109,9 @@ INCFLAGS_IMPORT	= $(patsubst %, -I$(OBJROOT)/EXPORT_HDRS/%, $(COMPONENT_IMPORT_L
- INCFLAGS_EXTERN	= -I$(SRCROOT)/EXTERNAL_HEADERS
+@@ -1107,8 +1109,9 @@ INCFLAGS_IMPORT	= $(patsubst %, -I$(OBJROOT)/EXPORT_HDRS/%, $(COMPONENT_IMPORT_L INCFLAGS_EXTERN	= -I$(SRCROOT)/EXTERNAL_HEADERS
  INCFLAGS_GEN	= -I$(SRCROOT)/$(COMPONENT) -I$(OBJROOT)/EXPORT_HDRS/$(COMPONENT)
  INCFLAGS_LOCAL	= -I.
 -INCFLAGS_SDK	= -I$(SDKROOT)/usr/local/include/kernel -I$(SDKROOT)/$(KPINCDIR)/AppleFeatures
@@ -10003,8 +9855,7 @@ diff --git a/makedefs/MakeInc.kernel b/makedefs/MakeInc.kernel
 index 3939409..7eb090d 100644
 --- a/makedefs/MakeInc.kernel
 +++ b/makedefs/MakeInc.kernel
-@@ -187,7 +187,7 @@ $(TARGET)/lib$(KERNEL_FILE_NAME).a: $(addprefix $(TARGET)/,$(foreach component,$
- 	$(_v)$(LN) $(call function_convert_build_config_to_objdir,$(CURRENT_BUILD_CONFIG))/lib$(KERNEL_FILE_NAME).a $(OBJROOT)/lib$(KERNEL_FILE_NAME).a
+@@ -187,7 +187,7 @@ $(TARGET)/lib$(KERNEL_FILE_NAME).a: $(addprefix $(TARGET)/,$(foreach component,$ 	$(_v)$(LN) $(call function_convert_build_config_to_objdir,$(CURRENT_BUILD_CONFIG))/lib$(KERNEL_FILE_NAME).a $(OBJROOT)/lib$(KERNEL_FILE_NAME).a
  endif
  
 -$(TARGET)/$(KERNEL_FILE_NAME).unstripped.noctf: $(addprefix $(TARGET)/,$(foreach component,$(COMPONENT_LIST),$(component)/$(CURRENT_KERNEL_CONFIG)/$(component).filelist)) lastkerneldataconst.o lastkernelconstructor.o nonlto.o version.o $(LDFILES_KERNEL_ONLY) .LDFLAGS $(filter %/MakeInc.kernel,$(MAKEFILE_LIST))
@@ -10016,8 +9867,7 @@ diff --git a/osfmk/arm/arm_init.c b/osfmk/arm/arm_init.c
 index 02ab93c..77b178c 100644
 --- a/osfmk/arm/arm_init.c
 +++ b/osfmk/arm/arm_init.c
-@@ -91,6 +91,10 @@
- #include <IOKit/IOPlatformExpert.h>
+@@ -91,5 +91,9 @@ #include <IOKit/IOPlatformExpert.h>
  #endif /* HIBERNATION */
  
 +#if defined(PONG) && defined(XNU_PONG_RAMOOPS_CONSOLE) && XNU_PONG_RAMOOPS_CONSOLE
@@ -10027,8 +9877,7 @@ index 02ab93c..77b178c 100644
  extern void     patch_low_glo(void);
  extern int      serial_init(void);
  extern void sleep_token_buffer_init(void);
-@@ -407,6 +411,10 @@ arm_init(
- 
+@@ -407,5 +411,9 @@ arm_init( 
  
  	{
 +		/* Native non-Apple 4K builds expose the hardware page size at any RAM size. */
@@ -10038,8 +9887,7 @@ index 02ab93c..77b178c 100644
  		/*
  		 * Select the advertised kernel page size.
  		 */
-@@ -425,8 +433,14 @@ arm_init(
- 			PAGE_SHIFT_CONST = ARM_PGSHIFT;
+@@ -425,7 +433,13 @@ arm_init( 			PAGE_SHIFT_CONST = ARM_PGSHIFT;
  		}
  
 +#endif
@@ -10053,8 +9901,7 @@ index 02ab93c..77b178c 100644
  #ifdef  APPLETYPHOON
  		if (PE_parse_boot_argn("cpus_defeatures", &cpus_defeatures, sizeof(cpus_defeatures))) {
  			if ((cpus_defeatures & 0xF) != 0) {
-@@ -525,6 +539,16 @@ arm_init(
- #if __ARM_PAN_AVAILABLE__
+@@ -525,5 +539,15 @@ arm_init( #if __ARM_PAN_AVAILABLE__
  	__builtin_arm_wsr("pan", 1);
  #endif  /* __ARM_PAN_AVAILABLE__ */
 +#if defined(PONG_LEGACY_UACCESS) && PONG_LEGACY_UACCESS
@@ -10070,8 +9917,7 @@ index 02ab93c..77b178c 100644
  
  
  	/*
-@@ -553,6 +577,10 @@ arm_init(
- 
+@@ -553,5 +577,9 @@ arm_init( 
  	arm_vm_init(xmaxmem, args);
  
 +#if defined(PONG) && defined(XNU_PONG_RAMOOPS_CONSOLE) && XNU_PONG_RAMOOPS_CONSOLE
@@ -10081,8 +9927,7 @@ index 02ab93c..77b178c 100644
  	if (debug_boot_arg) {
  		patch_low_glo();
  	}
-@@ -567,6 +595,10 @@ arm_init(
- 	const unsigned int serial_exists = serial_init();
+@@ -567,5 +595,9 @@ arm_init( 	const unsigned int serial_exists = serial_init();
  	kernel_startup_initialize_upto(STARTUP_SUB_KPRINTF);
  	kprintf("kprintf initialized\n");
 +#if defined(PONG)
@@ -10092,8 +9937,7 @@ index 02ab93c..77b178c 100644
  
  	serialmode = 0;
  	if (PE_parse_boot_argn("serial", &serialmode, sizeof(serialmode))) {
-@@ -702,6 +734,11 @@ arm_init_cpu(
- 
+@@ -702,6 +734,11 @@ arm_init_cpu( 
  	machine_set_current_thread(cpu_data_ptr->cpu_active_thread);
  
 +#if defined(GENERIC_PSCI_SMP)
@@ -10108,8 +9952,7 @@ diff --git a/osfmk/arm/commpage/commpage.c b/osfmk/arm/commpage/commpage.c
 index 591ab6c..057daaf 100644
 --- a/osfmk/arm/commpage/commpage.c
 +++ b/osfmk/arm/commpage/commpage.c
-@@ -153,8 +153,13 @@ commpage_populate(void)
- #if __arm64__
+@@ -153,8 +153,13 @@ commpage_populate(void) #if __arm64__
  	*((uint8_t*)(_COMM_PAGE_USER_PAGE_SHIFT_32_LEGACY + _COMM_PAGE_RW_OFFSET)) = (uint8_t) page_shift_user32;
  	*((uint8_t*)(_COMM_PAGE_USER_PAGE_SHIFT_32 + _COMM_PAGE_RO_OFFSET)) = (uint8_t) page_shift_user32;
 +#if !defined(APPLE_ARM64_ARCH_FAMILY) && !__ARM_16K_PG__
@@ -10126,8 +9969,7 @@ diff --git a/osfmk/arm/pmap.h b/osfmk/arm/pmap.h
 index 223d5b1..74fb15b 100644
 --- a/osfmk/arm/pmap.h
 +++ b/osfmk/arm/pmap.h
-@@ -45,3 +45,17 @@
- #else
+@@ -45,3 +45,17 @@ #else
  #include <arm/pmap/pmap.h>
  #endif
 +
@@ -10148,8 +9990,7 @@ diff --git a/osfmk/arm/pmap/pmap.c b/osfmk/arm/pmap/pmap.c
 index a5de704..c7ca70f 100644
 --- a/osfmk/arm/pmap/pmap.c
 +++ b/osfmk/arm/pmap/pmap.c
-@@ -84,8 +84,12 @@
- 
+@@ -84,7 +84,11 @@ 
  #include <arm64/proc_reg.h>
  #include <pexpert/arm64/boot.h>
 +#if XNU_MONITOR_ANS2_SART
@@ -10161,8 +10002,7 @@ index a5de704..c7ca70f 100644
  
  #if defined(KERNEL_INTEGRITY_KTRR) || defined(KERNEL_INTEGRITY_CTRR)
  #include <arm64/amcc_rorgn.h>
-@@ -919,6 +923,8 @@ PMAP_SUPPORT_PROTOTYPES(
- 	vm_prot_t allow_mode,
+@@ -919,5 +923,7 @@ PMAP_SUPPORT_PROTOTYPES( 	vm_prot_t allow_mode,
  	int options), ARM_FORCE_FAST_FAULT_INDEX);
  
 +MARK_AS_PMAP_TEXT static void pmap_phys_write_disable(vm_address_t va);
@@ -10170,8 +10010,7 @@ index a5de704..c7ca70f 100644
  MARK_AS_PMAP_TEXT static boolean_t
  arm_force_fast_fault_with_flush_range(
  	ppnum_t ppnum,
-@@ -1536,7 +1542,7 @@ pmap_set_xprr_perm(
- {
+@@ -1536,6 +1542,6 @@ pmap_set_xprr_perm( {
  	pvh_assert_locked(pai);
  
 -	const vm_offset_t kva = phystokv(vm_first_phys + (pmap_paddr_t)ptoa(pai));
@@ -10179,8 +10018,7 @@ index a5de704..c7ca70f 100644
  	pt_entry_t * const ptep = pmap_pte(kernel_pmap, kva);
  
  	pmap_set_pte_xprr_perm(ptep, expected_perm, new_perm);
-@@ -2315,13 +2321,17 @@ pmap_bootstrap(
- 	/**
+@@ -2315,12 +2321,16 @@ pmap_bootstrap( 	/**
  	 * Bootstrap any necessary UAT data structures and values needed from the device tree.
  	 */
 +#if XNU_MONITOR_UAT_PPL
@@ -10197,8 +10035,7 @@ index a5de704..c7ca70f 100644
  
  	/**
  	 * Don't make any assumptions about the alignment of avail_start before this
-@@ -2336,8 +2346,14 @@ pmap_bootstrap(
- 
+@@ -2336,7 +2346,13 @@ pmap_bootstrap( 
  	memset((char *)phystokv(pmap_struct_start), 0, avail_start - pmap_struct_start);
  
 -	vm_first_phys = gPhysBase;
@@ -10214,8 +10051,7 @@ index a5de704..c7ca70f 100644
  
  	queue_init(&map_pmap_list);
  	queue_enter(&map_pmap_list, kernel_pmap, pmap_t, pmaps);
-@@ -2699,6 +2715,10 @@ pmap_virtual_region(
- 
+@@ -2699,5 +2715,9 @@ pmap_virtual_region( 
  static unsigned int avail_page_count = 0;
  static bool need_ram_ranges_init = true;
 +#if defined(PONG)
@@ -10225,8 +10061,7 @@ index a5de704..c7ca70f 100644
  
  
  /**
-@@ -2730,7 +2750,10 @@ initialize_ram_ranges(void)
- 	assert(first <= end);
+@@ -2730,6 +2750,9 @@ initialize_ram_ranges(void) 	assert(first <= end);
  	assert(first == (first & ~PAGE_MASK));
  	assert(end == (end & ~PAGE_MASK));
 -	avail_page_count = atop(end - first);
@@ -10237,8 +10072,7 @@ index a5de704..c7ca70f 100644
  
  	need_ram_ranges_init = false;
  }
-@@ -2752,7 +2775,11 @@ pmap_free_pages_span(
- 	if (need_ram_ranges_init) {
+@@ -2752,6 +2775,10 @@ pmap_free_pages_span( 	if (need_ram_ranges_init) {
  		initialize_ram_ranges();
  	}
 -	return (unsigned int)atop(avail_end - first_avail);
@@ -10250,8 +10084,7 @@ index a5de704..c7ca70f 100644
  }
  
  
-@@ -2781,8 +2808,23 @@ pmap_next_page(
- 		--avail_page_count;
+@@ -2781,7 +2808,22 @@ pmap_next_page( 		--avail_page_count;
  		return TRUE;
  	}
 -	assert(avail_page_count == 0);
@@ -10276,8 +10109,7 @@ index a5de704..c7ca70f 100644
  }
  
  
-@@ -4087,7 +4129,7 @@ pmap_set_ptov_ap(unsigned int pai __unused, unsigned int ap __unused, boolean_t
- {
+@@ -4087,6 +4129,6 @@ pmap_set_ptov_ap(unsigned int pai __unused, unsigned int ap __unused, boolean_t {
  #if __ARM_PTE_PHYSMAP__
  	pvh_assert_locked(pai);
 -	vm_offset_t kva = phystokv(vm_first_phys + (pmap_paddr_t)ptoa(pai));
@@ -10285,8 +10117,7 @@ index a5de704..c7ca70f 100644
  	pt_entry_t *pte_p = pmap_pte(kernel_pmap, kva);
  
  	pt_entry_t tmplate = *pte_p;
-@@ -4915,13 +4957,13 @@ pmap_page_protect_options_with_flush_range(
- 		if (pvh_ptep_is_iommu(pte_p)) {
+@@ -4915,12 +4957,12 @@ pmap_page_protect_options_with_flush_range( 		if (pvh_ptep_is_iommu(pte_p)) {
  #if XNU_MONITOR
  			if (__improbable(pvh_flags & PVH_FLAG_LOCKDOWN_MASK)) {
 -				panic("pmap_page_protect: ppnum 0x%x locked down, cannot be owned by iommu %p, pve_p=%p",
@@ -10303,8 +10134,7 @@ index a5de704..c7ca70f 100644
  			}
  			goto protect_skip_pve_pass1;
  		}
-@@ -7163,7 +7205,8 @@ void
- pmap_sync_page_attributes_phys(
+@@ -7163,6 +7205,7 @@ void pmap_sync_page_attributes_phys(
  	ppnum_t pp)
  {
 -	flush_dcache((vm_offset_t) (pp << PAGE_SHIFT), PAGE_SIZE, TRUE);
@@ -10313,8 +10143,7 @@ index a5de704..c7ca70f 100644
  }
  
  #if CONFIG_COREDUMP
-@@ -7732,6 +7775,11 @@ pmap_disconnect(
- boolean_t
+@@ -7732,5 +7775,10 @@ pmap_disconnect( boolean_t
  pmap_has_managed_page(ppnum_t first, ppnum_t last)
  {
 +#if defined(PONG)
@@ -10325,24 +10154,21 @@ index a5de704..c7ca70f 100644
  	if (ptoa(first) >= vm_last_phys) {
  		return FALSE;
  	}
-@@ -7740,6 +7788,7 @@ pmap_has_managed_page(ppnum_t first, ppnum_t last)
- 	}
+@@ -7740,5 +7788,6 @@ pmap_has_managed_page(ppnum_t first, ppnum_t last) 	}
  
  	return TRUE;
 +#endif
  }
  
  /*
-@@ -12186,6 +12235,7 @@ pmap_unpin_kernel_pages(vm_offset_t kva __unused, size_t nbytes __unused)
- #endif /* !XNU_MONITOR */
+@@ -12186,5 +12235,6 @@ pmap_unpin_kernel_pages(vm_offset_t kva __unused, size_t nbytes __unused) #endif /* !XNU_MONITOR */
  
  
 +#if PMAP_CS_PPL_MONITOR || PMAP_CS_INCLUDE_CODE_SIGNING
  MARK_AS_PMAP_TEXT static inline void
  pmap_cs_lockdown_pages(vm_address_t kva, vm_size_t size, bool ppl_writable)
  {
-@@ -12206,6 +12256,8 @@ pmap_cs_unlockdown_pages(vm_address_t kva, vm_size_t size, bool ppl_writable)
- #endif
+@@ -12206,6 +12256,8 @@ pmap_cs_unlockdown_pages(vm_address_t kva, vm_size_t size, bool ppl_writable) #endif
  }
  
 +#endif /* PMAP_CS_PPL_MONITOR || PMAP_CS_INCLUDE_CODE_SIGNING */
@@ -10354,8 +10180,7 @@ diff --git a/osfmk/arm/pmap/pmap.h b/osfmk/arm/pmap/pmap.h
 index 449dba7..4347107 100644
 --- a/osfmk/arm/pmap/pmap.h
 +++ b/osfmk/arm/pmap/pmap.h
-@@ -115,6 +115,16 @@
-  * Upper limit on how many pages can be consumed by bootstrap page tables
+@@ -115,6 +115,16 @@  * Upper limit on how many pages can be consumed by bootstrap page tables
   */
  #define BOOTSTRAP_TABLE_SIZE (ARM_PGBYTES * 34)
 +#elif !defined(APPLE_ARM64_ARCH_FAMILY) && !__ARM_16K_PG__
@@ -10375,8 +10200,7 @@ diff --git a/osfmk/arm/pmap/pmap_data.c b/osfmk/arm/pmap/pmap_data.c
 index a0ee8d9..db1cc16 100644
 --- a/osfmk/arm/pmap/pmap_data.c
 +++ b/osfmk/arm/pmap/pmap_data.c
-@@ -39,6 +39,9 @@
- #include <vm/vm_pageout.h>
+@@ -39,5 +39,8 @@ #include <vm/vm_pageout.h>
  
  #include <arm/pmap/pmap_internal.h>
 +#if !defined(PONG)
@@ -10385,8 +10209,7 @@ index a0ee8d9..db1cc16 100644
  
  /**
   * Physical Page Attribute Table.
-@@ -1210,6 +1213,24 @@ pmap_release_ppl_pages_to_kernel_internal(void)
- }
+@@ -1210,5 +1213,23 @@ pmap_release_ppl_pages_to_kernel_internal(void) }
  #endif /* XNU_MONITOR */
  
 +/* pmap_object has mem_size bytes, not the sparse physical address span.
@@ -10410,8 +10233,7 @@ index a0ee8d9..db1cc16 100644
  /**
   * Add a queue of VM pages to the pmap's VM object. This informs the VM that
   * these pages are being used by the pmap and shouldn't be reused.
-@@ -1228,7 +1249,7 @@ pmap_enqueue_pages(vm_page_t mem)
- 	vm_object_lock(pmap_object);
+@@ -1228,6 +1249,6 @@ pmap_enqueue_pages(vm_page_t mem) 	vm_object_lock(pmap_object);
  	while (mem != VM_PAGE_NULL) {
  		const vm_object_offset_t offset =
 -		    (vm_object_offset_t) ((ptoa(VM_PAGE_GET_PHYS_PAGE(mem))) - gPhysBase);
@@ -10419,8 +10241,7 @@ index a0ee8d9..db1cc16 100644
  
  		vm_page_insert_wired(mem, pmap_object, offset, VM_KERN_MEMORY_PTE);
  		m_prev = mem;
-@@ -1548,7 +1569,7 @@ pmap_pages_free(pmap_paddr_t pa, __assert_only unsigned size)
- 		 * Remove the page from the pmap's VM object and return it back to the
+@@ -1548,6 +1569,6 @@ pmap_pages_free(pmap_paddr_t pa, __assert_only unsigned size) 		 * Remove the page from the pmap's VM object and return it back to the
  		 * VM's global free list of pages.
  		 */
 -		mem = vm_page_lookup(pmap_object, (pa - gPhysBase));
@@ -10428,8 +10249,7 @@ index a0ee8d9..db1cc16 100644
  		assert(mem != VM_PAGE_NULL);
  		assert(VM_PAGE_WIRED(mem));
  		vm_page_lock_queues();
-@@ -2623,7 +2644,7 @@ pmap_remove_pv(
- 	}
+@@ -2623,7 +2644,7 @@ pmap_remove_pv( 	}
  #endif /* PVH_FLAG_EXEC */
  	if (__improbable((pvh_flags & PVH_FLAG_FLUSH_NEEDED) && pvh_test_type(pvh, PVH_TYPE_NULL))) {
 -		pmap_flush_noncoherent_page((pmap_paddr_t)ptoa(pai) + vm_first_phys);
@@ -10441,8 +10261,7 @@ diff --git a/osfmk/arm/pmap/pmap_data.h b/osfmk/arm/pmap/pmap_data.h
 index 0657906..c6d4f9c 100644
 --- a/osfmk/arm/pmap/pmap_data.h
 +++ b/osfmk/arm/pmap/pmap_data.h
-@@ -74,7 +74,11 @@ extern pmap_paddr_t vm_first_phys, vm_last_phys;
- static inline bool
+@@ -74,6 +74,10 @@ extern pmap_paddr_t vm_first_phys, vm_last_phys; static inline bool
  pa_valid(pmap_paddr_t pa)
  {
 -	return (pa >= vm_first_phys) && (pa < vm_last_phys);
@@ -10454,8 +10273,7 @@ index 0657906..c6d4f9c 100644
  }
  
  /**
-@@ -98,7 +102,11 @@ pa_valid(pmap_paddr_t pa)
- static inline unsigned int
+@@ -98,6 +102,10 @@ pa_valid(pmap_paddr_t pa) static inline unsigned int
  pa_index(pmap_paddr_t pa)
  {
 -	return (unsigned int)atop(pa - vm_first_phys);
@@ -10467,8 +10285,7 @@ index 0657906..c6d4f9c 100644
  }
  
  /* See the definition of pv_head_table for more information. */
-@@ -1843,6 +1851,7 @@ extern uint32_t pv_kern_alloc_initial_target;
-  * Functions exported to the rest of the internal pmap implementation.
+@@ -1843,6 +1851,7 @@ extern uint32_t pv_kern_alloc_initial_target;  * Functions exported to the rest of the internal pmap implementation.
   */
  extern void pmap_data_bootstrap(void);
 +extern vm_object_offset_t pmap_page_object_offset(pmap_paddr_t);
@@ -10479,8 +10296,7 @@ diff --git a/osfmk/arm/pmap/pmap_misc.c b/osfmk/arm/pmap/pmap_misc.c
 index 3666c4a..6ac2ac9 100644
 --- a/osfmk/arm/pmap/pmap_misc.c
 +++ b/osfmk/arm/pmap/pmap_misc.c
-@@ -28,6 +28,14 @@
- #include <arm/pmap/pmap_internal.h>
+@@ -28,6 +28,14 @@ #include <arm/pmap/pmap_internal.h>
  #include <arm/preemption_disable_internal.h>
  
 +#if SCHED_HYGIENE_DEBUG && (DEVELOPMENT || DEBUG)
@@ -10498,8 +10314,7 @@ diff --git a/osfmk/arm/pmap/pmap_ppl_interface.c b/osfmk/arm/pmap/pmap_ppl_inter
 index c99edb2..0990259 100644
 --- a/osfmk/arm/pmap/pmap_ppl_interface.c
 +++ b/osfmk/arm/pmap/pmap_ppl_interface.c
-@@ -144,7 +144,7 @@ pmap_release_ppl_pages_to_kernel(void)
- 		 */
+@@ -144,7 +144,7 @@ pmap_release_ppl_pages_to_kernel(void) 		 */
  		vm_object_lock(pmap_object);
  
 -		mem = vm_page_lookup(pmap_object, (pa - gPhysBase));
@@ -10511,8 +10326,7 @@ diff --git a/osfmk/arm64/arm_vm_init.c b/osfmk/arm64/arm_vm_init.c
 index e050e53..27157d6 100644
 --- a/osfmk/arm64/arm_vm_init.c
 +++ b/osfmk/arm64/arm_vm_init.c
-@@ -340,6 +340,10 @@ SECURITY_READ_ONLY_LATE(vm_offset_t)     static_memory_end;
- SECURITY_READ_ONLY_LATE(pmap_paddr_t)    avail_start;
+@@ -340,5 +340,9 @@ SECURITY_READ_ONLY_LATE(vm_offset_t)     static_memory_end; SECURITY_READ_ONLY_LATE(pmap_paddr_t)    avail_start;
  SECURITY_READ_ONLY_LATE(pmap_paddr_t)    avail_end;
  SECURITY_READ_ONLY_LATE(pmap_paddr_t)    real_avail_end;
 +#if defined(PONG)
@@ -10522,8 +10336,7 @@ index e050e53..27157d6 100644
  SECURITY_READ_ONLY_LATE(unsigned long)   real_phys_size;
  SECURITY_READ_ONLY_LATE(vm_map_address_t) physmap_base = (vm_map_address_t)0;
  SECURITY_READ_ONLY_LATE(vm_map_address_t) physmap_end = (vm_map_address_t)0;
-@@ -366,7 +370,90 @@ typedef struct {
- 	vm_size_t len;
+@@ -366,6 +370,89 @@ typedef struct { 	vm_size_t len;
  } ptov_table_entry;
  
 +
@@ -10613,8 +10426,7 @@ index e050e53..27157d6 100644
  
  SECURITY_READ_ONLY_LATE(static ptov_table_entry)        ptov_table[PTOV_TABLE_SIZE];
  SECURITY_READ_ONLY_LATE(static boolean_t)               kva_active = FALSE;
-@@ -1136,7 +1223,7 @@ arm_vm_page_granular_prot(vm_offset_t start, unsigned long size, pmap_paddr_t pa
- 
+@@ -1136,6 +1223,6 @@ arm_vm_page_granular_prot(vm_offset_t start, unsigned long size, pmap_paddr_t pa 
  			tte2 = arm_kva_to_tte(align_start);
  
 -			if ((pa >= gPhysBase) && (pa < real_avail_end)) {
@@ -10622,8 +10434,7 @@ index e050e53..27157d6 100644
  				tmplate = (pa & ARM_TTE_BLOCK_L2_MASK) | ARM_TTE_TYPE_BLOCK
  				    | ARM_TTE_VALID | ARM_TTE_BLOCK_AF | ARM_TTE_BLOCK_NX
  				    | ARM_TTE_BLOCK_AP(pte_prot_APX) | ARM_TTE_BLOCK_SH(SH_OUTER_MEMORY)
-@@ -1541,6 +1628,58 @@ arm_vm_physmap_slide(ptov_table_entry *temp_ptov_table, vm_map_address_t orig_va
- 	++ptov_index;
+@@ -1541,5 +1628,57 @@ arm_vm_physmap_slide(ptov_table_entry *temp_ptov_table, vm_map_address_t orig_va 	++ptov_index;
  }
  
 +
@@ -10681,8 +10492,7 @@ index e050e53..27157d6 100644
  #if XNU_MONITOR
  
  SECURITY_READ_ONLY_LATE(static boolean_t) keep_linkedit = FALSE;
-@@ -1632,6 +1771,13 @@ arm_vm_physmap_init(boot_args *args)
- 	arm_vm_physmap_slide(temp_ptov_table, (args->topOfKernelData - gPhysBase + gVirtBase),
+@@ -1632,5 +1771,12 @@ arm_vm_physmap_init(boot_args *args) 	arm_vm_physmap_slide(temp_ptov_table, (args->topOfKernelData - gPhysBase + gVirtBase),
  	    real_avail_end - args->topOfKernelData, AP_RWNA, ARM64_GRANULE_ALLOW_BLOCK | ARM64_GRANULE_ALLOW_HINT); // rest of physmem
  
 +#if defined(PONG)
@@ -10695,8 +10505,7 @@ index e050e53..27157d6 100644
  	assert((temp_ptov_table[ptov_index - 1].va + temp_ptov_table[ptov_index - 1].len) <= physmap_end);
  
  	// Sort in descending order of segment length.  LUT traversal is linear, so largest (most likely used)
-@@ -1876,7 +2022,33 @@ arm_vm_init(uint64_t memory_size, boot_args * args)
- 	 */
+@@ -1876,6 +2022,32 @@ arm_vm_init(uint64_t memory_size, boot_args * args) 	 */
  	gPhysSize = mem_size = ((gPhysBase + args->memSize) & ~PAGE_MASK) - gPhysBase;
  
 +#if defined(PONG)
@@ -10729,8 +10538,7 @@ index e050e53..27157d6 100644
  
  	if ((memory_size != 0) && (mem_size > memory_size)) {
  		mem_size = memory_size;
-@@ -1920,7 +2092,7 @@ arm_vm_init(uint64_t memory_size, boot_args * args)
- 	physmap_end = physmap_base + real_phys_size;
+@@ -1920,6 +2092,6 @@ arm_vm_init(uint64_t memory_size, boot_args * args) 	physmap_end = physmap_base + real_phys_size;
  #else
  	static_memory_end = physmap_base + mem_size + (PTOV_TABLE_SIZE * ARM_TT_TWIG_SIZE); // worst possible case for block alignment
 -	physmap_end = physmap_base + real_phys_size + (PTOV_TABLE_SIZE * ARM_TT_TWIG_SIZE);
@@ -10738,8 +10546,7 @@ index e050e53..27157d6 100644
  #endif // ARM_LARGE_MEMORY
  #endif
  
-@@ -1973,6 +2145,26 @@ arm_vm_init(uint64_t memory_size, boot_args * args)
- 	 */
+@@ -1973,5 +2145,25 @@ arm_vm_init(uint64_t memory_size, boot_args * args) 	 */
  	first_avail_phys = avail_start = args->topOfKernelData;
  
 +#if defined(PONG)
@@ -10765,8 +10572,7 @@ index e050e53..27157d6 100644
  #if defined(KERNEL_INTEGRITY_KTRR) || defined(KERNEL_INTEGRITY_CTRR)
  	arm_replace_identity_map();
  #endif
-@@ -1988,7 +2180,7 @@ arm_vm_init(uint64_t memory_size, boot_args * args)
- 	cpu_tte = (tt_entry_t *)alloc_ptpage(TRUE);
+@@ -1988,6 +2180,6 @@ arm_vm_init(uint64_t memory_size, boot_args * args) 	cpu_tte = (tt_entry_t *)alloc_ptpage(TRUE);
  	cpu_ttep = kvtophys((vm_offset_t)cpu_tte);
  	bzero(cpu_tte, ARM_PGBYTES);
 -	avail_end = gPhysBase + mem_size;
@@ -10774,8 +10580,7 @@ index e050e53..27157d6 100644
  	assert(!(avail_end & PAGE_MASK));
  
  #if KASAN
-@@ -2177,7 +2369,9 @@ arm_vm_init(uint64_t memory_size, boot_args * args)
- 	arm_vm_physmap_init(args);
+@@ -2177,7 +2369,9 @@ arm_vm_init(uint64_t memory_size, boot_args * args) 	arm_vm_physmap_init(args);
  	set_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);
  
 +#if XNU_MONITOR
@@ -10788,8 +10593,7 @@ diff --git a/osfmk/arm64/caches_asm.s b/osfmk/arm64/caches_asm.s
 index 1a45a0a..f89fa9d 100644
 --- a/osfmk/arm64/caches_asm.s
 +++ b/osfmk/arm64/caches_asm.s
-@@ -304,6 +304,10 @@ L_cpudr_loop:
-  */
+@@ -304,6 +304,10 @@ L_cpudr_loop:  */
  	.text
  	.align 2
 +#if defined(PONG)
@@ -10803,8 +10607,7 @@ diff --git a/osfmk/arm64/copyio.c b/osfmk/arm64/copyio.c
 index 4952ffb..13f7e8f 100644
 --- a/osfmk/arm64/copyio.c
 +++ b/osfmk/arm64/copyio.c
-@@ -29,6 +29,10 @@
- #include <arm/cpu_data_internal.h>
+@@ -29,5 +29,9 @@ #include <arm/cpu_data_internal.h>
  #include <arm/misc_protos.h>
  #include <kern/thread.h>
 +#if defined(ARM64_BOARD_CONFIG_PONG)
@@ -10814,8 +10617,7 @@ index 4952ffb..13f7e8f 100644
  #include <kern/zalloc_internal.h>
  #include <sys/errno.h>
  #include <vm/pmap.h>
-@@ -305,6 +309,11 @@ copyin(const user_addr_t user_addr, void *kernel_addr, vm_size_t nbytes)
- 	user_addr_t guarded_user_addr;
+@@ -305,6 +309,11 @@ copyin(const user_addr_t user_addr, void *kernel_addr, vm_size_t nbytes) 	user_addr_t guarded_user_addr;
  	int result;
  
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -10830,8 +10632,7 @@ diff --git a/osfmk/arm64/cpu.c b/osfmk/arm64/cpu.c
 index 8d2cad3..fbe52be 100644
 --- a/osfmk/arm64/cpu.c
 +++ b/osfmk/arm64/cpu.c
-@@ -578,7 +578,7 @@ cpu_idle(void)
- #endif /* CONFIG_CPU_COUNTERS */
+@@ -578,7 +578,7 @@ cpu_idle(void) #endif /* CONFIG_CPU_COUNTERS */
  
  	if (wfi) {
 -#if !defined(APPLE_ARM64_ARCH_FAMILY)
@@ -10843,8 +10644,7 @@ diff --git a/osfmk/arm64/genassym.c b/osfmk/arm64/genassym.c
 index 4f8404f..287ac88 100644
 --- a/osfmk/arm64/genassym.c
 +++ b/osfmk/arm64/genassym.c
-@@ -286,6 +286,7 @@ main(int     argc,
- 
+@@ -286,6 +286,7 @@ main(int     argc, 
  
  	DECLARE("PGBYTES", ARM_PGBYTES);
 +	DECLARE("BOOTSTRAP_TABLE_BYTES", BOOTSTRAP_TABLE_SIZE);
@@ -10855,8 +10655,7 @@ diff --git a/osfmk/arm64/machine_routines.c b/osfmk/arm64/machine_routines.c
 index cbb494a..63cc4b9 100644
 --- a/osfmk/arm64/machine_routines.c
 +++ b/osfmk/arm64/machine_routines.c
-@@ -1712,12 +1712,38 @@ ml_processor_register(ml_processor_info_t *in_processor_info,
- 	 * It needs to be booted here for the boot processor to finish the
+@@ -1712,11 +1712,37 @@ ml_processor_register(ml_processor_info_t *in_processor_info, 	 * It needs to be booted here for the boot processor to finish the
  	 * subsequent registerInterrupt operations and unblock the other cores.
  	 */
 +#if !defined(PONG)
@@ -10894,8 +10693,7 @@ index cbb494a..63cc4b9 100644
  void
  ml_init_arm_debug_interface(
  	void * in_cpu_datap,
-@@ -2579,8 +2605,10 @@ _enable_virtual_timer(void)
- 	uint64_t cntvctl = CNTV_CTL_EL0_ENABLE; /* One wants to use 32 bits, but "mrs" prefers it this way */
+@@ -2579,8 +2605,10 @@ _enable_virtual_timer(void) 	uint64_t cntvctl = CNTV_CTL_EL0_ENABLE; /* One wants to use 32 bits, but "mrs" prefers it this way */
  
  	__builtin_arm_wsr64(KERNEL_CNTV_CTL_EL0, cntvctl);
 +#if !defined(PONG)
@@ -10910,8 +10708,7 @@ new file mode 100644
 index 0000000..d3ff8ea
 --- /dev/null
 +++ b/osfmk/arm64/pong_ramoops_console.h
-@@ -0,0 +1,149 @@
-+/* SPDX-License-Identifier: BSD-2-Clause-Patent */
+@@ -0,1 +1,149 @@+/* SPDX-License-Identifier: BSD-2-Clause-Patent */
 +/* Minimal persistent console mirror for Pong. It does not touch VBAR, TTBR,
 + * the framebuffer, scheduler state, IOKit, or storage. */
 +#include <arm/caches_internal.h>
@@ -11065,8 +10862,7 @@ new file mode 100644
 index 0000000..ad5e3d0
 --- /dev/null
 +++ b/osfmk/arm64/pong_ui_exception.c
-@@ -0,0 +1,64 @@
-+/* Bounded UI crash capture derived from the earlier user_exception_trace.c.
+@@ -0,1 +1,64 @@+/* Bounded UI crash capture derived from the earlier user_exception_trace.c.
 + * Exception delivery is unchanged; no polling threads or periodic probes.
 + */
 +#include <pexpert/arm64/board_config.h>
@@ -11134,8 +10930,7 @@ diff --git a/osfmk/arm64/proc_reg.h b/osfmk/arm64/proc_reg.h
 index d4e10cd..d2404d5 100644
 --- a/osfmk/arm64/proc_reg.h
 +++ b/osfmk/arm64/proc_reg.h
-@@ -203,6 +203,10 @@
- /* D-Cache, 160KB for Firestorm, 8-way. 64KB for Icestorm, 6-way. */
+@@ -203,6 +203,10 @@ /* D-Cache, 160KB for Firestorm, 8-way. 64KB for Icestorm, 6-way. */
  #define MMU_CLINE   6                      /* cache line size is 1<<MMU_CLINE (64) */
  
 +#elif defined(PONG)
@@ -11150,8 +10945,7 @@ new file mode 100644
 index 0000000..ef86c2c
 --- /dev/null
 +++ b/osfmk/arm64/psci_smp.c
-@@ -0,0 +1,232 @@
-+/*
+@@ -0,1 +1,232 @@+/*
 + * More than one processor on generic (non-Apple) ARMv8 boards.
 + *
 + * On Apple hardware the other cores are powered up by closed drivers. Here
@@ -11388,8 +11182,7 @@ new file mode 100644
 index 0000000..a840c5c
 --- /dev/null
 +++ b/osfmk/arm64/psci_smp.h
-@@ -0,0 +1,26 @@
-+/*
+@@ -0,1 +1,26 @@+/*
 + * More than one processor on generic (non-Apple) ARMv8 boards: see psci_smp.c.
 + */
 +#ifndef _ARM64_PSCI_SMP_H_
@@ -11419,8 +11212,7 @@ diff --git a/osfmk/arm64/sleh.c b/osfmk/arm64/sleh.c
 index 77e126f..8f8f220 100644
 --- a/osfmk/arm64/sleh.c
 +++ b/osfmk/arm64/sleh.c
-@@ -54,7 +54,9 @@
- #include <machine/limits.h>
+@@ -54,6 +54,8 @@ #include <machine/limits.h>
  
  #include <pexpert/arm/protos.h>
 +#if defined(APPLE_ARM64_ARCH_FAMILY)
@@ -11429,8 +11221,7 @@ index 77e126f..8f8f220 100644
  #include <pexpert/arm64/apple_arm64_regs.h>
  #include <pexpert/arm64/board_config.h>
  
-@@ -65,6 +67,11 @@
- #include <vm/vm_map_xnu.h>
+@@ -65,5 +67,10 @@ #include <vm/vm_map_xnu.h>
  
  #include <sys/errno.h>
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11441,8 +11232,7 @@ index 77e126f..8f8f220 100644
  #include <sys/kdebug.h>
  #include <sys/code_signing.h>
  #include <sys/reason.h>
-@@ -283,6 +290,9 @@ static arm_saved_state64_t *original_faulting_state = NULL;
- 
+@@ -283,5 +290,8 @@ static arm_saved_state64_t *original_faulting_state = NULL; 
  
  TUNABLE(bool, fp_exceptions_enabled, "-fp_exceptions", false);
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11451,8 +11241,7 @@ index 77e126f..8f8f220 100644
  
  extern const vm_map_address_t physmap_base;
  extern const vm_map_address_t physmap_end;
-@@ -716,6 +726,19 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused
- 	}
+@@ -716,5 +726,18 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused 	}
  #endif
  	bool is_user = PSR64_IS_USER(get_saved_state_cpsr(state));
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11471,8 +11260,7 @@ index 77e126f..8f8f220 100644
  
  #if CONFIG_SPTM
  	// Lockdown should only be initiated for kernel exceptions
-@@ -844,6 +867,17 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused
- 	if (SPSR_INTERRUPTS_ENABLED(get_saved_state_cpsr(state))) {
+@@ -844,5 +867,16 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused 	if (SPSR_INTERRUPTS_ENABLED(get_saved_state_cpsr(state))) {
  		ml_set_interrupts_enabled(TRUE);
  	}
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11489,8 +11277,7 @@ index 77e126f..8f8f220 100644
  
  
  	switch (class) {
-@@ -853,10 +887,20 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused
- 		}
+@@ -853,9 +887,19 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused 		}
  
  		handle_svc(state);
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11510,8 +11297,7 @@ index 77e126f..8f8f220 100644
  		break;
  
  	case ESR_EC_MSR_TRAP:
-@@ -889,6 +933,11 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused
- 
+@@ -889,6 +933,11 @@ sleh_synchronous(arm_context_t *context, uint64_t esr, vm_offset_t far, __unused 
  	case ESR_EC_IABORT_EL0:
  		handle_abort(state, esr, far, inspect_instruction_abort, handle_user_abort, expected_fault_handler);
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11526,16 +11312,14 @@ diff --git a/osfmk/arm64/start.s b/osfmk/arm64/start.s
 index da9002e..fc2e562 100644
 --- a/osfmk/arm64/start.s
 +++ b/osfmk/arm64/start.s
-@@ -25,7 +25,6 @@
-  *
+@@ -25,6 +25,5 @@  *
   * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
   */
 -#include "assym.s"
  #include <arm64/asm.h>
  #include <arm64/proc_reg.h>
  #include <arm64/machine_machdep.h>
-@@ -33,7 +32,10 @@
- #include <pexpert/arm64/board_config.h>
+@@ -33,6 +32,9 @@ #include <pexpert/arm64/board_config.h>
  #include <mach_assert.h>
  #include <machine/asm.h>
 +#include "assym.s"
@@ -11545,8 +11329,7 @@ index da9002e..fc2e562 100644
  #include <arm64/exception_asm.h>
  
  #if __ARM_KERNEL_PROTECT__
-@@ -126,6 +128,18 @@ LEXT(LowResetVectorBase)
- 	.globl EXT(reset_vector)
+@@ -126,5 +128,17 @@ LEXT(LowResetVectorBase) 	.globl EXT(reset_vector)
  LEXT(reset_vector)
  	// Preserve x0 for start_first_cpu, if called
 +#if defined(GENERIC_PSCI_SMP)
@@ -11564,16 +11347,14 @@ index da9002e..fc2e562 100644
  	// Unlock the core for debugging
  	msr		OSLAR_EL1, xzr
  	msr		DAIFSet, #(DAIFSC_ALL)				// Disable all interrupts
-@@ -136,6 +150,7 @@ LEXT(reset_vector)
- 	add     x0, x0, EXT(LowExceptionVectorBase)@pageoff
+@@ -136,5 +150,6 @@ LEXT(reset_vector) 	add     x0, x0, EXT(LowExceptionVectorBase)@pageoff
  	msr     VBAR_EL1, x0
  #endif
 +#endif /* GENERIC_PSCI_SMP */
  
  
  
-@@ -143,7 +158,7 @@ LEXT(reset_vector)
- 	adrp	x19, EXT(ResetHandlerData)@page			// Get address of the reset handler data
+@@ -143,6 +158,6 @@ LEXT(reset_vector) 	adrp	x19, EXT(ResetHandlerData)@page			// Get address of the reset handler data
  	add		x19, x19, EXT(ResetHandlerData)@pageoff
  	mrs		x15, MPIDR_EL1						// Load MPIDR to get CPU number
 -#if HAS_CLUSTER
@@ -11581,8 +11362,7 @@ index da9002e..fc2e562 100644
  	and		x0, x15, #0xFFFF					// CPU number in Affinity0, cluster ID in Affinity1
  #else
  	and		x0, x15, #0xFF						// CPU number is in MPIDR Affinity Level 0
-@@ -277,6 +292,92 @@ LEXT(LowExceptionVectorBase)
- 	b		.
+@@ -277,5 +292,91 @@ LEXT(LowExceptionVectorBase) 	b		.
  	.align	7
  	b		.
 +#if defined(GENERIC_PSCI_SMP)
@@ -11674,8 +11454,7 @@ index da9002e..fc2e562 100644
  	.align 12, 0
  
  #if defined(KERNEL_INTEGRITY_KTRR) || defined(KERNEL_INTEGRITY_CTRR)
-@@ -433,6 +534,10 @@ start_cpu:
- 
+@@ -433,5 +534,9 @@ start_cpu: 
  	/* allocate an L2 table */
  3:	add	$4, $4, PGBYTES
 +	/* Refuse before a new table can overwrite adjacent kernel globals. */
@@ -11685,8 +11464,7 @@ index da9002e..fc2e562 100644
  
  	/* create_l1_table_entry(virt_base, L1 table, L2 table, scratch1, scratch2, scratch3) */
  	create_l1_table_entry	$0, $3, $4, $6, $7, $8
-@@ -535,8 +640,8 @@ LEXT(start_first_cpu)
- 	// Invalidate all entries in the bootstrap page tables
+@@ -535,7 +640,7 @@ LEXT(start_first_cpu) 	// Invalidate all entries in the bootstrap page tables
  	mov		x0, #(ARM_TTE_EMPTY)				// Load invalid entry template
  	mov		x1, x25								// Start at V=P pagetable root
 -	mov		x2, #(TTE_PGENTRIES)				// Load number of entries per page
@@ -11696,8 +11474,7 @@ index da9002e..fc2e562 100644
  
  Linvalidate_bootstrap:							// do {
  	str		x0, [x1], #(1 << TTE_SHIFT)			//   Invalidate and advance
-@@ -620,6 +725,12 @@ Lkernelcache_base_found:
- 	lsr		x5,  x24, #(ARM_TT_L2_SHIFT)
+@@ -620,5 +725,11 @@ Lkernelcache_base_found: 	lsr		x5,  x24, #(ARM_TT_L2_SHIFT)
  	create_bootstrap_mapping x14, x15, x5, x3, x2, x9, x10, x11, x12, x13
  
 +	b Lbootstrap_tables_ready
@@ -11709,8 +11486,7 @@ index da9002e..fc2e562 100644
  	/* Ensure TTEs are visible */
  	dsb		ish
  
-@@ -779,10 +890,12 @@ common_start:
- 	// Initialization common to all non-virtual Apple targets
+@@ -779,10 +890,12 @@ common_start: 	// Initialization common to all non-virtual Apple targets
  #endif  // APPLE_ARM64_ARCH_FAMILY
  
 +#if defined(APPLE_ARM64_ARCH_FAMILY)
@@ -11726,8 +11502,7 @@ diff --git a/osfmk/conf/Makefile.template b/osfmk/conf/Makefile.template
 index 0066474..d676224 100644
 --- a/osfmk/conf/Makefile.template
 +++ b/osfmk/conf/Makefile.template
-@@ -459,7 +459,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -459,7 +459,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -11739,8 +11514,7 @@ diff --git a/osfmk/conf/files b/osfmk/conf/files
 index 000c627..ddb9637 100644
 --- a/osfmk/conf/files
 +++ b/osfmk/conf/files
-@@ -399,3 +399,6 @@ osfmk/corecrypto/ccsha256_ltc_di.c	standard
- 
+@@ -399,3 +399,6 @@ osfmk/corecrypto/ccsha256_ltc_di.c	standard 
  osfmk/prng/prng_random.c	standard
  osfmk/prng/entropy.c   standard
 +
@@ -11750,8 +11524,7 @@ diff --git a/osfmk/conf/files.arm64 b/osfmk/conf/files.arm64
 index 4806f20..591e217 100644
 --- a/osfmk/conf/files.arm64
 +++ b/osfmk/conf/files.arm64
-@@ -33,10 +33,10 @@ osfmk/arm64/WKdmCompress_4k.s	standard
- osfmk/arm64/WKdmData.s		standard
+@@ -33,10 +33,10 @@ osfmk/arm64/WKdmCompress_4k.s	standard osfmk/arm64/WKdmData.s		standard
  osfmk/arm64/lz4_decode_arm64.s  standard
  osfmk/arm64/lz4_encode_arm64.s  standard
 -osfmk/arm64/amcc_rorgn_ppl.c optional nos_arm_asm config_pmap_ppl
@@ -11769,8 +11542,7 @@ diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
 index 7784e72..4ea8603 100644
 --- a/osfmk/console/serial_console.c
 +++ b/osfmk/console/serial_console.c
-@@ -520,9 +520,16 @@ console_resume()
-  * @param str The string of characters to print.
+@@ -520,8 +520,15 @@ console_resume()  * @param str The string of characters to print.
   * @param size The number of characters in `str` to print.
   */
 +#if defined(PONG) && defined(XNU_PONG_RAMOOPS_CONSOLE) && XNU_PONG_RAMOOPS_CONSOLE
@@ -11786,8 +11558,7 @@ index 7784e72..4ea8603 100644
  	if (disableConsoleOutput) {
  		return;
  	}
-@@ -608,6 +615,9 @@ console_write(char *str, int size)
- void
+@@ -608,6 +615,9 @@ console_write(char *str, int size) void
  console_write_unbuffered(char c)
  {
 +#if defined(PONG) && defined(XNU_PONG_RAMOOPS_CONSOLE) && XNU_PONG_RAMOOPS_CONSOLE
@@ -11800,8 +11571,7 @@ diff --git a/osfmk/console/video_console.c b/osfmk/console/video_console.c
 index 648cb70..5f14753 100644
 --- a/osfmk/console/video_console.c
 +++ b/osfmk/console/video_console.c
-@@ -2860,7 +2860,7 @@ initialize_screen(PE_Video * boot_vinfo, unsigned int op)
- 			gc_acquired = TRUE;
+@@ -2860,7 +2860,7 @@ initialize_screen(PE_Video * boot_vinfo, unsigned int op) 			gc_acquired = TRUE;
  		} else {
  			if (makeMapping) {
 -#if HAS_UCNORMAL_MEM || APPLEVIRTUALPLATFORM
@@ -11813,8 +11583,7 @@ diff --git a/osfmk/ipc/mach_port.c b/osfmk/ipc/mach_port.c
 index 2583f81..8ce4c08 100644
 --- a/osfmk/ipc/mach_port.c
 +++ b/osfmk/ipc/mach_port.c
-@@ -2943,7 +2943,30 @@ mach_port_is_connection_for_service(
- 	}
+@@ -2943,7 +2943,30 @@ mach_port_is_connection_for_service( 	}
  
  	if (!mach_msg_filter_at_least(MACH_MSG_FILTER_CALLBACKS_VERSION_1)) {
 +#if defined(PONG) && (DEVELOPMENT || DEBUG)
@@ -11848,8 +11617,7 @@ diff --git a/osfmk/kern/ast.c b/osfmk/kern/ast.c
 index 0b2206e..4368c4a 100644
 --- a/osfmk/kern/ast.c
 +++ b/osfmk/kern/ast.c
-@@ -259,8 +259,10 @@ ast_taken_user(void)
- #if CONFIG_CPU_COUNTERS
+@@ -259,8 +259,10 @@ ast_taken_user(void) #if CONFIG_CPU_COUNTERS
  		kpc_thread_ast_handler(thread);
  #endif /* CONFIG_CPU_COUNTERS */
 +#if KPERF
@@ -11863,8 +11631,7 @@ diff --git a/osfmk/kern/exception.c b/osfmk/kern/exception.c
 index 7b3c26a..8c32639 100644
 --- a/osfmk/kern/exception.c
 +++ b/osfmk/kern/exception.c
-@@ -101,6 +101,11 @@
- #include <libkern/coreanalytics/coreanalytics.h>
+@@ -101,5 +101,10 @@ #include <libkern/coreanalytics/coreanalytics.h>
  
  #include <sys/code_signing.h> /* for developer mode state */
 +#include <pexpert/arm64/board_config.h>
@@ -11875,8 +11642,7 @@ index 7b3c26a..8c32639 100644
  
  bool panic_on_exception_triage = false;
  
-@@ -733,6 +738,10 @@ exception_triage_thread(
- 
+@@ -733,5 +738,9 @@ exception_triage_thread( 
  	assert(exception != EXC_RPC_ALERT);
  
 +#if defined(ARM64_BOARD_CONFIG_PONG) && (DEVELOPMENT || DEBUG)
@@ -11886,8 +11652,7 @@ index 7b3c26a..8c32639 100644
  	/*
  	 * If this behavior has been requested by the the kernel
  	 * (due to the boot environment), we should panic if we
-@@ -886,6 +895,10 @@ maybe_unrecoverable_exception_triage(
- 	int pid = proc_selfpid();
+@@ -886,6 +895,10 @@ maybe_unrecoverable_exception_triage( 	int pid = proc_selfpid();
  	char *proc_name = proc_name_address(proc);
  	os_log_error(OS_LOG_DEFAULT, "%s: process %s[%d] hit an unrecoverable exception\n", __func__, proc_name, pid);
 +	/* These traps exit before exception_triage_thread's ordinary capture. */
@@ -11901,8 +11666,7 @@ diff --git a/osfmk/kern/kalloc.c b/osfmk/kern/kalloc.c
 index 6e17b34..b658546 100644
 --- a/osfmk/kern/kalloc.c
 +++ b/osfmk/kern/kalloc.c
-@@ -970,6 +970,8 @@ kalloc_type_view_copy(
- 	}
+@@ -970,5 +970,7 @@ kalloc_type_view_copy( 	}
  }
  
 +__attribute__((used)) const uint32_t kalloc_sparse_prelink_index_version = 1;
@@ -11910,8 +11674,7 @@ index 6e17b34..b658546 100644
  __startup_func
  static uint64_t
  kalloc_type_view_parse(const kalloc_type_variant_t type)
-@@ -1052,10 +1054,46 @@ kalloc_type_view_parse(const kalloc_type_variant_t type)
- 		cur = prelink_sect->addr;
+@@ -1052,9 +1054,45 @@ kalloc_type_view_parse(const kalloc_type_variant_t type) 		cur = prelink_sect->addr;
  		end = prelink_sect->addr + prelink_sect->size;
  
 -		while (cur < end) {
@@ -11958,8 +11721,7 @@ index 6e17b34..b658546 100644
  			if (kext_mh->magic == 0) {
  				/*
  				 * Assert that we have processed all kexts and all that is left
-@@ -1078,6 +1116,15 @@ kalloc_type_view_parse(const kalloc_type_variant_t type)
- 
+@@ -1078,5 +1116,14 @@ kalloc_type_view_parse(const kalloc_type_variant_t type) 
  			for (uint32_t i = 0; i < kext_mh->ncmds && (vm_offset_t)lc < end;
  			    i++, lc = (struct load_command *)((vm_offset_t)lc + lc->cmdsize)) {
 +				if (macho_list) {
@@ -11974,8 +11736,7 @@ index 6e17b34..b658546 100644
  				if (lc->cmd == LC_SEGMENT_SPLIT_INFO) {
  					isSplitKext = true;
  					continue;
-@@ -1087,6 +1134,10 @@ kalloc_type_view_parse(const kalloc_type_variant_t type)
- 
+@@ -1087,5 +1134,9 @@ kalloc_type_view_parse(const kalloc_type_variant_t type) 
  				kernel_segment_command_t *seg_cmd =
  				    (struct segment_command_64 *)(vm_offset_t)lc;
 +				if (macho_list && (lc->cmdsize < sizeof(*seg_cmd) ||
@@ -11985,8 +11746,7 @@ index 6e17b34..b658546 100644
  				/*
  				 * Parse kalloc_type section
  				 */
-@@ -1120,7 +1171,9 @@ kalloc_type_view_parse(const kalloc_type_variant_t type)
- 				break;
+@@ -1120,7 +1171,9 @@ kalloc_type_view_parse(const kalloc_type_variant_t type) 				break;
  			}
  
 -			cur += ((kext_text_sz + (KEXT_ALIGN_BYTES - 1)) & (~KEXT_ALIGN_MASK));
@@ -12000,16 +11760,14 @@ diff --git a/osfmk/kern/kpc.h b/osfmk/kern/kpc.h
 index d60d8b3..2f8b901 100644
 --- a/osfmk/kern/kpc.h
 +++ b/osfmk/kern/kpc.h
-@@ -157,6 +157,7 @@ int kpc_set_config_kernel(uint32_t classes, kpc_config_t *new_config);
- #endif /* XNU_KERNEL_PRIVATE */
+@@ -157,5 +157,6 @@ int kpc_set_config_kernel(uint32_t classes, kpc_config_t *new_config); #endif /* XNU_KERNEL_PRIVATE */
  
  #ifdef MACH_KERNEL_PRIVATE
 +#if KPC
  
  /* context switch callback for KPC */
  
-@@ -172,6 +173,13 @@ kpc_off_cpu(thread_t thread)
- 		kpc_off_cpu_internal(thread);
+@@ -172,6 +173,13 @@ kpc_off_cpu(thread_t thread) 		kpc_off_cpu_internal(thread);
  	}
  }
 +#else
@@ -12026,8 +11784,7 @@ diff --git a/osfmk/kern/printf.c b/osfmk/kern/printf.c
 index c5c6da5..9854c4f 100644
 --- a/osfmk/kern/printf.c
 +++ b/osfmk/kern/printf.c
-@@ -920,7 +920,11 @@ consdebug_putc(char c)
- 
+@@ -920,6 +920,10 @@ consdebug_putc(char c) 
  	debug_putc(c);
  
 -	if (!console_is_serial() && !disable_serial_output && (PE_kputc != NULL)) {
@@ -12039,8 +11796,7 @@ index c5c6da5..9854c4f 100644
  		PE_kputc(c);
  	}
  }
-@@ -932,7 +936,11 @@ consdebug_putc_unbuffered(char c)
- 
+@@ -932,7 +936,11 @@ consdebug_putc_unbuffered(char c) 
  	debug_putc(c);
  
 -	if (!console_is_serial() && !disable_serial_output && (PE_kputc != NULL)) {
@@ -12056,8 +11812,7 @@ diff --git a/osfmk/kern/processor.c b/osfmk/kern/processor.c
 index 3133708..ab29523 100644
 --- a/osfmk/kern/processor.c
 +++ b/osfmk/kern/processor.c
-@@ -164,7 +164,9 @@ processor_set_t         pset_array[MAX_PSETS] = { 0 };
- static timer_call_func_t running_timer_funcs[] = {
+@@ -164,7 +164,9 @@ processor_set_t         pset_array[MAX_PSETS] = { 0 }; static timer_call_func_t running_timer_funcs[] = {
  	[RUNNING_TIMER_QUANTUM] = thread_quantum_expire,
  	[RUNNING_TIMER_PREEMPT] = thread_preempt_expire,
 +#if KPERF
@@ -12070,8 +11825,7 @@ diff --git a/osfmk/kern/recount.c b/osfmk/kern/recount.c
 index a7f4322..abcb5d4 100644
 --- a/osfmk/kern/recount.c
 +++ b/osfmk/kern/recount.c
-@@ -1486,3 +1486,19 @@ recount_usage_free(recount_topo_t topo, struct recount_usage *usage)
- 	assert(_topo_allocates[topo]);
+@@ -1486,3 +1486,19 @@ recount_usage_free(recount_topo_t topo, struct recount_usage *usage) 	assert(_topo_allocates[topo]);
  	zfree(_recount_usage_zones[topo], usage);
  }
 +
@@ -12094,8 +11848,7 @@ diff --git a/osfmk/kern/sched_prim.c b/osfmk/kern/sched_prim.c
 index e48077a..1b508e0 100644
 --- a/osfmk/kern/sched_prim.c
 +++ b/osfmk/kern/sched_prim.c
-@@ -5801,6 +5801,24 @@ choose_processor(
- 
+@@ -5801,6 +5801,24 @@ choose_processor( 
  	assert(thread->sched_pri <= MAXPRI);
  
 +#if defined(ARM64_BOARD_CONFIG_PONG)
@@ -12123,8 +11876,7 @@ diff --git a/osfmk/kern/startup.c b/osfmk/kern/startup.c
 index 7616f20..93df9e5 100644
 --- a/osfmk/kern/startup.c
 +++ b/osfmk/kern/startup.c
-@@ -798,6 +798,10 @@ kernel_bootstrap_thread(void)
- 	kernel_bootstrap_log("vnguard_policy_init");
+@@ -798,5 +798,9 @@ kernel_bootstrap_thread(void) 	kernel_bootstrap_log("vnguard_policy_init");
  	vnguard_policy_init();
  #endif
 +#if defined(PONG) && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
@@ -12134,16 +11886,14 @@ index 7616f20..93df9e5 100644
  #endif
  
  #if CONFIG_DTRACE
-@@ -821,6 +825,7 @@ kernel_bootstrap_thread(void)
- 	csm_initialize_provisioning_profiles();
+@@ -821,5 +825,6 @@ kernel_bootstrap_thread(void) 	csm_initialize_provisioning_profiles();
  #endif
  
 +#if !defined(PONG) || (defined(XNU_NATIVE_TRUST_CACHE) && XNU_NATIVE_TRUST_CACHE)
  	kernel_bootstrap_log("trust_cache_init");
  
  	/* Initialize the runtime for the trust cache interface */
-@@ -829,6 +834,8 @@ kernel_bootstrap_thread(void)
- 	/* Load the static and engineering trust caches */
+@@ -829,6 +834,8 @@ kernel_bootstrap_thread(void) 	/* Load the static and engineering trust caches */
  	load_static_trust_cache();
  
 +#endif
@@ -12155,8 +11905,7 @@ diff --git a/osfmk/kern/work_interval.c b/osfmk/kern/work_interval.c
 index 5a144b3..b3cc2f2 100644
 --- a/osfmk/kern/work_interval.c
 +++ b/osfmk/kern/work_interval.c
-@@ -1126,7 +1126,7 @@ kern_work_interval_create(thread_t thread,
- 			return KERN_FAILURE;
+@@ -1126,7 +1126,7 @@ kern_work_interval_create(thread_t thread, 			return KERN_FAILURE;
  		}
  		if (!task_is_app(creating_task)) {
 -#if XNU_TARGET_OS_OSX
@@ -12168,8 +11917,7 @@ diff --git a/osfmk/kern/zalloc.c b/osfmk/kern/zalloc.c
 index cf4d1ab..38cc62c 100644
 --- a/osfmk/kern/zalloc.c
 +++ b/osfmk/kern/zalloc.c
-@@ -1492,10 +1492,11 @@ zone_id_require_aligned(zone_id_t zid, void *addr)
- 	zone_t zone = zone_by_id(zid);
+@@ -1492,10 +1492,11 @@ zone_id_require_aligned(zone_id_t zid, void *addr) 	zone_t zone = zone_by_id(zid);
  	vm_offset_t elem, offs;
  
 -	elem = (vm_offset_t)addr;
@@ -12186,8 +11934,7 @@ diff --git a/osfmk/kern/zalloc_internal.h b/osfmk/kern/zalloc_internal.h
 index fade1fe..4724645 100644
 --- a/osfmk/kern/zalloc_internal.h
 +++ b/osfmk/kern/zalloc_internal.h
-@@ -387,7 +387,7 @@ struct zone {
- 	spl_t               z_kasan_spl;
+@@ -387,7 +387,7 @@ struct zone { 	spl_t               z_kasan_spl;
  #endif
  
 -#if ZONE_ENABLE_LOGGING || CONFIG_ZLEAKS || KASAN_TBI
@@ -12199,16 +11946,14 @@ diff --git a/osfmk/kperf/kperf.h b/osfmk/kperf/kperf.h
 index 05903a4..079ef4d 100644
 --- a/osfmk/kperf/kperf.h
 +++ b/osfmk/kperf/kperf.h
-@@ -142,6 +142,7 @@ kperf_make_runnable(thread_t thread, int interrupt)
- 	}
+@@ -142,5 +142,6 @@ kperf_make_runnable(thread_t thread, int interrupt) 	}
  }
  
 +#if KPERF
  static inline void
  kperf_running_setup(processor_t processor, uint64_t now)
  {
-@@ -150,6 +151,14 @@ kperf_running_setup(processor_t processor, uint64_t now)
- 		kptimer_running_setup(processor, now);
+@@ -150,6 +151,14 @@ kperf_running_setup(processor_t processor, uint64_t now) 		kptimer_running_setup(processor, now);
  	}
  }
 +#else
@@ -12226,8 +11971,7 @@ diff --git a/osfmk/prng/prng_random.c b/osfmk/prng/prng_random.c
 index f51b4b0..c712c20 100644
 --- a/osfmk/prng/prng_random.c
 +++ b/osfmk/prng/prng_random.c
-@@ -544,3 +544,35 @@ random_bool_gen_bits(struct bool_gen * bg, unsigned int * buffer, unsigned int c
- 	}
+@@ -544,3 +544,35 @@ random_bool_gen_bits(struct bool_gen * bg, unsigned int * buffer, unsigned int c 	}
  	return rbits;
  }
 +
@@ -12266,8 +12010,7 @@ diff --git a/osfmk/vm/vm_compressor.c b/osfmk/vm/vm_compressor.c
 index 4cfd11b..8b13be4 100644
 --- a/osfmk/vm/vm_compressor.c
 +++ b/osfmk/vm/vm_compressor.c
-@@ -1213,6 +1213,17 @@ vm_compressor_init(void)
- 	if (vm_pageout_internal_start() != KERN_SUCCESS) {
+@@ -1213,6 +1213,17 @@ vm_compressor_init(void) 	if (vm_pageout_internal_start() != KERN_SUCCESS) {
  		panic("vm_compressor_init: Failed to start the internal pageout thread.");
  	}
 +#if DEVELOPMENT || DEBUG
@@ -12288,8 +12031,7 @@ diff --git a/osfmk/vm/vm_fault.c b/osfmk/vm/vm_fault.c
 index 1a206a8..357ef85 100644
 --- a/osfmk/vm/vm_fault.c
 +++ b/osfmk/vm/vm_fault.c
-@@ -102,6 +102,9 @@
- #include <vm/vm_purgeable_internal.h>   /* Needed by some vm_page.h macros */
+@@ -102,6 +102,9 @@ #include <vm/vm_purgeable_internal.h>   /* Needed by some vm_page.h macros */
  #include <vm/vm_shared_region.h>
  #include <vm/vm_page_internal.h>
 +#if __arm64__
@@ -12302,8 +12044,7 @@ diff --git a/osfmk/vm/vm_page.h b/osfmk/vm/vm_page.h
 index 632e50e..ea284d5 100644
 --- a/osfmk/vm/vm_page.h
 +++ b/osfmk/vm/vm_page.h
-@@ -355,6 +355,13 @@ extern vm_page_t        vm_pages_end;
- extern uint32_t         vm_pages_count;
+@@ -355,5 +355,12 @@ extern vm_page_t        vm_pages_end; extern uint32_t         vm_pages_count;
  #if XNU_VM_HAS_LINEAR_PAGES_ARRAY
  extern ppnum_t          vm_pages_first_pnum;
 +#if defined(PONG)
@@ -12316,8 +12057,7 @@ index 632e50e..ea284d5 100644
  #endif /* XNU_VM_HAS_LINEAR_PAGES_ARRAY */
  
  /**
-@@ -432,7 +439,11 @@ VM_PAGE_GET_PHYS_PAGE(const struct vm_page *m)
- 	if (vm_page_in_array(m)) {
+@@ -432,7 +439,11 @@ VM_PAGE_GET_PHYS_PAGE(const struct vm_page *m) 	if (vm_page_in_array(m)) {
  		uintptr_t index = (uintptr_t)(m - vm_pages_array_internal());
  
 -		return (ppnum_t)(vm_pages_first_pnum + index);
@@ -12333,8 +12073,7 @@ diff --git a/osfmk/vm/vm_resident.c b/osfmk/vm/vm_resident.c
 index bd4bb7f..b18fe72 100644
 --- a/osfmk/vm/vm_resident.c
 +++ b/osfmk/vm/vm_resident.c
-@@ -381,6 +381,9 @@ SECURITY_READ_ONLY_LATE(uint32_t)  vm_pages_count;
- #endif /* XNU_VM_HAS_DELAYED_PAGES */
+@@ -381,5 +381,8 @@ SECURITY_READ_ONLY_LATE(uint32_t)  vm_pages_count; #endif /* XNU_VM_HAS_DELAYED_PAGES */
  #if XNU_VM_HAS_LINEAR_PAGES_ARRAY
  SECURITY_READ_ONLY_LATE(ppnum_t)   vm_pages_first_pnum;
 +#if defined(PONG)
@@ -12343,8 +12082,7 @@ index bd4bb7f..b18fe72 100644
  #endif /* XNU_VM_HAS_LINEAR_PAGES_ARRAY */
  #if CONFIG_SPTM
  /*
-@@ -2463,6 +2466,9 @@ pmap_startup(
- #if XNU_VM_HAS_LINEAR_PAGES_ARRAY
+@@ -2463,5 +2466,8 @@ pmap_startup( #if XNU_VM_HAS_LINEAR_PAGES_ARRAY
  		if (i == 0) {
  			vm_pages_first_pnum = phys_page;
 +#if defined(PONG)
@@ -12353,8 +12091,7 @@ index bd4bb7f..b18fe72 100644
  			patch_low_glo_vm_page_info(vm_pages, vm_pages_end,
  			    vm_pages_first_pnum);
  		}
-@@ -2818,7 +2824,7 @@ vm_pages_radix_insert(ppnum_t pnum, vm_page_t page)
- }
+@@ -2818,6 +2824,6 @@ vm_pages_radix_insert(ppnum_t pnum, vm_page_t page) }
  
  __abortlike
 -static void
@@ -12362,8 +12099,7 @@ index bd4bb7f..b18fe72 100644
  vm_page_for_ppnum_panic(ppnum_t pnum)
  {
  	if (pnum < pmap_first_pnum) {
-@@ -2837,11 +2843,18 @@ vm_page_find_canonical(ppnum_t pnum)
- 	vm_page_radix_ptr_t  ptr;
+@@ -2837,10 +2843,17 @@ vm_page_find_canonical(ppnum_t pnum) 	vm_page_radix_ptr_t  ptr;
  	uint32_t level, index;
  
 -	if (pnum < pmap_first_pnum) {
@@ -12385,8 +12121,7 @@ index bd4bb7f..b18fe72 100644
  		/*
  		 * We could receive requests for pages which are beyond the xnu's managed space. (eg: ECC errors)
  		 * These need to be handled gracefully, so we return VM_PAGE_NULL here.
-@@ -2850,10 +2863,11 @@ vm_page_find_canonical(ppnum_t pnum)
- 	}
+@@ -2850,10 +2863,11 @@ vm_page_find_canonical(ppnum_t pnum) 	}
  
  	if (__probable(pnum >= vm_pages_first_pnum)) {
 -		return vm_page_get(pnum - vm_pages_first_pnum);
@@ -12404,8 +12139,7 @@ diff --git a/osfmk/vm/vm_shared_region.c b/osfmk/vm/vm_shared_region.c
 index 39fe08a..523510e 100644
 --- a/osfmk/vm/vm_shared_region.c
 +++ b/osfmk/vm/vm_shared_region.c
-@@ -787,11 +787,15 @@ vm_shared_region_create(
- 			sub_map = vm_map_create_options(pmap_nested, 0,
+@@ -787,11 +787,15 @@ vm_shared_region_create( 			sub_map = vm_map_create_options(pmap_nested, 0,
  			    (vm_map_offset_t)size, VM_MAP_CREATE_PAGEABLE);
  
 +#if !defined(APPLE_ARM64_ARCH_FAMILY) && !__ARM_16K_PG__
@@ -12424,8 +12158,7 @@ diff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
 index 666b87b..e3d2ee7 100644
 --- a/pexpert/arm/pe_init.c
 +++ b/pexpert/arm/pe_init.c
-@@ -79,6 +79,9 @@ clock_frequency_info_t gPEClockFrequencyInfo;
- vm_offset_t gPanicBase = 0;
+@@ -79,5 +79,8 @@ clock_frequency_info_t gPEClockFrequencyInfo; vm_offset_t gPanicBase = 0;
  unsigned int gPanicSize;
  struct embedded_panic_header *panic_info = NULL;
 +#if defined(PONG) && defined(XNU_PONG_VOLATILE_PANIC_LOG) && XNU_PONG_VOLATILE_PANIC_LOG
@@ -12434,8 +12167,7 @@ index 666b87b..e3d2ee7 100644
  
  #if (DEVELOPMENT || DEBUG) && defined(XNU_TARGET_OS_BRIDGE)
  /*
-@@ -108,7 +111,7 @@ void PE_slide_devicetree(vm_offset_t);
- static void
+@@ -108,6 +111,6 @@ void PE_slide_devicetree(vm_offset_t); static void
  check_for_panic_log(void)
  {
 -#ifdef PLATFORM_PANIC_LOG_PADDR
@@ -12443,8 +12175,7 @@ index 666b87b..e3d2ee7 100644
  	gPanicBase = ml_io_map_wcomb(PLATFORM_PANIC_LOG_PADDR, PLATFORM_PANIC_LOG_SIZE);
  	panic_text_len = PLATFORM_PANIC_LOG_SIZE - sizeof(struct embedded_panic_header);
  	gPanicSize = PLATFORM_PANIC_LOG_SIZE;
-@@ -118,6 +121,18 @@ check_for_panic_log(void)
- 	uintptr_t const *reg_prop;
+@@ -118,5 +121,17 @@ check_for_panic_log(void) 	uintptr_t const *reg_prop;
  	uint32_t const *panic_region_length;
  
 +#if defined(PONG) && defined(XNU_PONG_VOLATILE_PANIC_LOG) && XNU_PONG_VOLATILE_PANIC_LOG
@@ -12462,8 +12193,7 @@ index 666b87b..e3d2ee7 100644
  	/*
  	 * DT properties for the panic region are populated by UpdateDeviceTree() in iBoot:
  	 *
-@@ -138,7 +153,10 @@ check_for_panic_log(void)
- 		return;
+@@ -138,6 +153,9 @@ check_for_panic_log(void) 		return;
  	}
  
 -	if (kSuccess != SecureDTGetProperty(entry, "reg", (void const **)&reg_prop, &size)) {
@@ -12474,8 +12204,7 @@ index 666b87b..e3d2ee7 100644
  		return;
  	}
  
-@@ -146,11 +164,17 @@ check_for_panic_log(void)
- 		return;
+@@ -146,10 +164,16 @@ check_for_panic_log(void) 		return;
  	}
  
 -	if (kSuccess != SecureDTGetProperty(chosen, "embedded-panic-log-size", (void const **) &panic_region_length, &size)) {
@@ -12493,8 +12222,7 @@ index 666b87b..e3d2ee7 100644
  
  	/* Deduct the size of the panic header from the panic region size */
  	panic_text_len = panic_region_length[0] - sizeof(struct embedded_panic_header);
-@@ -169,6 +193,9 @@ check_for_panic_log(void)
- 	}
+@@ -169,5 +193,8 @@ check_for_panic_log(void) 	}
  #endif /* DEVELOPMENT && defined(XNU_TARGET_OS_BRIDGE) */
  
 +#endif
@@ -12503,8 +12231,7 @@ index 666b87b..e3d2ee7 100644
  #endif
  	panic_info = (struct embedded_panic_header *)gPanicBase;
  
-@@ -541,6 +568,25 @@ PE_create_console(void)
- 	 */
+@@ -541,6 +568,25 @@ PE_create_console(void) 	 */
  	check_for_panic_log();
  
 +#if defined(PONG)
@@ -12533,8 +12260,7 @@ diff --git a/pexpert/conf/Makefile.template b/pexpert/conf/Makefile.template
 index 2d65891..30b79ba 100644
 --- a/pexpert/conf/Makefile.template
 +++ b/pexpert/conf/Makefile.template
-@@ -78,7 +78,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -78,7 +78,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -12546,8 +12272,7 @@ diff --git a/pexpert/pexpert/arm64/Makefile b/pexpert/pexpert/arm64/Makefile
 index 5afac02..2c2a516 100644
 --- a/pexpert/pexpert/arm64/Makefile
 +++ b/pexpert/pexpert/arm64/Makefile
-@@ -32,6 +32,7 @@ PRIVATE_KERNELFILES = \
- 	H14.h \
+@@ -32,6 +32,7 @@ PRIVATE_KERNELFILES = \ 	H14.h \
  	H15.h \
  	H16.h \
 +	PONG.h \
@@ -12559,8 +12284,7 @@ new file mode 100644
 index 0000000..0d7d130
 --- /dev/null
 +++ b/pexpert/pexpert/arm64/PONG.h
-@@ -0,0 +1,34 @@
-+// SPDX-License-Identifier: BSD-2-Clause-Patent
+@@ -0,1 +1,34 @@+// SPDX-License-Identifier: BSD-2-Clause-Patent
 +#ifndef _PEXPERT_ARM64_PONG_H
 +#define _PEXPERT_ARM64_PONG_H
 +
@@ -12598,8 +12322,7 @@ diff --git a/pexpert/pexpert/arm64/apple_arm64_cpu.h b/pexpert/pexpert/arm64/app
 index f76d5c8..3722562 100644
 --- a/pexpert/pexpert/arm64/apple_arm64_cpu.h
 +++ b/pexpert/pexpert/arm64/apple_arm64_cpu.h
-@@ -28,7 +28,7 @@
- 
+@@ -28,6 +28,6 @@ 
  #pragma once
  
 -#if !defined(__ASSEMBLER__)
@@ -12607,8 +12330,7 @@ index f76d5c8..3722562 100644
  
  #include <stdbool.h>
  #include <sys/cdefs.h>
-@@ -111,4 +111,4 @@ arm64_core_type_as_string(void)
- 	return arm64_core_type_to_string(arm64_core_type());
+@@ -111,4 +111,4 @@ arm64_core_type_as_string(void) 	return arm64_core_type_to_string(arm64_core_type());
  }
  
 -#endif /* !defined(__ASSEMBLER__) */
@@ -12617,8 +12339,7 @@ diff --git a/pexpert/pexpert/arm64/board_config.h b/pexpert/pexpert/arm64/board_
 index ba15ae4..6bf82a9 100644
 --- a/pexpert/pexpert/arm64/board_config.h
 +++ b/pexpert/pexpert/arm64/board_config.h
-@@ -270,6 +270,14 @@
- 
+@@ -270,6 +270,14 @@ 
  #endif  /* ARM64_BOARD_CONFIG_T6041 */
  
 +#ifdef ARM64_BOARD_CONFIG_PONG
@@ -12636,8 +12357,7 @@ diff --git a/san/conf/Makefile.template b/san/conf/Makefile.template
 index 30ff35c..d1c449d 100644
 --- a/san/conf/Makefile.template
 +++ b/san/conf/Makefile.template
-@@ -55,7 +55,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -55,7 +55,7 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)
@@ -12649,8 +12369,7 @@ diff --git a/security/conf/Makefile.template b/security/conf/Makefile.template
 index 67b6106..308d638 100644
 --- a/security/conf/Makefile.template
 +++ b/security/conf/Makefile.template
-@@ -81,7 +81,7 @@ $(COBJS): .CFLAGS
- 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
+@@ -81,6 +81,6 @@ $(COBJS): .CFLAGS 	$(_v)$(REPLACECONTENTS) $@ $(KCC) $(CFLAGS) $(INCFLAGS)
  $(CXXOBJS): .CXXFLAGS
  .CXXFLAGS: ALWAYS
 -	$(_v)$(REPLACECONTENTS) $@ $(KC++) $(CXXFLAGS) $(INCFLAGS)

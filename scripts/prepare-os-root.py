@@ -198,8 +198,29 @@ def main():
         # frame.  Run it as root so the job plists stay owned by root.
         services = Path(__file__).resolve().parents[1] / 'userland' / 'board_services18.py'
         if services.is_file():
-            run(['sudo', sys.executable, str(services), '--stage-root', str(mount)])
-            print('launchd job policy staged', file=sys.stderr)
+            # wifi-bootstrap is what terminates SystemConfiguration's
+            # InterfaceNamer wait (*QUIET* / *COMPLETE* / *TIMEOUT*).  Without
+            # that answer SpringBoard stays blocked opening the wifi manager and
+            # never asks for its first frame -- the reference port's services107
+            # records the same block lifting, and its first visible frame, the
+            # moment this handshake completed.  It is a macOS build (xcrun,
+            # clang, codesign), so it belongs here, where the image is already
+            # being assembled on a Mac; a failure is reported and the job policy
+            # is staged without it rather than losing the whole run.
+            runtime = args.work / 'wifi-runtime'
+            build = subprocess.run([sys.executable, str(services), '--build-wifi-runtime',
+                                    str(runtime)], capture_output=True)
+            if build.returncode or not (runtime / 'wifi-bootstrap').is_file():
+                detail = (build.stderr or build.stdout).decode('utf-8', 'replace').strip()
+                print('wifi-bootstrap not built; staging job policy only\n'
+                      + detail[-2000:], file=sys.stderr)
+                runtime = None
+            command = ['sudo', sys.executable, str(services), '--stage-root', str(mount)]
+            if runtime is not None:
+                command += ['--runtime', str(runtime)]
+            run(command)
+            print('launchd job policy staged' + (' with wifi-bootstrap' if runtime else ''),
+                  file=sys.stderr)
         else:
             print(f'no {services}; job policy left at stock', file=sys.stderr)
     finally:

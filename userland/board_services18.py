@@ -158,7 +158,7 @@ def main():
                         help='stage onto an already-mounted root; the caller owns the mount')
     args = parser.parse_args()
     if args.stage_root:
-        changes = stage(args.stage_root)
+        changes = stage(args.stage_root, args.runtime)
         print(json.dumps(dict(build='22H374', changes=changes, binaries_removed=False), indent=2))
         return
     if args.build_wifi_runtime:

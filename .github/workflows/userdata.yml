@@ -142,12 +142,15 @@ jobs:
           import json
           from pathlib import Path
           report = json.loads(Path('ci-os-root.json').read_text())
-          if 'System/Library/xpc/launchd.plist.sig' not in report['moved']:
-              raise SystemExit('launchd.plist.sig is still in the image; launchd will abort')
+          # The invariant is that the image carries no stock detached signature
+          # beside the cache, not that one was moved out of it: a prepared
+          # userland may never have had one.  Assert the end state.
+          if report['still_present']:
+              raise SystemExit('still in the image: ' + ', '.join(report['still_present']))
           if report['rebuilt_bytes'] != report['original_bytes']:
               raise SystemExit('the root changed size; the windows after it would move')
           print('root bytes', report['original_bytes'], 'links', report['links'])
-          print('moved out:', ', '.join(report['moved']))
+          print('moved out:', ', '.join(report['moved']) or 'nothing')
           print('aliases:', ', '.join(report['aliases']))
           PY
           df -h

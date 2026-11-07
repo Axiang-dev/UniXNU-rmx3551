@@ -146,6 +146,11 @@ def main():
             run(['sudo', 'mv', str(source), str(stock / Path(rel).name)])
             moved.append(rel)
         print(f'moved out of the image: {", ".join(moved) or "nothing"}', file=sys.stderr)
+        # What matters is not that a file was moved, but that launchd cannot find
+        # a stock detached signature next to the cache.  A prepared userland that
+        # never carried one satisfies that just as well, so record the end state
+        # and let the caller assert on it instead of on `moved`.
+        still_present = [rel for rel in MOVED if os.path.lexists(mount / rel)]
 
         cryptex_device, cryptex_mount = attach(args.cryptex)
         try:
@@ -217,7 +222,8 @@ def main():
     os.replace(rebuilt, args.root)
 
     report = {'original_bytes': original_bytes, 'rebuilt_bytes': rebuilt_bytes,
-              'moved': moved, 'links': len(links), 'aliases': aliases}
+              'moved': moved, 'still_present': still_present,
+              'links': len(links), 'aliases': aliases}
     text = json.dumps(report, indent=2) + '\n'
     (args.report or (args.work / 'os-root.json')).write_text(text)
     print(f'root kept its size: {rebuilt_bytes} bytes, {len(links)} links, '

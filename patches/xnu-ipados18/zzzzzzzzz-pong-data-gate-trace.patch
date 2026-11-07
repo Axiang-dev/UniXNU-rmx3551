@@ -1,0 +1,16 @@
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -7308,10 +7308,13 @@ native_owner_data_prepare(proc_t p, user_addr_t scratch)
+ static int
+ native_owner_data_prepare(proc_t p, user_addr_t scratch)
+ {
++	printf("PONG APFS: data gate status=%d auth=%d recheck=%d\n",
++	    native_owner_cache_status, native_owner_cache_authorized,
++	    native_owner_cache_root_recheck);
+ 	/* Writable Data is selected only after the existing OS/SystemOS handoff. */
+ 	if (native_owner_cache_status != 0 || !native_owner_cache_authorized ||
+ 	    !native_owner_cache_root_recheck) {
+ 		native_owner_data_status = ENXIO;
+ 		return ENXIO;
+ 	}
+ 	printf("PONG APFS: Data prepare enter uuid=%s\n", XNU_OWNER_DATA_VOLUME_UUID);

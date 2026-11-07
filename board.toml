@@ -176,6 +176,13 @@ kernel_args = [
   # loader's own development switch: it accepts the locally adapted cache and
   # stops pairing the modified plist with the stock signature.
   "launchd_unsecure_cache=1",
+  # SpringBoard no longer traps on the display mode, but the console then only
+  # shows wifip2pd restarting: nothing says whether the compositor ever asks the
+  # framebuffer for anything. fbtrace logs the first calls of every IOMFB
+  # selector, surftrace the first surfaces and what becomes of them, both from
+  # the port's own frame diagnostics.
+  "fbtrace=8",
+  "surftrace=24",
 ]
 
 [payload.adt]

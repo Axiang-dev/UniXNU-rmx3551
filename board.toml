@@ -195,10 +195,10 @@ kernel_args = [
   # first check (stage 0) when either is false, and /private/var then stays on the
   # read-only root, which is where launchd dies.  Both switches are the ones the
   # upstream documents name for this pipeline and neither was in this list:
-  # offline-owner-root-check starts the verified root probe, native-ufs-root is
-  # the UFS runtime argument the storage page requires.
+  # offline-owner-root-check starts the verified root probe.  native-ufs-root=1 is
+  # NOT set: it is the ShengUfs runtime argument and the payload step rejects it
+  # without sheng-pmgr=2, which this board's power path does not provide.
   "offline-owner-root-check=1",
-  "native-ufs-root=1",
 ]
 
 [payload.adt]

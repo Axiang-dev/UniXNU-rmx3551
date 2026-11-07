@@ -143,6 +143,10 @@ kernel_args = [
   "pong_adsp=2",
   "pong_audio=2",
   "pong_ufs_readwrite=1",
+  # Mirror the kernel console into the spare tail of userdata every 10 s so a
+  # recovery reader can pull the log after a panic. See
+  # drivers/NativeUfs/PongBootLog.h.
+  "pong_bootlog=1",
   "ignition_level=1",
   "dyld_flags=0x8",
   # launchd_rd=md0 was the reference port's ramdisk handoff: it makes launchd

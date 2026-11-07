@@ -154,7 +154,13 @@ def main():
     parser.add_argument('--record', type=Path)
     parser.add_argument('--runtime', type=Path)
     parser.add_argument('--build-wifi-runtime',type=Path)
+    parser.add_argument('--stage-root', type=Path,
+                        help='stage onto an already-mounted root; the caller owns the mount')
     args = parser.parse_args()
+    if args.stage_root:
+        changes = stage(args.stage_root)
+        print(json.dumps(dict(build='22H374', changes=changes, binaries_removed=False), indent=2))
+        return
     if args.build_wifi_runtime:
         build_wifi(args.build_wifi_runtime);return
     if not args.prepared or not args.record:

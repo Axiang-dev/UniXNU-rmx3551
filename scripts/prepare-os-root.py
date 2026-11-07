@@ -182,6 +182,21 @@ def main():
         script.write_text('\n'.join(lines) + '\n', encoding='utf-8')
         run(['sudo', 'sh', str(script)])
         print(f'aliases created: {", ".join(aliases) or "none"}', file=sys.stderr)
+
+        # Per-service launchd policy.  userland/board_services18.py has carried
+        # the reference port's evidence-driven job adjustments since the 22H374
+        # import, but nothing ever called it, so every boot paid for the same
+        # failures again: bluetoothd and wifip2pd restarting on hardware this
+        # board does not have, softwareupdated crashing at startup, and the
+        # com.apple.wifi.manager port reserved before wifid checks in -- the
+        # wait the reference port recorded as blocking SpringBoard's first
+        # frame.  Run it as root so the job plists stay owned by root.
+        services = Path(__file__).resolve().parents[1] / 'userland' / 'board_services18.py'
+        if services.is_file():
+            run(['sudo', sys.executable, str(services), '--stage-root', str(mount)])
+            print('launchd job policy staged', file=sys.stderr)
+        else:
+            print(f'no {services}; job policy left at stock', file=sys.stderr)
     finally:
         detach(device)
 

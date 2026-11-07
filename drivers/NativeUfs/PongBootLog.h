@@ -7,9 +7,9 @@
  * RAM, so a panic takes it with it and the screen is the only copy.
  *
  * This copies the mirror into a reserved region just past the flashed image,
- * inside the userdata partition, every ten seconds. A reader running later
- * (recovery with root adb) pulls that region with dd, so the log survives a
- * panic, a hang and a power cycle.
+ * inside the userdata partition, within two seconds of the console changing.
+ * A reader running later (recovery with root adb) pulls that region with dd,
+ * so the log survives a panic, a hang and a power cycle.
  *
  * Region layout, little endian:
  *   +0x0000  4096  header: "PBLOG001", mirror bytes, sequence, status, digest
@@ -63,17 +63,18 @@ struct Header {
   uint32_t mirrorBytes;
   uint32_t sequence;
   uint32_t status;          /* 1 = this snapshot is complete */
-  uint32_t reserved;
+  uint32_t crc32;           /* reflected IEEE CRC32 of the mirror, same as zlib.crc32 */
   uint64_t mirrorPhysical;
-  uint8_t digest[32];       /* SHA-256 of the mirror as written */
+  uint32_t reserved[8];
 };
 
 static void snapshot() {
   if (!gMirror || !gHost.ready || gHost.poisoned) return;
   /* The kernel cleans the lines it writes; drop ours so the copy is current. */
   cacheInvalidate(reinterpret_cast<const void *>(gMirror), kMirrorBytes);
+  const auto *mirror = reinterpret_cast<const uint8_t *>(gMirror);
   const uint64_t first = gRegionLba + kHeaderBytes / 4096;
-  if (!writeBlocks(first, reinterpret_cast<const void *>(gMirror), kMirrorBytes)) {
+  if (!writeBlocks(first, mirror, kMirrorBytes)) {
     gFailures++;
     return;
   }
@@ -84,6 +85,7 @@ static void snapshot() {
   header.mirrorBytes = static_cast<uint32_t>(kMirrorBytes);
   header.sequence = ++gSequence;
   header.status = 1;
+  header.crc32 = rootCrc32(mirror, kMirrorBytes);
   header.mirrorPhysical = kMirrorPhys;
   if (!writeBlocks(gRegionLba, &header, kHeaderBytes)) {
     gFailures++;
@@ -92,12 +94,29 @@ static void snapshot() {
   gWrites++;
 }
 
+/* The persistent_ram header opens the mirror: magic, then the ring's start and
+ * size. Those two move only when the kernel writes to the console, so they make
+ * a cheap dirty flag and let the writer poll often without paying for a 4 MiB
+ * snapshot on every tick. */
+static uint32_t gLastStart = 0xffffffffU, gLastSize = 0xffffffffU;
+
+static bool consoleChanged() {
+  cacheInvalidate(reinterpret_cast<const void *>(gMirror), 16);
+  const auto *head = reinterpret_cast<const volatile uint32_t *>(gMirror);
+  const uint32_t sig = head[0], start = head[1], size = head[2];
+  if (sig != 0x43474244U) return true;  /* not the ring we expect: never skip */
+  if (start == gLastStart && size == gLastSize) return false;
+  gLastStart = start;
+  gLastSize = size;
+  return true;
+}
+
 static void worker(void *, wait_result_t) {
   /* Give storage and the console a moment to be up before the first copy. */
   IOSleep(2000);
   for (;;) {
-    snapshot();
-    IOSleep(10000);
+    if (consoleChanged()) snapshot();
+    IOSleep(2000);
   }
 }
 
@@ -118,7 +137,7 @@ static void start(uint64_t firstLba, uint64_t bytes) {
     return;
   }
   thread_deallocate(thread);
-  IOLog("PongBootLog: %llu KiB mirror to userdata LBA %llu every 10s\n",
+  IOLog("PongBootLog: %llu KiB mirror to userdata LBA %llu, every 2s when it changes\n",
         kMirrorBytes >> 10, gRegionLba);
 }
 }  /* namespace PongBootLog */

@@ -34,6 +34,7 @@ static uintptr_t gMirror;
 static OSSharedPtr<IOMemoryMap> gMirrorMap;
 static volatile uint32_t gStarted;
 static uint32_t gSequence;
+static uint32_t gTick;
 static uint32_t gWrites, gFailures;
 
 static bool writeBlocks(uint64_t lba, const void *source, uint64_t bytes) {
@@ -61,12 +62,36 @@ static bool writeBlocks(uint64_t lba, const void *source, uint64_t bytes) {
 struct Header {
   char magic[8];
   uint32_t mirrorBytes;
-  uint32_t sequence;
-  uint32_t status;          /* 1 = this snapshot is complete */
+  uint32_t sequence;        /* number of complete snapshots written */
+  uint32_t status;          /* 1 = snapshot, 2 = heartbeat only */
   uint32_t crc32;           /* reflected IEEE CRC32 of the mirror, same as zlib.crc32 */
   uint64_t mirrorPhysical;
-  uint32_t reserved[8];
+  uint32_t tick;            /* advances every 2 s while this thread runs */
+  uint32_t consoleStart;    /* ring position last seen */
+  uint32_t consoleSize;     /* bytes written into the ring last seen */
+  uint32_t reserved[5];
 };
+
+/* Fills in everything but the magic, which never changes. */
+static void fillHeader(Header *header, uint32_t status) {
+  header->mirrorBytes = static_cast<uint32_t>(kMirrorBytes);
+  header->sequence = gSequence;
+  header->status = status;
+  header->tick = ++gTick;
+  header->mirrorPhysical = kMirrorPhys;
+  const auto *head = reinterpret_cast<const volatile uint32_t *>(gMirror);
+  header->consoleStart = head[1];
+  header->consoleSize = head[2];
+}
+
+static bool writeHeader(uint32_t status) {
+  static Header header;
+  memset(&header, 0, sizeof(header));
+  memcpy(header.magic, "PBLOG001", 8);
+  fillHeader(&header, status);
+  if (status == 1) header.crc32 = rootCrc32(reinterpret_cast<const uint8_t *>(gMirror), kMirrorBytes);
+  return writeBlocks(gRegionLba, &header, kHeaderBytes);
+}
 
 static void snapshot() {
   if (!gMirror || !gHost.ready || gHost.poisoned) return;
@@ -79,15 +104,8 @@ static void snapshot() {
     return;
   }
   /* Header last: a torn data write leaves the previous complete snapshot. */
-  static Header header;
-  memset(&header, 0, sizeof(header));
-  memcpy(header.magic, "PBLOG001", 8);
-  header.mirrorBytes = static_cast<uint32_t>(kMirrorBytes);
-  header.sequence = ++gSequence;
-  header.status = 1;
-  header.crc32 = rootCrc32(mirror, kMirrorBytes);
-  header.mirrorPhysical = kMirrorPhys;
-  if (!writeBlocks(gRegionLba, &header, kHeaderBytes)) {
+  gSequence++;
+  if (!writeHeader(1)) {
     gFailures++;
     return;
   }
@@ -115,7 +133,14 @@ static void worker(void *, wait_result_t) {
   /* Give storage and the console a moment to be up before the first copy. */
   IOSleep(2000);
   for (;;) {
-    if (consoleChanged()) snapshot();
+    if (consoleChanged()) {
+      snapshot();
+    } else if (gMirror && gHost.ready && !gHost.poisoned) {
+      /* Nothing new to copy, but the tick still records that this thread ran:
+       * a frozen tick after the last console line means the kernel stopped,
+       * a rising tick means it was alive and userspace was what hung. */
+      writeHeader(2);
+    }
     IOSleep(2000);
   }
 }

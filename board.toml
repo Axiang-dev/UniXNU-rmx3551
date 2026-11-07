@@ -190,6 +190,15 @@ kernel_args = [
   # read a wait chain where this board only saw wifip2pd restarting.
   "applog=1",
   "applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd",
+  # The writable Data mount is gated on the owner cache being authorized and the
+  # root device being verified: native_owner_data_prepare returns ENXIO at its
+  # first check (stage 0) when either is false, and /private/var then stays on the
+  # read-only root, which is where launchd dies.  Both switches are the ones the
+  # upstream documents name for this pipeline and neither was in this list:
+  # offline-owner-root-check starts the verified root probe, native-ufs-root is
+  # the UFS runtime argument the storage page requires.
+  "offline-owner-root-check=1",
+  "native-ufs-root=1",
 ]
 
 [payload.adt]

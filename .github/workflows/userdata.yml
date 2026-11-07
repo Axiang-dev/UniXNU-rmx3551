@@ -120,34 +120,35 @@ jobs:
           rm -rf "${RUNNER_TEMP}/pong-ipsw-work"
           df -h
 
-      - name: Put the dyld shared cache on the root volume
-        # launchd resolves its cache through the root's own
-        # /System/Library/Caches/com.apple.dyld and strips the DYLD_* environment
-        # the kernel passes, so a cache that only exists inside the SystemOS
-        # cryptex is unreachable and launchd_cache_loader aborts (-67062).  The
-        # root window is rebuilt with the cryptex caches and keeps its volume
-        # UUID, which the kernel's root_match_volume_uuid depends on.
-        timeout-minutes: 90
+      - name: Prepare the OS root for launchd
+        # launchd verifies /System/Library/xpc/launchd.plist against its detached
+        # signature before it reads a single job, and a copy of the root that is
+        # not the sealed system volume can never satisfy that check: the panic
+        # log shows it mapping 112 cache segments and then aborting with -67062
+        # errSecCSUnsigned.  The step also bridges the usr trees the split
+        # userland keeps in the cryptex (execvp /usr/libexec/xpcproxy otherwise
+        # fails with ENOENT).  Both edits are metadata only, so the container
+        # keeps its size and the windows after it keep their offsets.
+        timeout-minutes: 60
         run: |
           set -euo pipefail
           prepared="$(cat ci-userland-path.txt)"
-          python3 device/scripts/inject-dyld-root.py \
+          python3 device/scripts/prepare-os-root.py \
             --root "${prepared}/pong-ipados18-system.cdr" \
             --cryptex "${prepared}/pong-ipados18-systemos.cdr" \
-            --work "${RUNNER_TEMP}/root-rebuild" \
-            --report ci-dyld-root.json
+            --work "${RUNNER_TEMP}/os-root" \
+            --report ci-os-root.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          report = json.loads(Path('ci-dyld-root.json').read_text())
-          if not report['cache']:
-              raise SystemExit('the rebuilt root carries no dyld cache')
-          print('root bytes', report['original_bytes'], '->', report['rebuilt_bytes'])
-          print('uuid kept', report['os_uuid'], 'name kept', report['volume_name'])
-          for item in report['cache']:
-              print(' ', item['name'], item['bytes'])
-          if report['skipped']:
-              print('left out (symbolication only):', ', '.join(report['skipped']))
+          report = json.loads(Path('ci-os-root.json').read_text())
+          if 'System/Library/xpc/launchd.plist.sig' not in report['moved']:
+              raise SystemExit('launchd.plist.sig is still in the image; launchd will abort')
+          if report['rebuilt_bytes'] != report['original_bytes']:
+              raise SystemExit('the root changed size; the windows after it would move')
+          print('root bytes', report['original_bytes'], 'links', report['links'])
+          print('moved out:', ', '.join(report['moved']))
+          print('aliases:', ', '.join(report['aliases']))
           PY
           df -h
 
@@ -174,6 +175,32 @@ jobs:
           if names != ['OS', 'SystemOS', 'Data']:
               raise SystemExit('layout windows are %s, not OS/SystemOS/Data' % names)
           print('SHNGROOT directory', len(header), 'bytes for', ', '.join(names))
+          PY
+          df -h
+
+      - name: OS window parts
+        # The root is the only window that changes between bring-up builds and it
+        # comes first, so this prefix (header + pad + OS window) is byte for byte
+        # what a full flash writes over userdata.  Flashing just this replaces the
+        # root and leaves SystemOS and Data where the previous flash put them.
+        # It has to run before the full parts, which consume the source windows.
+        run: |
+          set -euo pipefail
+          python3 device/scripts/build-oswindow-parts.py \
+            --header out/ipados18/ufs/shngroot-ipados18.bin \
+            --layout out/ipados18/ufs/ufs-layout.json \
+            --output-dir out/ipados18/ufs \
+            --part-mib 1900 \
+            --json-out oswindow-image.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          image = json.loads(Path('oswindow-image.json').read_text())
+          os_bytes = image['os_window_bytes']
+          if not 4 * 1024 ** 3 < os_bytes < 16 * 1024 ** 3:
+              raise SystemExit('the OS window is %d bytes; that is not a root' % os_bytes)
+          print('os window', os_bytes, 'bytes, prefix', image['image_bytes'],
+                'in', len(image['parts']), 'part(s)')
           PY
           df -h
 
@@ -220,6 +247,9 @@ jobs:
             gh release create "$tag" --title "RMX3551 userdata (22H374)" \
               --notes "SHNGROOT userdata image parts for the RMX3551 iPadOS 18.7.10 bring-up. Concatenate in part order, then fastboot flash userdata."
           gh release upload "$tag" out/ipados18/ufs/pong-ipados18-userdata.img.part* ci-products/userdata-image.json ci-products/ci-volume-layout.json --clobber
+          # The OS window prefix: what the phone host actually needs when only
+          # the root changed.
+          gh release upload "$tag" out/ipados18/ufs/pong-ipados18-oswindow.img.part* oswindow-image.json --clobber
           echo "assets:"
           gh release view "$tag" --json assets --jq '.assets[] | "\(.name) \(.size)"'
         env:

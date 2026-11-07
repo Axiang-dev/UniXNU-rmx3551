@@ -29,6 +29,17 @@ psci-method = "smc"
 [adt.chosen.u32]
 debug-enabled = 1
 mix-n-match-prevention-status = 0
+# MobileGestalt and FrontBoard take the software coordinate scale from here.  The
+# pong-adt generator this board used before schema 2 wrote it as /chosen/display-scale;
+# the profile's description did not carry it over, so the property was simply absent
+# from the built ADT and MobileGestalt answered 0.  A zero scale makes every
+# FBSDisplayMode's logical size infinite, and SpringBoard deliberately traps before
+# creating its main display:
+#   FBSDisplayMode cannot be configured as requested: infxinf@0x (1080x2412/0) 120Hz
+# The panel is 1080x2412 at 3x, the same value [adt.product.u32] artwork-scale-factor
+# already declares for artwork.
+display-scale = 3
+display-rotation = 0
 [adt.product.string]
 product-name = "iPhone 16 Pro"
 product-description = "iPhone 16 Pro"

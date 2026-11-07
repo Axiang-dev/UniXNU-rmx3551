@@ -1,0 +1,102 @@
+== configuration pong_ipados18_ci_defconfig -> /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+== tree /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/tree
++ /usr/local/bin/dtc -I dts -O dtb -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb -i /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/UniXNU-sm8475-common/dts /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/dts/rmx3551.dts
+Building Darwin 24; log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261107T191646Z.log
+Build failed; log retained: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261107T191646Z.log
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 35, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 30, in main
+    subprocess.run(command, cwd=source, check=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-ipados18-pong-macos.py', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--jobs', '4', '--skip-image-verification', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 54, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 44, in main
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-pong-profile-kernel.py'),
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py', '--source', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb', '--jobs', '4']' returned non-zero exit status 1.
+===== resolved config =====
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
+CONFIG_XNU_PONG_ADRENO_PLATFORM=n
+CONFIG_XNU_PONG_WIFI=n
+===== pong-power archive =====
+===== /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261107T191646Z.log =====
+Cloning into '.cache/xnu-work'...
+Updating files:  44% (2427/5502)Updating files:  45% (2476/5502)Updating files:  46% (2531/5502)Updating files:  47% (2586/5502)Updating files:  48% (2641/5502)Updating files:  49% (2696/5502)Updating files:  50% (2751/5502)Updating files:  51% (2807/5502)Updating files:  52% (2862/5502)Updating files:  53% (2917/5502)Updating files:  54% (2972/5502)Updating files:  55% (3027/5502)Updating files:  56% (3082/5502)Updating files:  57% (3137/5502)Updating files:  58% (3192/5502)Updating files:  59% (3247/5502)Updating files:  60% (3302/5502)Updating files:  61% (3357/5502)Updating files:  62% (3412/5502)Updating files:  63% (3467/5502)Updating files:  64% (3522/5502)Updating files:  65% (3577/5502)Updating files:  66% (3632/5502)Updating files:  67% (3687/5502)Updating files:  68% (3742/5502)Updating files:  69% (3797/5502)Updating files:  70% (3852/5502)Updating files:  71% (3907/5502)Updating files:  72% (3962/5502)Updating files:  73% (4017/5502)Updating files:  74% (4072/5502)Updating files:  75% (4127/5502)Updating files:  76% (4182/5502)Updating files:  77% (4237/5502)Updating files:  78% (4292/5502)Updating files:  79% (4347/5502)Updating files:  80% (4402/5502)Updating files:  81% (4457/5502)Updating files:  82% (4512/5502)Updating files:  83% (4567/5502)Updating files:  84% (4622/5502)Updating files:  85% (4677/5502)Updating files:  86% (4732/5502)Updating files:  87% (4787/5502)Updating files:  88% (4842/5502)Updating files:  89% (4897/5502)Updating files:  90% (4952/5502)Updating files:  91% (5007/5502)Updating files:  92% (5062/5502)Updating files:  93% (5117/5502)Updating files:  94% (5172/5502)Updating files:  95% (5227/5502)Updating files:  96% (5282/5502)Updating files:  97% (5337/5502)Updating files:  98% (5392/5502)Updating files:  99% (5447/5502)Updating files: 100% (5502/5502)Updating files: 100% (5502/5502), done.
+/usr/local/bin/cmake  -GNinja 	-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja -DSRCROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/refer/ipados18/AvailabilityVersions-143.7 -DOBJROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability		\
+											-DSYMROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability -DDSTROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot -DDRIVERKIT=0														\
+											-DSYSTEM_PREFIX= -DCONFIG_EXCLAVEKIT=0											\
+											-DCONFIG_EXCLAVECORE=0 -DINSTALL_KERNEL_HEADERS="1" \
+											-S /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/refer/ipados18/AvailabilityVersions-143.7 -B /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability
+-- SRCROOT="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/refer/ipados18/AvailabilityVersions-143.7"
+-- DSTROOT="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot"
+-- OBJROOT="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability"
+-- SYMROOT="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability"
+-- APPLE_INTERNAL="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/AppleInternal"
+-- CMAKE_CURRENT_BINARY_DIR="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability"
+-- USR_LOCAL_LIBEXEC="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/libexec"
+-- USR_LOCAL_INCLUDE="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include"
+-- USR_INCLUDE="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include"
+-- RUNTIME="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/Runtime/usr/include"
+-- RUNTIME_LOCAL="/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/Runtime/usr/local/include"
+-- CONFIG_EXCLAVEKIT="0"
+-- CONFIG_EXCLAVECORE="0"
+-- DRIVERKIT="0"
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability
+/usr/local/bin/ninja -C /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability install
+ninja: Entering directory `/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability'
+ninja: warning: Ignoring jobserver: Pipe-based protocol is not supported! [ --jobserver-fds=3,4 -j -- NINJA=/usr/local/bin/ninja CMAKE=/usr/local/bin/cmake DSTROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot SYMROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability OBJROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/availability]
+[1/14] Generating availability
+[2/14] Generating Availability.h
+[3/14] Generating AvailabilityInternalLegacy.h
+[4/14] Generating AvailabilityInternal.h
+[5/14] Generating AvailabilityInternalPrivate.h
+[6/14] Generating AvailabilityProhibitedInternal.h
+[7/14] Generating AvailabilityMacros.h
+[8/14] Generating AvailabilityVersions.h
+[9/14] Generating VersionMap.h
+[10/14] Generating for_dyld_priv.inc
+[11/14] Generating os_availability.h
+[12/14] Generating os_availability_private.modulemap
+[13/14] Generating os_availability.modulemap
+[13/14] Install the project...
+-- Install configuration: ""
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/AppleInternal
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AvailabilityInternalPrivate.h -> ../../../../../../../usr/local/include/AvailabilityInternalPrivate.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AvailabilityProhibitedInternal.h -> ../../../../../../../usr/local/include/AvailabilityProhibitedInternal.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/os/availability.h -> ../../../../../../../../usr/include/os/availability.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/Availability.h -> ../../../../../../../usr/include/Availability.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/AvailabilityInternal.h -> ../../../../../../../usr/include/AvailabilityInternal.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/AvailabilityInternalLegacy.h -> ../../../../../../../usr/include/AvailabilityInternalLegacy.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/AvailabilityMacros.h -> ../../../../../../../usr/include/AvailabilityMacros.h
+-- Created symlink: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/AvailabilityVersions.h -> ../../../../../../../usr/include/AvailabilityVersions.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/dyld/VersionMap.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/dyld/for_dyld_priv.inc
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/AvailabilityInternalPrivate.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/AvailabilityProhibitedInternal.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/os_availability_private.modulemap
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/os/availability.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/Availability.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/AvailabilityInternal.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/AvailabilityInternalLegacy.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/AvailabilityMacros.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/AvailabilityVersions.h
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/include/os_availability.modulemap
+-- Installing: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/libexec/availability.pl
+Applying XNU patch: 0001-pong-darwin24.patch
+Patch does not apply cleanly to XNU 11417.140.69: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/patches/xnu/0001-pong-darwin24.patch
+===== error lines =====

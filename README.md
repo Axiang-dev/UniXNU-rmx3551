@@ -29,10 +29,17 @@ realme GT2 大师探索版（RMX3551 / SM8475 / cape）的 UniXNU 格式 2 设�
 ## 当前状态
 
 - [x] UEFI 点亮、显示、ConIn（音量键选择 / 电源键确认）
-- [ ] 内核编译
+- [x] 内核编译与启动（Darwin 24 / 22H374）
+- [x] APFS 三卷挂载：OS root、SystemOS → `/private/preboot`、Data → `/private/var`
+- [x] launchd 跑完 boot task，`SpringBoard` / `backboardd` / `lsd` 进程存活
+- [ ] 首帧 —— 合成器尚未创建 surface，`surftrace` 无输出
 - [ ] 触摸驱动 —— Synaptics S3910，pong 用的是 goodix-berlin，需新写
+- [ ] 背光 —— ADT 的 `pong-dsi-backlight` 未提供，亮度控制不工作
 - [ ] 屏幕驱动 —— NT37701B，pong 用的是 NT37705
 - [ ] Pixelworks 显示芯片（i2c@880000，pong 无）
+
+首帧前的三处阻塞及各轮设备证据见
+[`migration/ipados18/services168-first-frame-blockers.md`](migration/ipados18/services168-first-frame-blockers.md)。
 
 ## 构建
 

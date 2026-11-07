@@ -183,6 +183,13 @@ kernel_args = [
   # the port's own frame diagnostics.
   "fbtrace=8",
   "surftrace=24",
+  # The kernel console only carries what the kernel prints; SpringBoard's own
+  # reasons live in os_log, which is why a stalled home screen says nothing.
+  # These two mirror the named processes' logs into the console -- the same pair
+  # and the same list the reference port boots with, and the reason it could
+  # read a wait chain where this board only saw wifip2pd restarting.
+  "applog=1",
+  "applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd",
 ]
 
 [payload.adt]

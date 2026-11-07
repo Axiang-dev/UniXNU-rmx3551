@@ -97,15 +97,16 @@ def decode(path, output):
     if magic == b'PBLOG001':
         mirror_bytes, sequence, status, crc = struct.unpack_from('<IIII', blob, 8)
         physical, = struct.unpack_from('<Q', blob, 24)
+        tick, ring_start, ring_size = struct.unpack_from('<III', blob, 32)
         body = blob[HEADER_BYTES:HEADER_BYTES + mirror_bytes]
         if crc:
             ok = (zlib.crc32(body) & 0xFFFFFFFF) == crc
             verdict = 'ok' if ok else 'MISMATCH'
         else:
             verdict = 'not recorded'
-        lines.append(f'header: sequence {sequence}, status {status}, '
-                     f'{mirror_bytes} bytes, mirror at {physical:#x}, '
-                     f'crc {verdict}')
+        lines.append(f'header: sequence {sequence} (status {status}), tick {tick}, '
+                     f'ring {ring_start}+{ring_size}, crc {verdict}')
+        lines.append(f'        mirror at {physical:#x}, {mirror_bytes} bytes')
         if status != 1:
             lines.append('warning: status is not "complete"; this snapshot may be torn')
     else:

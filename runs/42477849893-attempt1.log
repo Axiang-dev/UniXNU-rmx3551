@@ -1,0 +1,436 @@
+== configuration pong_ipados18_ci_defconfig -> /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+== tree /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/tree
++ /usr/local/bin/dtc -I dts -O dtb -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb -i /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/UniXNU-sm8475-common/dts /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/dts/rmx3551.dts
+Building Darwin 24; log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T115847Z.log
+Build failed; log retained: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T115847Z.log
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 35, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 30, in main
+    subprocess.run(command, cwd=source, check=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-ipados18-pong-macos.py', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--jobs', '4', '--skip-image-verification', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 54, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 44, in main
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-pong-profile-kernel.py'),
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py', '--source', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb', '--jobs', '4']' returned non-zero exit status 1.
+===== resolved config =====
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
+CONFIG_XNU_PONG_ADRENO_PLATFORM=n
+CONFIG_XNU_PONG_WIFI=n
+===== pong-power archive =====
+===== /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T115847Z.log =====
+     INSTALLHDR posix_shm.h
+     INSTALLHDR priv.h
+     INSTALLHDR proc.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR process_policy.h
+     INSTALLHDR proc_uuid_policy.h
+     INSTALLHDR protosw.h
+     INSTALLHDR ptrace.h
+     INSTALLHDR queue.h
+     INSTALLHDR random.h
+     INSTALLHDR reason.h
+     INSTALLHDR quota.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resource.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR sem.h
+     INSTALLHDR sdt.h
+     INSTALLHDR select.h
+     INSTALLHDR semaphore.h
+     INSTALLHDR sfi.h
+     INSTALLHDR shm.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR signal.h
+     INSTALLHDR snapshot.h
+     INSTALLHDR socket.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR spawn.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR stat.h
+     INSTALLHDR stdio.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslog.h
+     INSTALLHDR time.h
+     INSTALLHDR termios.h
+     INSTALLHDR timeb.h
+     INSTALLHDR timex.h
+     INSTALLHDR times.h
+     INSTALLHDR trace.h
+     INSTALLHDR tree.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR tty.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR uio.h
+     INSTALLHDR ulock.h
+     INSTALLHDR un.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR user.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR utsname.h
+     INSTALLHDR ux_exception.h
+     INSTALLHDR vadvise.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vcmd.h
+     INSTALLHDR vm.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vnode.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vsock.h
+     INSTALLHDR vstat.h
+     INSTALLHDR wait.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _posix_availability.h
+     INSTALLHDR _symbol_aliasing.h
+     INSTALLHDR syscall.h
+     INSTALLHDR appleapiopts.h
+     INSTALLHDR attr.h
+     INSTALLHDR buf.h
+     INSTALLHDR cdefs.h
+     INSTALLHDR conf.h
+     INSTALLHDR constrained_ctypes.h
+     INSTALLHDR dir.h
+     INSTALLHDR dirent.h
+     INSTALLHDR disk.h
+     INSTALLHDR disklabel.h
+     INSTALLHDR dkstat.h
+     INSTALLHDR errno.h
+     INSTALLHDR ev.h
+     INSTALLHDR fcntl.h
+     INSTALLHDR file.h
+     INSTALLHDR event.h
+     INSTALLHDR filio.h
+     INSTALLHDR ioccom.h
+     INSTALLHDR ioctl.h
+     INSTALLHDR ipc.h
+     INSTALLHDR ioctl_compat.h
+     INSTALLHDR kernel.h
+     INSTALLHDR kernel_types.h
+     INSTALLHDR kern_event.h
+     INSTALLHDR lock.h
+     INSTALLHDR lockf.h
+     INSTALLHDR kauth.h
+     INSTALLHDR kdebug.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kdebug_kernel.h
+     INSTALLHDR md5.h
+     INSTALLHDR kern_control.h
+     INSTALLHDR imgact.h
+     INSTALLHDR malloc.h
+     INSTALLHDR namei.h
+     INSTALLHDR mman.h
+     INSTALLHDR mbuf.h
+     INSTALLHDR mount.h
+     INSTALLHDR param.h
+     INSTALLHDR netport.h
+     INSTALLHDR proc.h
+     INSTALLHDR paths.h
+     INSTALLHDR random.h
+     INSTALLHDR queue.h
+     INSTALLHDR resource.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR posix_sem.h
+     INSTALLHDR posix_shm.h
+     INSTALLHDR sem.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR shm.h
+     INSTALLHDR select.h
+     INSTALLHDR socket.h
+     INSTALLHDR signal.h
+     INSTALLHDR sockio.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR stat.h
+     INSTALLHDR stdio.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR syslog.h
+     INSTALLHDR systm.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR time.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR un.h
+     INSTALLHDR uio.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR unicode.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vm.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vnode.h
+     INSTALLHDR vsock.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _select.h
+     INSTALLHDR _structs.h
+     INSTALLHDR _types.h
+     INSTALLHDR _endian.h
+     INSTALLHDR __endian.h
+     INSTALLHDR protosw.h
+     INSTALLHDR domain.h
+     INSTALLHDR kpi_socket.h
+     INSTALLHDR kpi_mbuf.h
+     INSTALLHDR kpi_socketfilter.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR termios.h
+     INSTALLHDR msg.h
+     INSTALLHDR wait.h
+     INSTALLHDR spawn.h
+     INSTALLHDR timex.h
+     INSTALLHDR commpage.h
+     INSTALLHDR acct.h
+     INSTALLHDR attr_private.h
+     INSTALLHDR codesign.h
+     INSTALLHDR cprotect.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR csr.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR disktab.h
+     INSTALLHDR event_log.h
+     INSTALLHDR eventhandler.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fbt.h
+     INSTALLHDR fileport.h
+     INSTALLHDR fsctl.h
+     INSTALLHDR fslog.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR kpi_private.h
+     INSTALLHDR ktrace.h
+     INSTALLHDR kern_memorystatus_freeze.h
+     INSTALLHDR kdebug_triage.h
+     INSTALLHDR mach_swapon.h
+     INSTALLHDR monotonic.h
+     INSTALLHDR linker_set.h
+     INSTALLHDR msgbuf.h
+     INSTALLHDR eventvar.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR persona.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR pthread_shims.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR quota.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sem_internal.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR timeb.h
+     INSTALLHDR tprintf.h
+     INSTALLHDR times.h
+     INSTALLHDR tty.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR user.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vfs_context.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR reason.h
+     INSTALLHDR priv.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR memory_maintenance.h
+     INSTALLHDR pgo.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR doc_tombstone.h
+     INSTALLHDR kern_sysctl.h
+     INSTALLHDR vsock_transport.h
+     INSTALLHDR trust_caches.h
+     INSTALLHDR code_signing.h
+     INSTALLHDR lockdown_mode.h
+     INSTALLHDR sysproto.h
+Compiled generic DT platform archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armdt-platform/libArmDTPlatform.a
+Compiled Pong PSCI/GICv3 CPU archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armcpu/libArmCpu.a
+Derived 16 original storage imports from 22H374 (190 slots)
+Linked UFS with actual 22H374 storage dispatch and public base constructor/destructor
+Compiled Pong NativeUfs read/write path (boot-arg gated): /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/native-ufs/libNativeUfs.a
+audio container tfa98xx.cnt absent; building the shared platform resources only
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/pong-power/libPongPower.a
+Cloning into '.cache/libdispatch-work'...
+Command line invocation:
+    /Applications/Xcode_16.4.app/Contents/Developer/usr/bin/xcodebuild install -project .cache/libdispatch-work/libdispatch.xcodeproj -target libfirehose_kernel -configuration Release -sdk iphoneos -jobs 4 ARCHS=arm64 VALID_ARCHS=arm64 ONLY_ACTIVE_ARCH=NO IPHONEOS_DEPLOYMENT_TARGET=18.0 CODE_SIGNING_ALLOWED=NO GCC_TREAT_WARNINGS_AS_ERRORS=NO OBJROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj SYMROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym DSTROOT=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot FAKEROOT_DIR=/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot
+
+Build settings from command line:
+    ARCHS = arm64
+    CODE_SIGNING_ALLOWED = NO
+    DSTROOT = /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot
+    FAKEROOT_DIR = /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot
+    GCC_TREAT_WARNINGS_AS_ERRORS = NO
+    IPHONEOS_DEPLOYMENT_TARGET = 18.0
+    OBJROOT = /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj
+    ONLY_ACTIVE_ARCH = NO
+    SDKROOT = iphoneos18.5
+    SYMROOT = /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym
+    VALID_ARCHS = arm64
+
+Build Preparation
+Build task concurrency set to 4 via user default IDEBuildOperationMaxNumberOfConcurrentCompileTasks
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'libfirehose_kernel' in project 'libdispatch' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -V
+
+Build description signature: a835396ff7aaae1ba0a103497812c926
+Build description path: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/XCBuildData/a835396ff7aaae1ba0a103497812c926.xcbuilddata
+CreateBuildDirectory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    builtin-create-build-directory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym
+
+CreateBuildDirectory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    builtin-create-build-directory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj
+
+CreateBuildDirectory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    builtin-create-build-directory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot
+
+ClangStatCache /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/C/com.apple.DeveloperTools/16.4-16F6/Xcode/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -o /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/C/com.apple.DeveloperTools/16.4-16F6/Xcode/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache
+
+CreateBuildDirectory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/EagerLinkingTBDs/Release-iphoneos
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    builtin-create-build-directory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/EagerLinkingTBDs/Release-iphoneos
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libdispatch-b70f309984113d3e693c695e11edd800-VFS-iphoneos/all-product-headers.yaml
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libdispatch-b70f309984113d3e693c695e11edd800-VFS-iphoneos/all-product-headers.yaml
+
+CreateBuildDirectory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/libdispatch.xcodeproj
+    builtin-create-build-directory /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.DependencyStaticMetadataFileList (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.DependencyMetadataFileList (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-project-headers.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-own-target-headers.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-generated-files.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-all-target-headers.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-all-non-framework-target-headers.hmap (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/libfirehose_kernel.LinkFileList (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/libfirehose_kernel.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/7187679823f38a2a940e0043cdf9d637-common-args.resp (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    write-file /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/7187679823f38a2a940e0043cdf9d637-common-args.resp
+-target arm64-apple-ios18.0 -fpascal-strings -Os '-DKERNEL=1' '-DDISPATCH_USE_DTRACE=0' '-DOS_ATOMIC_CONFIG_MEMORY_ORDER_DEPENDENCY=1' '-DOS_ATOMIC_CONFIG_MEMORY_ORDER_DEPENDENCY=1' '-DOS_ATOMIC_CONFIG_STARVATION_FREE_ONLY=0' -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -g -iquote /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-generated-files.hmap -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-own-target-headers.hmap -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-all-target-headers.hmap -iquote /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/libfirehose_kernel-project-headers.hmap -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos/include -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/PrivateHeaders -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Headers -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/os -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/firehose -I/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/usr/include -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/EXTERNAL_HEADERS -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/DerivedSources-normal/arm64 -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/DerivedSources/arm64 -I/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/DerivedSources -F/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos -mkernel -nostdinc
+
+SymLink /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos/liblibfirehose_kernel.a ../../../../.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    /bin/ln -sfh ../../../../.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos/liblibfirehose_kernel.a
+
+Unifdef /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/kernel/os/firehose_buffer_private.h /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/os/firehose_buffer_private.h (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/unifdef -x 2 -DKERNEL\=1 -DOS_FIREHOSE_SPI\=1 -DOS_VOUCHER_ACTIVITY_SPI_TYPES\=1 -UOS_VOUCHER_ACTIVITY_SPI -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/include/kernel/os/firehose_buffer_private.h /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/os/firehose_buffer_private.h
+
+CompileC /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/firehose_buffer.o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/src/firehose/firehose_buffer.c normal arm64 c com.apple.compilers.llvm.clang.1_0.compiler (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    
+    Using response file: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/7187679823f38a2a940e0043cdf9d637-common-args.resp
+    
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -ivfsstatcache /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/C/com.apple.DeveloperTools/16.4-16F6/Xcode/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache -fmessage-length\=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit\=0 -fno-color-diagnostics -Wno-trigraphs -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-implicit-fallthrough -fstrict-aliasing -Wdeprecated-declarations -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-semicolon-before-method-body -Wno-packed @/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/7187679823f38a2a940e0043cdf9d637-common-args.resp -MMD -MT dependencies -MF /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/firehose_buffer.d --serialize-diagnostics /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/firehose_buffer.dia -c /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work/src/firehose/firehose_buffer.c -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/firehose_buffer.o
+
+Libtool /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a normal (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -static -arch_only arm64 -D -syslibroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -L/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/sym/Release-iphoneos -filelist /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/libfirehose_kernel.LinkFileList -dependency_info /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/firehose/obj/libdispatch.build/Release-iphoneos/libfirehose_kernel.build/Objects-normal/arm64/libfirehose_kernel_libtool_dependency_info.dat -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a
+
+SetOwnerAndGroup runner:staff /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    /usr/sbin/chown -RH runner:staff /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a
+
+SetMode u+w,go-w,a+rX /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a (in target 'libfirehose_kernel' from project 'libdispatch')
+    cd /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/libdispatch-work
+    /bin/chmod -RH u+w,go-w,a+rX /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a
+
+warning: Traditional headermap style is no longer supported; please migrate to using separate headermaps and set 'ALWAYS_SEARCH_USER_PATHS' to NO. (in target 'libfirehose_kernel' from project 'libdispatch')
+** INSTALL SUCCEEDED **
+
+Non-fat file: .cache/fakeroot/usr/local/lib/kernel/libfirehose_kernel.a is architecture: arm64
+The current pthread source-link recipe requires XNU_SOURCE_CORECRYPTO14=1
+===== error lines =====

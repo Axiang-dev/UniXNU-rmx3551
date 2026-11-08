@@ -165,6 +165,10 @@ jobs:
           PONG_SHENG_ROOT: ${{ env.PONG_INPUT_ROOT }}/sheng
           XNU_PONG_POWER: '1'
           XNU_SOURCE_CORECRYPTO14: '0'
+          # The CRLF fix also revived XNU_SOURCE_PTHREAD, and that recipe refuses to
+          # run without XNU_SOURCE_CORECRYPTO14=1, whose archive this runner never
+          # builds.  Keep both off; the pre-fix builds linked without them.
+          XNU_SOURCE_PTHREAD: '0'
         # The wrapper used to drop every XNU_ variable it inherited, keeping only
         # what the generated .config carries -- and that file has no line for the
         # board symbols, so the power archive was never built.  It now keeps them;

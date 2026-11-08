@@ -155,10 +155,11 @@ jobs:
         # them here; the wrapper starts from os.environ and only overwrites keys
         # that the generated .config actually contains.
         env:
+          # Only the power archive is missing: the platform, CPU and UFS archives
+          # already reach the kernel.  Exporting those as well pulled in the
+          # source-corecrypto branch, whose archive this build does not carry, and
+          # the build stopped at test -f $CRYPTO_ARCHIVE.
           XNU_PONG_POWER: '1'
-          XNU_ARM_DT_PLATFORM: '1'
-          XNU_ARMCPU: '1'
-          XNU_NATIVE_UFS: '1'
         run: |
           set -euo pipefail
           mkdir -p "${PONG_WORK_ROOT}" "${PONG_INPUT_ROOT}"

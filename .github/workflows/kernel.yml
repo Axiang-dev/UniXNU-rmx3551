@@ -163,6 +163,25 @@ jobs:
             --defconfig pong_ipados18_ci_defconfig 2>&1 \
             | tee "${GITHUB_WORKSPACE}/build-driver.log"
 
+      - name: Report whether the board components reached the kernel
+        # A boot with pong_usb=1 produced no USB line at all, and the kernel
+        # carried the touch strings but neither "audio classes ready" (added by
+        # the step above) nor any pong-power object.  Say out loud what the
+        # build produced, so the next round reads an answer instead of a guess.
+        run: |
+          set -uo pipefail
+          KERNEL=$(find build -name 'kernel-ipados18.macho' | head -1)
+          echo "kernel: ${KERNEL:-<missing>}"
+          echo "--- pong-power archive ---"
+          find build -name 'libPongPower.a' -o -name 'pong-power' -type d | sed 's/^/  /' | head
+          for symbol in "audio classes ready" "Pong touch: Berlin-D ready" "pong_power_start_optional"; do
+            if [ -n "${KERNEL}" ] && grep -qa "$symbol" "$KERNEL"; then
+              echo "  present: $symbol"
+            else
+              echo "  MISSING: $symbol"
+            fi
+          done
+
       - name: Prelink the Apple kexts into the kernel
         # A source build alone is not a bootable kernel: the Apple kexts and
         # platform services live in the original kernelcache, and IOKit's C++

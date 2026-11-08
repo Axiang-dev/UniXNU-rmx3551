@@ -162,10 +162,14 @@ kernel_args = [
   "pong_buttons=1",
   "pong_init_path=/pong/init",
   "pong_build=ipados18-22H374",
-  "pong_gpu_scanout=1",
-  "pong_gpu_pool_mib=0",
-  "pong_metal_global=1",
-  "pong_gpu_lock_max=1",
+  # The four arguments the device build template carries for a software-UI boot
+  # and this list did not: RAM bank registration, the native Wi-Fi worker, the
+  # poster snapshot path PosterBoard reads, and the row count the CPU scanout
+  # scaler divides among workers.
+  "pong_ram_banks=1",
+  "pong_wifi=1",
+  "pong_poster_snapshot=1",
+  "fb_threads=4",
   "pong_usb=1",
   "pong_usb_mux=1",
   "pong_usb_iphone=1",

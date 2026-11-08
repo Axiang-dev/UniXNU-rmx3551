@@ -148,6 +148,11 @@ jobs:
 
       - name: Resolve configuration and build the kernel
         working-directory: device
+        # The power archive now builds PongPower.cpp (the USB entry) even without the
+        # audio container, using weak stubs for the audio symbols it names.
+        env:
+          XNU_PONG_POWER: '1'
+          XNU_SOURCE_CORECRYPTO14: '0'
         # The wrapper used to drop every XNU_ variable it inherited, keeping only
         # what the generated .config carries -- and that file has no line for the
         # board symbols, so the power archive was never built.  It now keeps them;
@@ -375,5 +380,7 @@ jobs:
             build/**/kernel/*
             build/**/payload/*
             kernel-build.log
+            build/**/build-*.log
+            pong-work/**/build-*.log
           if-no-files-found: warn
           retention-days: 7

@@ -47,10 +47,17 @@ def main():
   subprocess.run([os.sys.executable,str(ROOT/'scripts/prepare-pong-audio.py'),'--container',str(container),'--output',str(out/'PongAmpProfiles.h')],check=True)
   sources=('QcomSmem.c','QcomSmp2p.c','QcomGlink.c','QcomMdt.c','QcomQmp.c','ShengBattmgr.c','ShengGpr.c','ShengAudioReach.c','GeniI2c.c','PongFirmware.c','PongAdsp.cpp','PongBattery.cpp','PongAudio.cpp','PongAudioService.cpp','PongPlatformResources.cpp','PongPower.cpp','PongBacklight.cpp')
  else:
-  print('audio container tfa98xx.cnt absent; building the shared platform resources only')
+  # PongPower.cpp carries the USB entry (PongUsb::start()).  The audio container is
+  # what selects the full list above, but losing USB with it is what left the board
+  # with no console at all: build the power unit with weak stubs instead.
+  stub=out/'pong-usb-stubs.cpp'
+  stub.write_text('/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path\n   links without the amplifier profile this public tree does not carry.  Every\n   symbol is weak: a real definition elsewhere wins, and nothing here touches\n   audio hardware. */\nextern "C" {\n__attribute__((weak)) void PongAudioServiceStaticInit(void) {}\n__attribute__((weak)) void sheng_adsp_probe(void) {}\n__attribute__((weak)) void sheng_audio_probe(void) {}\n__attribute__((weak)) void sheng_battery_start(void) {}\n__attribute__((weak)) void PongBatteryStaticInit(void) {}\n__attribute__((weak)) void pong_rpmh_init(void) {}\n}')
+  sources=('PongPlatformResources.cpp','PongPower.cpp',str(stub))
+  print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
  objects=[]
  for name in sources:
-  source=ROOT/'drivers/PongPower'/name;obj=out/(source.stem+'.o');cpp=source.suffix=='.cpp'
+  source=Path(name) if os.path.isabs(str(name)) else ROOT/'drivers/PongPower'/name
+  obj=out/(source.stem+'.o');cpp=source.suffix=='.cpp'
   cmd=['xcrun','clang++' if cpp else 'clang',*flags,*(['-std=gnu++17','-fno-exceptions','-fno-rtti'] if cpp else []),'-c',str(source),'-o',str(obj)]
   r=subprocess.run(cmd,env=env,capture_output=True,text=True);(out/(source.stem+'.log')).write_text(r.stdout+r.stderr)
   if r.returncode:raise SystemExit(r.stderr)

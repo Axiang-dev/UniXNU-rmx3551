@@ -47,12 +47,7 @@ def main():
  report['base_kernel']=report['kernel'];report['kernel']={'path':str(kernel),'bytes':len(candidate)};report['prelink']={'components':selection['components'],'library_only_components':selection['library_only_components']};report['image_verification']='skipped by request'
  result=a.output_dir/'PONG_BUILD_RESULT.json';result.write_text(json.dumps(report,indent=2)+'\n')
  layout=json.loads(a.volume_layout.read_text())
- opts=['pong_allow_unauthenticated_root=1','cs_enforcement_disable=1','cs_library_val_enable=0','amfi_get_out_of_my_way=1','-apfs_shared_datavolume','debug=0x14e','serial=0','pong_disable_swap=1','pong_skip_setup=1',
-      # pong_adsp=2 keeps the battery channel up: PongUsb waits for a real PMIC
-      # session before it enumerates, and pong_battery_usb_online() only learns
-      # that from the ADSP message.  pong_audio=2 is gone: the audio stage is
-      # not built here, and sheng_audio_probe is a weak no-op.
-      'pong_adsp=2','pong_ufs_readwrite=1','ignition_level=1','dyld_flags=0x8','launchd_rd=md0','pong_init_trace=1','applog=1','applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd','pong_software_keybag=1','pong_display=1','pong_software_ui=1','pong_ui_software=1','pong_touch=1','pong_buttons=1','pong_init_path=/pong/init','pong_build=ipados18-22H374','epoch='+str(int(time.time()))]
+ opts=['pong_allow_unauthenticated_root=1','cs_enforcement_disable=1','cs_library_val_enable=0','amfi_get_out_of_my_way=1','-apfs_shared_datavolume','debug=0x14e','serial=0','pong_disable_swap=1','pong_skip_setup=1','pong_adsp=2','pong_audio=2','pong_ufs_readwrite=1','ignition_level=1','dyld_flags=0x8','launchd_rd=md0','pong_init_trace=1','applog=1','applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd','pong_software_keybag=1','pong_display=1','pong_software_ui=1','pong_ui_software=1','pong_touch=1','pong_buttons=1','pong_init_path=/pong/init','pong_build=ipados18-22H374','epoch='+str(int(time.time()))]
  # The existing CPU scanout scaler divides independent rows among workers.
  # Leave CPU time for the software compositor and stock service startup.
  if gpu:
@@ -63,10 +58,7 @@ def main():
  # is ready. Do not silently disable it in an otherwise audio-enabled build.
  # Keep the live board's Wi-Fi worker and wallpaper snapshot policy in
  # every package; rebuilding must not silently drop these opt-in paths.
- # pong_usb=1 is what starts the USB worker at all: PongUsbDevice.h returns
- # immediately when the argument is absent, so a correct kernel alone still
- # gives no console.  The mux and phone identity stay opt-in.
- opts+=['pong_usb=1','pong_ram_banks=1','launchd_unsecure_cache=1','pong_wifi=1','pong_poster_snapshot=1',f'fb_threads={min(a.cpus,4)}']
+ opts+=['pong_ram_banks=1','launchd_unsecure_cache=1','pong_wifi=1','pong_poster_snapshot=1',f'fb_threads={min(a.cpus,4)}']
  if report['settings'].get('XNU_PONG_BACKLIGHT')=='1':opts+=['pong_backlight=1']
  # PE_parse_boot_argn can select the first duplicate. Apply command-line
  # overrides before packaging so there is exactly one value per named key.

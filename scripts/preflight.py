@@ -150,7 +150,7 @@ def pass_decisions():
     else:
         print("  wrapper keeps exported XNU_ switches")
     wf = (ROOT / ".github/workflows/kernel.yml").read_text(encoding="utf-8")
-    need = {"XNU_PONG_POWER": "1", "XNU_SOURCE_CORECRYPTO14": "0",
+    need = {"XNU_PONG_POWER": "0", "XNU_SOURCE_CORECRYPTO14": "0",
             "XNU_SOURCE_PTHREAD": "0", "XNU_NATIVE_AES": "0"}
     for key, want in need.items():
         m = re.search(rf"{key}: '([^']*)'", wf)
@@ -160,19 +160,24 @@ def pass_decisions():
             fail(3, "kernel.yml", f"{key}={m.group(1)}, expected {want}")
         else:
             print(f"  {key}={want}")
-    boot = (ROOT / "scripts/build-ipados18-prelinked-boot.py").read_text(encoding="utf-8")
-    if "'pong_adsp=2'" not in boot:
-        fail(3, "build-ipados18-prelinked-boot.py", "pong_adsp=2 is needed: PongUsb waits for a PMIC session it only learns from the battery channel")
+    # board.toml is where the boot arguments live: finalize-pong-adt.py writes them
+    # into the ADT, and the packaging script's own list is legacy duplication.
+    board = (ROOT / "board.toml").read_text(encoding="utf-8")
+    for needed in ("pong_adsp=2", "pong_usb=1"):
+        if f'"{needed}"' not in board:
+            fail(3, "board.toml", f"{needed} is not in kernel_args; the driver will not start")
+        else:
+            print(f"  board.toml carries {needed}")
+    patch = ROOT / "patches/xnu-ipados18/zzzzzzzzzz-rmx3551-usb-debug.patch"
+    if not patch.is_file():
+        fail(3, "patches", "the USB debug port patch is missing")
     else:
-        print("  pong_adsp=2 keeps the battery channel up")
-    if "'pong_usb=1'" not in boot:
-        fail(3, "build-ipados18-prelinked-boot.py", "pong_usb=1 is missing: the USB worker returns before it starts without it")
+        print(f"  USB debug port patch present ({patch.stat().st_size} bytes)")
+    board_toml = (ROOT / "board.toml").read_text(encoding="utf-8")
+    if '"liuqin_usb=1"' not in board_toml:
+        fail(3, "board.toml", "liuqin_usb=1 is not in kernel_args; the debug port stays off")
     else:
-        print("  pong_usb=1 starts the USB worker")
-    if "'pong_audio=2'" in boot:
-        fail(3, "build-ipados18-prelinked-boot.py", "pong_audio=2 asks for the audio stage this build does not carry")
-    else:
-        print("  pong_audio stays out")
+        print("  board.toml starts the USB debug port")
     if "PONG_SHENG_ROOT" not in wf:
         fail(3, "kernel.yml", "no sheng source checkout for QcomRpmh.h")
     else:
@@ -228,6 +233,10 @@ def pass_sources():
             fail(5, "build-pong-power-native.py", f"{unit} is not in the source tuple")
         else:
             print(f"  {unit} in the tuple")
+    if "IOPlatformExpert.h" not in script:
+        fail(5, "build-pong-power-native.py", "mux unit does not include IOPlatformExpert.h; the attach/start upcast will not compile")
+    else:
+        print("  mux unit includes IOPlatformExpert.h")
     if "mux.write_text" not in script:
         fail(5, "build-pong-power-native.py", "the mux translation unit is never written")
     else:

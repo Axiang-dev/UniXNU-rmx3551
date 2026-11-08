@@ -55,7 +55,9 @@ def main():
   stub=out/'pong-usb-stubs.cpp'
   stub.write_text(chr(10).join(['/* Weak stand-ins for the audio entry points PongPower.cpp names, so the USB start', '   path links without the amplifier profile this public tree does not carry.  Every', '   symbol is weak: a real definition elsewhere wins, and none of these touches', '   hardware.  The mux is not stubbed: PongUsbMux.h is self-contained and gets its', '   own translation unit below. */', 'extern "C" {', '__attribute__((weak)) void PongAudioServiceStaticInit(void) {}', '__attribute__((weak)) void sheng_adsp_probe(void) {}', '__attribute__((weak)) void sheng_audio_probe(void) {}', '__attribute__((weak)) void sheng_battery_start(void) {}', '__attribute__((weak)) void PongBatteryStaticInit(void) {}', '__attribute__((weak)) void pong_rpmh_init(void) {}', '}']))
   mux=out/'pong-usb-mux.cpp'
-  mux.write_text('#include "PongUsbMux.h"' + chr(10))
+  # IOPlatformExpert.h defines the class the mux attaches to; without it the
+  # compiler only sees a forward declaration and refuses the upcast to IOService.
+  mux.write_text('#include <IOKit/IOPlatformExpert.h>' + chr(10) + '#include "PongUsbMux.h"' + chr(10))
   # Everything except the two files that need the amplifier profile: PongAudio.cpp
   # and PongAudioService.cpp.  PongBattery.cpp pulls the battery/ADSP chain and
   # PongUsb pulls QcomRpmh for rail votes, so the list is the full one less those two.

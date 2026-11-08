@@ -1,0 +1,2188 @@
+diff --git a/osfmk/arm64/start.s b/osfmk/arm64/start.s
+--- a/osfmk/arm64/start.s
++++ b/osfmk/arm64/start.s
+@@ -222,5 +222,14 @@
+ 	.align	3
+ 	.globl EXT(_start)
+ LEXT(_start)
++	movz	x26, #0xb818, lsl #16
++	movz	w27, #0xffff
++	movk	w27, #0xff00, lsl #16
++	mov	x28, #0x10000
++LiqinEntryBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinEntryBar
++	dsb	sy
+ 	b	EXT(start_first_cpu)
+ 
+@@ -610,4 +610,58 @@
+ 	/* Setup the KVA bootstrap mapping */
+ 	lsr		x5,  x24, #(ARM_TT_L2_SHIFT)
+ 	create_bootstrap_mapping x14, x15, x5, x3, x2, x9, x10, x11, x12, x13
++	/* liuqin: the V=P map XNU builds does not reach the boot PC on this */
++	/* board (the L2 slot for the entry reads back zero) and the frame- */
++	/* buffer sits outside the load window. Fill both into the V=P table */
++	/* before the MMU goes on, with exactly ARM_TTE_BOOT_BLOCK: 2 MiB */
++	/* blocks, valid|block|AF|SH=outer|AttrIndx=writeback (0x601). */
++	ldr	x9, [x20, BA_PHYS_BASE]
++	ldr	x10, [x20, BA_MEM_SIZE]
++	movz	x11, #0x1000, lsl #16		// at least the 256 MiB owned window
++	cmp	x10, x11
++	csel	x10, x11, x10, lo
++	mov	x17, x9
++	mov	x19, lr
++	bl	LiqinFill
++	movz	x9, #0xb800, lsl #16		// framebuffer, 20 MiB
++	mov	x17, x9
++	mov	x10, #10
++	lsl	x10, x10, #21
++	bl	LiqinFill
++	mov	lr, x19
++	dsb	sy
++	b	LiqinFillDone
++
++	/* x9 = virtual base, x10 = size, x17 = physical cursor, x25 = V=P root */
++LiqinFill:
++	ubfx	x11, x9, #30, #9
++	lsl	x11, x11, #3
++	add	x11, x25, x11
++	ldr	x12, [x11]
++	and	x13, x12, #3
++	cmp	x13, #3
++	b.ne	LiqinFillOut			// no L2 page here: leave it alone
++	ubfx	x12, x12, #12, #36
++	lsl	x12, x12, #12
++	ubfx	x11, x9, #21, #9
++	lsl	x11, x11, #3
++	add	x12, x12, x11			// L2 entry pointer
++	mov	x15, #0x200
++	sub	x15, x15, x11, lsr #3		// entries left in this page
++	lsr	x14, x10, #21
++	cmp	x14, x15
++	csel	x14, x15, x14, hi		// never walk past the page
++	movz	x13, #0x601
++LiqinFillLoop:
++	cbz	x14, LiqinFillOut
++	ubfx	x16, x17, #21, #27
++	lsl	x16, x16, #21
++	orr	x16, x16, x13
++	str	x16, [x12], #8
++	add	x17, x17, #0x200000
++	subs	x14, x14, #1
++	b.ne	LiqinFillLoop
++LiqinFillOut:
++	ret
++LiqinFillDone:
+ 
+@@ -634,5 +634,14 @@
+  *	TPIDRRO_EL0 - CPU number
+  */
+ common_start:
++	movz	x26, #0xb81c, lsl #16
++	movz	w27, #0xff00
++	movk	w27, #0xffff, lsl #16
++	mov	x28, #0x10000
++LiqinMapBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinMapBar
++	dsb	sy
+ 
+ #if HAS_NEX_PG
+@@ -693,5 +693,14 @@
+ 	isb
+ 	tlbi	vmalle1
+ 	dsb		ish
++	movz	x26, #0xb820, lsl #16
++	movz	w27, #0xff
++	movk	w27, #0xff00, lsl #16
++	mov	x28, #0x10000
++LiqinMairBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinMairBar
++	dsb	sy
+ 
+ 
+@@ -750,14 +750,74 @@
+ #endif /* HAS_APPLE_PAC */
+ 
+ 	// Enable caches, MMU, ROP and JOP
++	movz	x26, #0xb824, lsl #16
++	movz	w27, #0xff
++	movk	w27, #0xffff, lsl #16
++	mov	x28, #0x10000
++LiqinVbarBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinVbarBar
++	dsb	sy
++	/* liuqin: read the L2 entry for this PC back and show the verdict. */
++	/* green = valid block that maps this very 2 MiB, red = anything else. */
++LiqinLampHere:
++	adr	x9, LiqinLampHere
++	ubfx	x11, x9, #30, #9
++	lsl	x11, x11, #3
++	add	x11, x25, x11
++	ldr	x12, [x11]
++	and	x13, x12, #3
++	cmp	x13, #3
++	b.ne	LiqinLampBad
++	ubfx	x12, x12, #12, #36
++	lsl	x12, x12, #12
++	ubfx	x13, x9, #21, #9
++	lsl	x13, x13, #3
++	add	x12, x12, x13
++	ldr	x12, [x12]
++	and	x13, x12, #3
++	cmp	x13, #1
++	b.ne	LiqinLampBad
++	movz	x13, #0xffe0, lsl #16
++	movk	x13, #0xffff, lsl #32		// block address field
++	and	x12, x12, x13
++	and	x13, x9, x13
++	cmp	x12, x13
++	b.ne	LiqinLampBad
++	movz	w27, #0xff00
++	movk	w27, #0xff00, lsl #16		// green
++	b	LiqinLampDraw
++LiqinLampBad:
++	movz	w27, #0x0000
++	movk	w27, #0xffff, lsl #16		// red
++LiqinLampDraw:
++	movz	x26, #0xb838, lsl #16
++	mov	x28, #0x10000
++LiqinLampBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinLampBar
++	dsb	sy
+-	MOV64   x0, SCTLR_EL1_DEFAULT
++	mrs	x0, SCTLR_EL1			// liuqin: keep the firmware's bits
++	orr	x0, x0, #1			// (RES1, EOS/IESB, nTWI/nTWE) and
++						// only add M
+ 	MSR_SCTLR_EL1_X0
+ 	isb		sy
++	movz	x26, #0xb828, lsl #16
++	movz	w27, #0xa500
++	movk	w27, #0xffff, lsl #16
++	mov	x28, #0x10000
++LiqinMmuBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinMmuBar
++	dsb	sy
+ 
+ #if !VMAPPLE
+-	MOV64   x1, SCTLR_EL1_DEFAULT
++	mov	x1, x0				// compare against what we wrote
+ 	cmp		x0, x1
+ 	bne		.
+ #endif /* !VMAPPLE */
+ 
+ #if (!CONFIG_KERNEL_INTEGRITY || (CONFIG_KERNEL_INTEGRITY && !defined(KERNEL_INTEGRITY_WT)))
+@@ -816,5 +816,14 @@
+ #endif
+ 
+ 	// Return to arm_init()
++	movz	x26, #0xb82c, lsl #16
++	movz	w27, #0xffff
++	movk	w27, #0xffff, lsl #16
++	mov	x28, #0x10000
++LiqinRetBar:
++	str	w27, [x26], #4
++	subs	x28, x28, #1
++	b.ne	LiqinRetBar
++	dsb	sy
+ 	ret
+ 
+diff --git a/bsd/conf/files.arm64 b/bsd/conf/files.arm64
+index a77bd10..3d9ae38 100644
+--- a/bsd/conf/files.arm64
++++ b/bsd/conf/files.arm64
+@@ -4,6 +4,8 @@
+ bsd/dev/arm/kern_machdep.c	standard
+ bsd/dev/arm/stubs.c		standard
+ bsd/dev/arm/systemcalls.c       standard
++bsd/dev/liuqin_debug.c		standard
++bsd/dev/liuqin_usb_debug.c	standard
+ bsd/dev/arm64/sysctl.c          standard
+ bsd/dev/arm/unix_signal.c	standard
+ 
+diff --git a/bsd/dev/liuqin_debug.c b/bsd/dev/liuqin_debug.c
+new file mode 100644
+index 0000000..baef08b
+--- /dev/null
++++ b/bsd/dev/liuqin_debug.c
+@@ -0,0 +1,487 @@
++/* Console mirror for the liuqin USB debug port.
++ * Best effort: any context, never waits, never touches storage.
++ */
++#include <sys/types.h>
++#include <sys/systm.h>
++#include <machine/atomic.h>
++#include <mach/vm_types.h>
++#include "liuqin_log_ring.h"
++
++static struct lq_ring log_ring;
++static uint32_t _Atomic log_lock;
++static uint64_t _Atomic dropped;
++
++void liuqin_debug_append(const char *data, int size);
++void liuqin_debug_putc(char c);
++void liuqin_debug_puts(const char *s);
++void liuqin_fb_putc(char c);
++void liuqin_stage(unsigned stage);
++unsigned liuqin_debug_copy(uint64_t *pos, char *out, unsigned max);
++uint64_t liuqin_debug_total(void);
++uint64_t liuqin_debug_dropped(void);
++
++void
++liuqin_debug_append(const char *data, int size)
++{
++	if (size <= 0) {
++		return;
++	}
++	if (!os_atomic_cmpxchg(&log_lock, 0, 1, acquire)) {
++		os_atomic_add(&dropped, (uint64_t)size, relaxed);
++		return;
++	}
++	lq_append(&log_ring, data, (unsigned)size);
++	os_atomic_store(&log_lock, 0, release);
++}
++
++void
++liuqin_debug_putc(char c)
++{
++	/* both the pe_kprintf hook and _cnputc feed this, so every character */
++	/* arrives twice and the panel would show 'UUnnddeeffiinneedd'. Drop the */
++	/* second copy of an immediate repeat. */
++	static char last;
++	if (c == last) {
++		last = 0;
++		return;
++	}
++	last = c;
++	liuqin_debug_append(&c, 1);
++	liuqin_fb_putc(c);
++}
++/* Same path without the de-duplication: used for hex dumps where two equal
++ * digits in a row are meaningful. */
++void
++liuqin_debug_puts(const char *s)
++{
++	int n = 0;
++
++	while (s[n] != 0) {
++		n++;
++	}
++	liuqin_debug_append(s, n);
++	for (int i = 0; i < n; i++) {
++		liuqin_fb_putc(s[i]);
++	}
++}
++
++unsigned
++liuqin_debug_copy(uint64_t *pos, char *out, unsigned max)
++{
++	if (!max) {
++		return 0;
++	}
++	if (!os_atomic_cmpxchg(&log_lock, 0, 1, acquire)) {
++		return 0;
++	}
++	unsigned n = lq_copy(&log_ring, pos, out, max);
++	os_atomic_store(&log_lock, 0, release);
++	return n;
++}
++
++uint64_t
++liuqin_debug_total(void)
++{
++	return log_ring.total;
++}
++
++uint64_t
++liuqin_debug_dropped(void)
++{
++	return os_atomic_load(&dropped, relaxed);
++}
++
++/* Screen markers: before the USB transport is up the panel is the only output
++ * channel. These paint bands at the top of the UEFI splash framebuffer, so one
++ * photograph says how far the kernel got. Best effort: one static mapping, no
++ * locks, no allocation; a failed map simply disables the markers.
++ */
++extern vm_offset_t ml_io_map(vm_offset_t, vm_size_t);
++/* Before pmap exists the panel is reachable through the identity mapping the */
++/* boot tables provide, so early kprintf and panic text already land on it. */
++#define LQ_FB_EARLY ((uint32_t *)(vm_offset_t)0xb8000000ULL)
++static uint32_t *lq_fb = LQ_FB_EARLY;
++static uint32_t *lq_fb_late;
++static uint32_t lq_fb_width = 1800, lq_fb_stride_px = 1800;
++
++void liuqin_fb_bind(uint64_t, uint32_t, uint32_t, uint32_t);
++void liuqin_fb_band(unsigned, uint32_t);
++
++void
++liuqin_fb_bind(uint64_t base, uint32_t width, uint32_t height, uint32_t stride_bytes)
++{
++	uint64_t rows = height < 1600 ? height : 1600;
++
++	if (lq_fb != LQ_FB_EARLY || !base || !width || !height || stride_bytes < 4) {
++		return;
++	}
++	vm_offset_t map = ml_io_map((vm_offset_t)base, (vm_size_t)(rows * stride_bytes));
++	if (!map) {
++		return;
++	}
++	lq_fb = (uint32_t *)map;
++	lq_fb_width = width;
++	lq_fb_stride_px = stride_bytes / 4;
++}
++
++void
++liuqin_fb_band(unsigned index, uint32_t color)
++{
++	/* liuqin: colour bands are off for this investigation, text only */
++	return;
++	if (!lq_fb || index > 32) {
++		return;
++	}
++	unsigned first = 182 + index * 12;
++	for (unsigned row = first; row < first + 10; row++) {
++		uint32_t *line = lq_fb + (uint64_t)row * lq_fb_stride_px;
++		for (unsigned x = 0; x < lq_fb_width; x++) {
++			line[x] = color;
++		}
++	}
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++
++/* Identity-mapped breadcrumb for the window between the loader jump and
++ * arm_vm_init: at that point the firmware's page tables (VA == PA) are still
++ * active, so the splash framebuffer can be painted directly, before kernel_map
++ * and before anything this kernel prints has somewhere to go. */
++static void
++lq_dcache_flush(uint64_t start, uint64_t size)
++{
++	uint64_t ctr, line, addr, end;
++
++	__asm__ volatile("mrs %0, ctr_el0" : "=r"(ctr));
++	line = 4ull << ((ctr >> 16) & 0xf);
++	addr = start & ~(line - 1);
++	end = start + size;
++	for (; addr < end; addr += line) {
++		__asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
++	}
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++
++void
++liuqin_late_bind(uint64_t va)
++{
++	lq_fb_late = va ? (uint32_t *)(vm_offset_t)va : 0;
++}
++
++void
++liuqin_late_unbind(void)
++{
++	lq_fb_late = 0;
++}
++
++/* One unmistakable block, used for milestones reached after pmap_bootstrap
++ * (the per-stage bands need the identity mapping, this needs only lq_fb). */
++void
++liuqin_fb_bigband(unsigned first, unsigned height, uint32_t color)
++{
++	/* liuqin: colour bands are off for this investigation, text only */
++	return;
++	if (!lq_fb || first + height > 2880) {
++		return;
++	}
++	for (unsigned row = first; row < first + height; row++) {
++		uint32_t *line = lq_fb + (uint64_t)row * lq_fb_stride_px;
++		for (unsigned x = 0; x < lq_fb_width; x++) {
++			line[x] = color;
++		}
++	}
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++
++static const uint32_t lq_stage_color[8] = {
++	0xff00ffffu,	/* 0 unused, cyan */
++	0xff00ff00u,	/* 1 green   - arm_init entered */
++	0xffffff00u,	/* 2 yellow  - arm_init past the signature setup */
++	0xff0000ffu,	/* 3 blue    - arm_init before machine_startup */
++	0xffff00ffu,	/* 4 magenta - arm_init after it */
++	0xffffa500u,	/* 5 orange  - arm_vm_init entered */
++	0xffffffffu,	/* 6 white   - arm_vm_init before pmap_bootstrap */
++	0xffff0000u,	/* 7 red     - arm_vm_init after it */
++};
++
++/* Written through the identity mapping, never through a mapping this kernel
++ * installs, so it works from the first C instruction until the bootstrap
++ * tables are replaced. Each stage gets its own row band and colour. */
++void
++liuqin_early_marker(unsigned band)
++{
++	/* liuqin: colour bands are off for this investigation, text only */
++	return;
++	const uint64_t base = 0xb8000000ULL, stride = 7200;
++	uint64_t first;
++	uint32_t color;
++
++	/* Only valid while TTBR0 still holds the identity table: arm_vm_init
++	 * replaces it with an invalid one before pmap_bootstrap, so nothing below
++	 * that point may use this. */
++	if (band > 15) {
++		return;
++	}
++	first = 1200 + (uint64_t)band * 70;
++	color = lq_stage_color[band & 7];
++	for (uint64_t row = first; row < first + 44; row++) {
++		volatile uint32_t *line = lq_fb_late ? (lq_fb_late + row * 1800) :
++		    (volatile uint32_t *)(base + row * stride);
++		for (unsigned x = 0; x < 1800; x++) {
++			line[x] = color;
++		}
++	}
++	/* cache maintenance through the identity alias would fault once TTBR0 is
++	 * gone, and the late mapping is only used with the caches off anyway */
++	if (!lq_fb_late) {
++		lq_dcache_flush(base + first * stride, 44 * stride);
++	}
++}
++
++
++/* 8x16 VGA text console: the kernel console mirror also paints the panel,
++ * so kprintf, IOLog and panic text are readable without a serial port. */
++static const uint8_t lq_font[95][16] = {
++{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x18,0x3c,0x3c,0x3c,0x18,0x18,0x18,0x00,0x18,0x18,0x00,0x00,0x00,0x00},
++{0x00,0x66,0x66,0x66,0x24,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x6c,0x6c,0xfe,0x6c,0x6c,0x6c,0xfe,0x6c,0x6c,0x00,0x00,0x00,0x00},
++{0x18,0x18,0x7c,0xc6,0xc2,0xc0,0x7c,0x06,0x06,0x86,0xc6,0x7c,0x18,0x18,0x00,0x00},
++{0x00,0x00,0x00,0x00,0xc2,0xc6,0x0c,0x18,0x30,0x60,0xc6,0x86,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x38,0x6c,0x6c,0x38,0x76,0xdc,0xcc,0xcc,0xcc,0x76,0x00,0x00,0x00,0x00},
++{0x00,0x30,0x30,0x30,0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x0c,0x18,0x30,0x30,0x30,0x30,0x30,0x30,0x18,0x0c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x30,0x18,0x0c,0x0c,0x0c,0x0c,0x0c,0x0c,0x18,0x30,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x66,0x3c,0xff,0x3c,0x66,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x7e,0x18,0x18,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x18,0x30,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x02,0x06,0x0c,0x18,0x30,0x60,0xc0,0x80,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x38,0x6c,0xc6,0xc6,0xd6,0xd6,0xc6,0xc6,0x6c,0x38,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x18,0x38,0x78,0x18,0x18,0x18,0x18,0x18,0x18,0x7e,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0x06,0x0c,0x18,0x30,0x60,0xc0,0xc6,0xfe,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0x06,0x06,0x3c,0x06,0x06,0x06,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x0c,0x1c,0x3c,0x6c,0xcc,0xfe,0x0c,0x0c,0x0c,0x1e,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfe,0xc0,0xc0,0xc0,0xfc,0x06,0x06,0x06,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x38,0x60,0xc0,0xc0,0xfc,0xc6,0xc6,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfe,0xc6,0x06,0x06,0x0c,0x18,0x30,0x30,0x30,0x30,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0xc6,0x7c,0xc6,0xc6,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0xc6,0x7e,0x06,0x06,0x06,0x0c,0x78,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x18,0x18,0x00,0x00,0x00,0x18,0x18,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x18,0x18,0x00,0x00,0x00,0x18,0x18,0x30,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x06,0x0c,0x18,0x30,0x60,0x30,0x18,0x0c,0x06,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x7e,0x00,0x00,0x7e,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x60,0x30,0x18,0x0c,0x06,0x0c,0x18,0x30,0x60,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0x0c,0x18,0x18,0x18,0x00,0x18,0x18,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x7c,0xc6,0xc6,0xde,0xde,0xde,0xdc,0xc0,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x10,0x38,0x6c,0xc6,0xc6,0xfe,0xc6,0xc6,0xc6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfc,0x66,0x66,0x66,0x7c,0x66,0x66,0x66,0x66,0xfc,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x3c,0x66,0xc2,0xc0,0xc0,0xc0,0xc0,0xc2,0x66,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xf8,0x6c,0x66,0x66,0x66,0x66,0x66,0x66,0x6c,0xf8,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfe,0x66,0x62,0x68,0x78,0x68,0x60,0x62,0x66,0xfe,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfe,0x66,0x62,0x68,0x78,0x68,0x60,0x60,0x60,0xf0,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x3c,0x66,0xc2,0xc0,0xc0,0xde,0xc6,0xc6,0x66,0x3a,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xfe,0xc6,0xc6,0xc6,0xc6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x3c,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x1e,0x0c,0x0c,0x0c,0x0c,0x0c,0xcc,0xcc,0xcc,0x78,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xe6,0x66,0x66,0x6c,0x78,0x78,0x6c,0x66,0x66,0xe6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xf0,0x60,0x60,0x60,0x60,0x60,0x60,0x62,0x66,0xfe,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xee,0xfe,0xfe,0xd6,0xc6,0xc6,0xc6,0xc6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xe6,0xf6,0xfe,0xde,0xce,0xc6,0xc6,0xc6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfc,0x66,0x66,0x66,0x7c,0x60,0x60,0x60,0x60,0xf0,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xd6,0xde,0x7c,0x0c,0x0e,0x00,0x00},
++{0x00,0x00,0xfc,0x66,0x66,0x66,0x7c,0x6c,0x66,0x66,0x66,0xe6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7c,0xc6,0xc6,0x60,0x38,0x0c,0x06,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x7e,0x7e,0x5a,0x18,0x18,0x18,0x18,0x18,0x18,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x6c,0x38,0x10,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xd6,0xd6,0xd6,0xfe,0xee,0x6c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xc6,0xc6,0x6c,0x7c,0x38,0x38,0x7c,0x6c,0xc6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x66,0x66,0x66,0x66,0x3c,0x18,0x18,0x18,0x18,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xfe,0xc6,0x86,0x0c,0x18,0x30,0x60,0xc2,0xc6,0xfe,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x3c,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x80,0xc0,0xe0,0x70,0x38,0x1c,0x0e,0x06,0x02,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x3c,0x0c,0x0c,0x0c,0x0c,0x0c,0x0c,0x0c,0x0c,0x3c,0x00,0x00,0x00,0x00},
++{0x10,0x38,0x6c,0xc6,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0x00,0x00},
++{0x30,0x30,0x18,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x78,0x0c,0x7c,0xcc,0xcc,0xcc,0x76,0x00,0x00,0x00,0x00},
++{0x00,0x00,0xe0,0x60,0x60,0x78,0x6c,0x66,0x66,0x66,0x66,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x7c,0xc6,0xc0,0xc0,0xc0,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x1c,0x0c,0x0c,0x3c,0x6c,0xcc,0xcc,0xcc,0xcc,0x76,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x7c,0xc6,0xfe,0xc0,0xc0,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x38,0x6c,0x64,0x60,0xf0,0x60,0x60,0x60,0x60,0xf0,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x76,0xcc,0xcc,0xcc,0xcc,0xcc,0x7c,0x0c,0xcc,0x78,0x00},
++{0x00,0x00,0xe0,0x60,0x60,0x6c,0x76,0x66,0x66,0x66,0x66,0xe6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x18,0x18,0x00,0x38,0x18,0x18,0x18,0x18,0x18,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x06,0x06,0x00,0x0e,0x06,0x06,0x06,0x06,0x06,0x06,0x66,0x66,0x3c,0x00},
++{0x00,0x00,0xe0,0x60,0x60,0x66,0x6c,0x78,0x78,0x6c,0x66,0xe6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x38,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x3c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xec,0xfe,0xd6,0xd6,0xd6,0xd6,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xdc,0x66,0x66,0x66,0x66,0x66,0x66,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x7c,0xc6,0xc6,0xc6,0xc6,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xdc,0x66,0x66,0x66,0x66,0x66,0x7c,0x60,0x60,0xf0,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x76,0xcc,0xcc,0xcc,0xcc,0xcc,0x7c,0x0c,0x0c,0x1e,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xdc,0x76,0x66,0x60,0x60,0x60,0xf0,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x7c,0xc6,0x60,0x38,0x0c,0xc6,0x7c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x10,0x30,0x30,0xfc,0x30,0x30,0x30,0x30,0x36,0x1c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xcc,0xcc,0xcc,0xcc,0xcc,0xcc,0x76,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0x66,0x66,0x66,0x66,0x66,0x3c,0x18,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xc6,0xc6,0xd6,0xd6,0xd6,0xfe,0x6c,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xc6,0x6c,0x38,0x38,0x38,0x6c,0xc6,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x7e,0x06,0x0c,0xf8,0x00},
++{0x00,0x00,0x00,0x00,0x00,0xfe,0xcc,0x18,0x30,0x60,0xc6,0xfe,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x0e,0x18,0x18,0x18,0x70,0x18,0x18,0x18,0x18,0x0e,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x70,0x18,0x18,0x18,0x0e,0x18,0x18,0x18,0x18,0x70,0x00,0x00,0x00,0x00},
++{0x00,0x00,0x76,0xdc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
++};
++
++static unsigned lq_text_x, lq_text_y;
++static bool lq_text_disabled;
++
++extern vm_map_t kernel_map;
++extern int PE_parse_boot_argn(const char *, void *, unsigned int);
++static bool
++lq_u64(const char **text, uint64_t *value)
++{
++	const char *s = *text;
++	uint64_t v = 0;
++	unsigned base = 10, digits = 0;
++
++	while (*s == ' ') {
++		s++;
++	}
++	if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
++		base = 16;
++		s += 2;
++	}
++	for (;; s++) {
++		unsigned d;
++		if (*s >= '0' && *s <= '9') {
++			d = (unsigned)(*s - '0');
++		} else if (base == 16 && *s >= 'a' && *s <= 'f') {
++			d = (unsigned)(*s - 'a') + 10;
++		} else if (base == 16 && *s >= 'A' && *s <= 'F') {
++			d = (unsigned)(*s - 'A') + 10;
++		} else {
++			break;
++		}
++		v = v * base + d;
++		if (++digits > 16) {
++			return false;
++		}
++	}
++	if (!digits) {
++		return false;
++	}
++	*text = s;
++	*value = v;
++	return true;
++}
++
++static void
++lq_text_clear(void)
++{
++	for (unsigned row = 280; row < 280 + 32 * 40; row++) {
++		uint32_t *line = lq_fb + (uint64_t)row * lq_fb_stride_px;
++		for (unsigned x = 0; x < lq_fb_width; x++) {
++			line[x] = 0;
++		}
++	}
++}
++
++void
++liuqin_fb_putc(char c)
++{
++	if (lq_text_disabled) {
++		return;
++	}
++	if (!lq_fb) {
++		/* ml_io_map needs kernel_map; before vm_init the console byte is lost. */
++		if (!kernel_map) {
++			return;
++		}
++		lq_text_disabled = true;
++		{
++			char spec[64];
++			uint64_t base = 0xb8000000ULL, width = 1800, height = 2880, stride = 7200;
++			if (PE_parse_boot_argn("fb", spec, sizeof(spec))) {
++				const char *text = spec;
++				uint64_t part[4];
++				unsigned n = 0;
++				while (n < 4 && lq_u64(&text, &part[n])) {
++					n++;
++					if (*text != ',') {
++						break;
++					}
++					text++;
++				}
++				if (n == 4) {
++					base = part[0]; width = part[1]; height = part[2]; stride = part[3];
++				}
++			}
++			liuqin_fb_bind(base, (uint32_t)width, (uint32_t)height, (uint32_t)stride);
++		}
++		if (!lq_fb) {
++			return;
++		}
++		lq_text_disabled = false;
++	}
++	if (c == '\r') {
++		lq_text_x = 0;
++		return;
++	}
++	if (c == '\n') {
++		lq_text_x = 0;
++		lq_text_y++;
++		if (280 + (lq_text_y + 1) * 32 > 2880) {
++			lq_text_clear();
++			lq_text_y = 0;
++		}
++		return;
++	}
++	if ((unsigned char)c < 0x20) {
++		return;
++	}
++	if (lq_text_x + 16 > lq_fb_width) {
++		lq_text_x = 0;
++		lq_text_y++;
++	}
++	unsigned glyph = (unsigned char)c - 0x20;
++	if (glyph > 94) {
++		glyph = '?' - 0x20;
++	}
++	const uint8_t *rows = lq_font[glyph];
++	for (unsigned gy = 0; gy < 16; gy++) {
++		uint64_t top = 280 + lq_text_y * 32 + gy * 2;
++		for (unsigned gx = 0; gx < 8; gx++) {
++			uint32_t color = (rows[gy] & (0x80u >> gx)) ? 0xffffffffu : 0;
++			for (unsigned dy = 0; dy < 2; dy++) {
++				uint32_t *line = lq_fb + (top + dy) * (uint64_t)lq_fb_stride_px + lq_text_x + gx * 2;
++				line[0] = color;
++				line[1] = color;
++			}
++		}
++	}
++	__asm__ volatile("dsb sy" ::: "memory");
++	lq_text_x += 16;
++}
++
++/* Boot black box: stage words the loader reads back on the next boot.
++ * Writes go to an ordinary kernel global, valid both while the bootstrap
++ * tables are live and after pmap_bootstrap installs the real ones. */
++volatile uint32_t lq_rec[24] = { 0x4c515231u };
++
++void
++liuqin_stage(unsigned stage)
++{
++	static unsigned next;
++
++	if (next + 1 < 24) {
++		lq_rec[1 + next] = stage;
++		next++;
++	}
++	liuqin_early_marker(stage);
++}
+diff --git a/bsd/dev/liuqin_log_ring.h b/bsd/dev/liuqin_log_ring.h
+new file mode 100644
+index 0000000..049e603
+--- /dev/null
++++ b/bsd/dev/liuqin_log_ring.h
+@@ -0,0 +1,45 @@
++/* One megabyte console mirror ring: no allocation, no filesystem IO.
++ * The caller supplies the lock; every access is bounded.
++ */
++#ifndef LIUQIN_LOG_RING_H
++#define LIUQIN_LOG_RING_H
++#ifdef LIUQIN_HOST_TEST
++#include <stdint.h>
++#else
++#include <sys/types.h>
++#endif
++#ifndef LQ_RING_SIZE
++#define LQ_RING_SIZE (1u << 20)
++#endif
++struct lq_ring {
++	uint64_t total;
++	char bytes[LQ_RING_SIZE];
++};
++static inline void lq_append(struct lq_ring *r, const char *s, unsigned n)
++{
++	uint64_t at = r->total;
++	r->total += n;
++	if (n > LQ_RING_SIZE) {
++		unsigned skip = n - LQ_RING_SIZE;
++		s += skip;
++		at += skip;
++		n = LQ_RING_SIZE;
++	}
++	for (unsigned i = 0; i < n; i++) {
++		r->bytes[(at + i) % LQ_RING_SIZE] = s[i];
++	}
++}
++static inline unsigned lq_copy(const struct lq_ring *r, uint64_t *pos, char *out,
++    unsigned max)
++{
++	if (*pos > r->total) *pos = 0;
++	if (r->total - *pos > LQ_RING_SIZE) *pos = r->total - LQ_RING_SIZE;
++	uint64_t left = r->total - *pos;
++	unsigned n = left < max ? (unsigned)left : max;
++	for (unsigned i = 0; i < n; i++) {
++		out[i] = r->bytes[(*pos + i) % LQ_RING_SIZE];
++	}
++	*pos += n;
++	return n;
++}
++#endif
+diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
+new file mode 100644
+--- /dev/null
++++ b/bsd/dev/liuqin_usb_debug.c
+@@ -0,0 +1,988 @@
++/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
++ *
++ * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console
++ * (github.com/xyyyds0106/ios-vermeer-lab, xnu/vermeer/vermeer_usb_debug.c).
++ *
++ * The port reuses the PHY, clocks and SMMU state that ABL/UEFI already set up.
++ * It never changes GCC, SMMU, PMIC, PHY or storage configuration: every guard
++ * below can only decide to leave the controller untouched, and the normal boot
++ * continues when it does.
++ *
++ * SM8475 constants and their evidence:
++ *   DWC3           0x0a600000, wrapper window 0xfc100   linux sm8450.dtsi usb@a600000
++ *   QSCRATCH       0x0a6f8800 (base + 0xf8800)          inside that window, dwc3-qcom glue
++ *   USB30_PRIM GDSC  GCC + 0x49004                      gcc-sm8450.c usb30_prim_gdsc
++ *   master clock halt GCC + 0x49018                     gcc-sm8450.c gcc_usb30_prim_master_clk
++ *   cfg_noc halt     GCC + 0x49084                      gcc-sm8450.c gcc_cfg_noc_usb3_prim_axi_clk
++ *   aggre halt       GCC + 0x49088                      gcc-sm8450.c gcc_aggre_usb3_prim_axi_clk
++ *   GCC block base  0x149000 (GCC 0x100000 + 0x49000)   linux sm8450.dtsi clock-controller
++ *   APPS SMMU       0x15000000, window 0x100000         linux sm8450.dtsi iommu@15000000
++ *   USB stream ID   0x0                                 linux sm8450.dtsi iommus
++ *
++ * Register order and endpoint protocol follow Linux drivers/usb/dwc3 and the
++ * vermeer reference. DMA memory is permanent: a timeout never frees it.
++ */
++#include <sys/param.h>
++#include <sys/systm.h>
++#include <kern/clock.h>
++#include <kern/thread.h>
++#include <kern/sched_prim.h>
++#include <kern/kalloc.h>
++#include <mach/thread_act.h>
++#include <machine/machine_routines.h>
++#include <arm/caches_internal.h>
++#include <vm/pmap.h>
++#include <vm/vm_kern.h>
++#include <pexpert/pexpert.h>
++#include "liuqin_usb_protocol.h"
++
++#define DWC3_PA        0x0a600000ULL
++#define DWC3_SIZE      0x0e000
++#define QSCRATCH_PA    0x0a6f8800ULL
++#define GCC_PA         0x149000ULL
++#define GCC_GDSC_OFF   0x04
++#define GCC_MASTER_OFF 0x18
++#define GCC_CFG_OFF    0x84
++#define GCC_AGGRE_OFF  0x88
++#define SMMU_PA        0x15000000ULL
++#define SMMU_SIZE      0x0d0000
++#define USB_SID_DEF    0x00000000U
++#define SMMU_SMR_COUNT 128
++#define DMA_LO_DEF     0x80000000ULL
++#define DMA_HI_DEF     0x100000000ULL
++
++extern vm_offset_t ml_io_map(vm_offset_t, vm_size_t);
++extern vm_offset_t liuqin_io_map(vm_offset_t, vm_size_t);
++/* liuqin: no flush_mmu_tlb symbol exists in this kernel image, do it inline */
++static void
++liuqin_tlb_flush(void)
++{
++	__asm__ volatile("dsb sy; tlbi vmalle1; dsb sy; isb" ::: "memory");
++}
++
++extern ppnum_t pmap_find_phys(pmap_t, addr64_t);
++/*
++ * Early identity mapping for MMIO through the bootstrap V=P table that start.s
++ * built and arm_vm_init left in TTBR0.
++ *
++ * ml_io_map() must not be used this early: it allocates from kernel_map, and
++ * those allocations wait for the pageout thread, which only starts at the end of
++ * kernel_bootstrap_thread. Mapping the framebuffer there hung the boot at
++ * bsd_init. GCC (0x149000), DWC3 (0xa600000) and the SMMU (0x15000000) all live
++ * in L1 slot 0, which the bootstrap table leaves empty, so one private L2 page
++ * covers them. Slots that already hold a table are refused rather than patched.
++ */
++extern uint8_t bootstrap_pagetables[];
++
++static uint64_t lq_io_l2[512] __attribute__((aligned(4096)));
++static bool lq_io_l2_used;
++
++vm_offset_t
++liuqin_io_map(vm_offset_t pa, vm_size_t size)
++{
++	uint64_t *l1tab = (uint64_t *)(void *)bootstrap_pagetables;
++	uint64_t first = (uint64_t)pa & ~0x1FFFFFULL;
++	uint64_t last = ((uint64_t)pa + size + 0x1FFFFFULL) & ~0x1FFFFFULL;
++	uint64_t slot = (first >> 30) & 0x1FF;
++	uint64_t table;
++	uint64_t va;
++
++	if (lq_io_l2_used || size == 0 || last <= first) {
++		return 0;
++	}
++	if (((last - 1) >> 30 & 0x1FF) != slot) {
++		return 0;
++	}
++	if ((l1tab[slot] & 3) != 0) {
++		return 0;
++	}
++	for (unsigned i = 0; i < 512; i++) {
++		lq_io_l2[i] = 0;
++	}
++	table = (uint64_t)pmap_find_phys(kernel_pmap, (addr64_t)(uintptr_t)lq_io_l2);
++	if (table == 0) {
++		return 0;
++	}
++	table = (table << 12) & 0x0000FFFFFFFFF000ULL;
++	for (va = first; va < last; va += 0x200000ULL) {
++		lq_io_l2[(va >> 21) & 0x1FF] =
++		    (va & 0x0000FFFFFFE00000ULL) | 0x601ULL;
++	}
++	l1tab[slot] = table | 3;
++	lq_io_l2_used = true;
++	liuqin_tlb_flush();
++	return pa;
++}
++
++extern ppnum_t pmap_find_phys(pmap_t, addr64_t);
++extern unsigned liuqin_debug_copy(uint64_t *, char *, unsigned);
++extern uint64_t liuqin_debug_total(void);
++extern uint64_t liuqin_debug_dropped(void);
++extern void liuqin_fb_bind(uint64_t, uint32_t, uint32_t, uint32_t);
++extern void liuqin_fb_band(unsigned, uint32_t);
++void liuqin_usb_debug_start(void);
++
++#define GCTL        0xc110
++#define GEVNTADRLO  0xc400
++#define GEVNTADRHI  0xc404
++#define GEVNTSIZ    0xc408
++#define GEVNTCOUNT  0xc40c
++#define DCFG        0xc700
++#define DCTL        0xc704
++#define DEVTEN      0xc708
++#define DSTS        0xc70c
++#define DALEPENA    0xc720
++#define EPBASE(n)   (0xc800 + 16 * (n))
++
++#define RUN          (1u << 31)
++#define RESET        (1u << 30)
++#define HALTED       (1u << 22)
++#define ACTIVE       (1u << 10)
++#define FORCE_REMOVE (1u << 11)
++
++#define SET_CONFIG   1
++#define SET_RESOURCE 2
++#define STALL        4
++#define CLEAR_STALL  5
++#define START        6
++#define END          8
++#define START_CONFIG 9
++
++#define T_NORMAL   (1u << 4)
++#define T_SETUP    (2u << 4)
++#define T_STATUS2  (3u << 4)
++#define T_STATUS3  (4u << 4)
++#define T_DATA     (5u << 4)
++#define HWO        1u
++#define TRB_FLAGS  (HWO | 2u | (1u << 10) | (1u << 11))
++
++#define EVENTS      0
++#define EVENT_SIZE  4096
++#define SETUP       0x1200
++#define DATA        0x1300
++#define NOTIFY      0x1500
++#define RX          0x1800
++#define TX          0x2000
++#define RX_SIZE     512
++#define TX_SIZE     2048
++#define DMA_SIZE    0x4000
++
++static const unsigned trb_off[6] = { 0x1000, 0x1040, 0x1080, 0x10c0, 0x1100, 0x1140 };
++static const char *const usb_strings[] = { NULL, "Liuqin Lab", "Liuqin XNU Debug", "LIQDBG001" };
++
++static struct {
++	vm_offset_t regs, dma, smmu;
++	uint64_t pa, cursor, tx_bytes, rx_bytes;
++	uint64_t dma_lo, dma_hi;
++	uint32_t pos, events, setups, mps, sid;
++	unsigned resource[6], requested[6];
++	bool busy[6], failed, configured, dtr, notify;
++	enum { SETUP_PHASE, DATA_PHASE, WAIT2, WAIT3, STATUS_PHASE } phase;
++	bool data_in, set_line;
++	uint8_t coding[7];
++	char command[64];
++	unsigned command_n;
++	bool command_overflow;
++	int sleep_channel;
++} u;
++
++static uint32_t
++read_reg(vm_offset_t base, unsigned off)
++{
++	uint32_t v = *(volatile uint32_t *)(base + off);
++	__asm__ volatile("dmb oshld" ::: "memory");
++	return v;
++}
++static uint32_t
++rd(unsigned off)
++{
++	return read_reg(u.regs, off);
++}
++static void
++wr(unsigned off, uint32_t v)
++{
++	*(volatile uint32_t *)(u.regs + off) = v;
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++static void
++sync_dma(unsigned off, unsigned size)
++{
++	flush_dcache64((addr64_t)(u.pa + off), size, TRUE);
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++static void
++fail(const char *why)
++{
++	if (!u.failed) {
++		printf("LIUQIN USB: stopped: %s; permanent DMA retained\n", why);
++	}
++	u.failed = true;
++}
++static int
++epcmd(unsigned ep, unsigned cmd, uint32_t p0, uint32_t p1, uint32_t p2)
++{
++	if (u.failed || ep >= 6) {
++		return -1;
++	}
++	wr(EPBASE(ep) + 8, p0);
++	wr(EPBASE(ep) + 4, p1);
++	wr(EPBASE(ep), p2);
++	wr(EPBASE(ep) + 12, cmd | ACTIVE);
++	for (unsigned n = 0; n < 1000; n++) {
++		uint32_t v = rd(EPBASE(ep) + 12);
++		if (!(v & ACTIVE)) {
++			if ((v >> 12) & 15) {
++				fail("endpoint command status");
++				return -1;
++			}
++			if ((cmd & 15) == START) {
++				u.resource[ep] = (v >> 16) & 0x7f;
++			}
++			return 0;
++		}
++		delay(1);
++	}
++	fail("endpoint command timeout");
++	return -1;
++}
++static void
++transfer(unsigned ep, unsigned buf, unsigned length, unsigned kind)
++{
++	if (u.failed) {
++		return;
++	}
++	if (ep >= 6 || u.busy[ep] || buf > DMA_SIZE || length > DMA_SIZE - buf) {
++		fail("transfer ownership/bounds");
++		return;
++	}
++	unsigned off = trb_off[ep];
++	uint64_t p = u.pa + buf, t = u.pa + off;
++	volatile uint32_t *trb = (volatile uint32_t *)(u.dma + off);
++	trb[0] = (uint32_t)p;
++	trb[1] = (uint32_t)(p >> 32);
++	trb[2] = length;
++	trb[3] = kind | TRB_FLAGS;
++	u.requested[ep] = length;
++	if (length) {
++		sync_dma(buf, length);
++	}
++	sync_dma(off, 16);
++	u.busy[ep] = true;
++	(void)epcmd(ep, START, (uint32_t)(t >> 32), (uint32_t)t, 0);
++}
++static int
++complete(unsigned ep)
++{
++	if (ep >= 6 || !u.busy[ep]) {
++		fail("unexpected completion");
++		return -1;
++	}
++	sync_dma(trb_off[ep], 16);
++	volatile uint32_t *t = (volatile uint32_t *)(u.dma + trb_off[ep]);
++	unsigned left = t[2] & 0xffffff;
++	if ((t[3] & HWO) || (t[2] >> 28) || left > u.requested[ep]) {
++		fail("invalid DMA completion");
++		return -1;
++	}
++	u.busy[ep] = false;
++	return (int)(u.requested[ep] - left);
++}
++static void
++setup_arm(void)
++{
++	u.phase = SETUP_PHASE;
++	transfer(0, SETUP, 8, T_SETUP);
++}
++static void
++stall(void)
++{
++	(void)epcmd(0, STALL, 0, 0, 0);
++	setup_arm();
++}
++static void
++receive_arm(void)
++{
++	transfer(2, RX, RX_SIZE, T_NORMAL);
++}
++static void
++stop_data(void)
++{
++	for (unsigned ep = 2; ep < 6; ep++) {
++		if (u.busy[ep]) {
++			if (!u.resource[ep] ||
++			    epcmd(ep, END | FORCE_REMOVE | (u.resource[ep] << 16), 0, 0, 0)) {
++				return;
++			}
++			u.busy[ep] = false;
++		}
++	}
++	wr(DALEPENA, 3);
++	u.configured = false;
++	u.dtr = false;
++	u.notify = false;
++}
++static void
++configure(void)
++{
++	if (u.configured || u.failed) {
++		return;
++	}
++	if (epcmd(0, START_CONFIG | (2u << 16), 0, 0, 0) ||
++	    epcmd(2, SET_CONFIG, (2u << 1) | (u.mps << 3), (1u << 8) | (2u << 25), 0) ||
++	    epcmd(2, SET_RESOURCE, 1, 0, 0) ||
++	    epcmd(3, SET_CONFIG, (2u << 1) | (u.mps << 3) | (1u << 17), (1u << 8) | (3u << 25), 0) ||
++	    epcmd(3, SET_RESOURCE, 1, 0, 0) ||
++	    epcmd(5, SET_CONFIG, (3u << 1) | (16u << 3) | (2u << 17), (1u << 8) | (8u << 16) | (5u << 25), 0) ||
++	    epcmd(5, SET_RESOURCE, 1, 0, 0)) {
++		return;
++	}
++	wr(DALEPENA, 3 | (1u << 2) | (1u << 3) | (1u << 5));
++	u.configured = true;
++	receive_arm();
++	printf("LIUQIN USB: CDC ACM configured, bulk MPS %u\n", u.mps);
++}
++static unsigned
++string_desc(unsigned index, uint8_t *data)
++{
++	if (!index) {
++		data[0] = 4;
++		data[1] = 3;
++		data[2] = 0x09;
++		data[3] = 0x04;
++		return 4;
++	}
++	if (index >= sizeof(usb_strings) / sizeof(usb_strings[0])) {
++		return 0;
++	}
++	unsigned n = 2;
++	for (const char *s = usb_strings[index]; *s && n < 126; s++) {
++		data[n++] = (uint8_t)*s;
++		data[n++] = 0;
++	}
++	data[0] = (uint8_t)n;
++	data[1] = 3;
++	return n;
++}
++static void
++handle_setup(void)
++{
++	sync_dma(SETUP, 8);
++	const uint8_t *s = (const uint8_t *)(u.dma + SETUP);
++	uint8_t *data = (uint8_t *)(u.dma + DATA);
++	unsigned value = s[2] | (s[3] << 8), index = s[4] | (s[5] << 8);
++	unsigned length = s[6] | (s[7] << 8), n = 0;
++	int kind = lqusb_request(s[0], s[1], (uint16_t)value, (uint16_t)index, (uint16_t)length);
++	u.data_in = (s[0] & 0x80) != 0;
++	u.set_line = false;
++	if (u.setups++ < 40) {
++		printf("LIUQIN USB: setup %02x %02x %04x %04x len%u\n", s[0], s[1], value, index, length);
++	}
++	switch (kind) {
++	case LQUSB_DESC:
++		switch (value >> 8) {
++		case 1:
++			if (value & 255) {
++				break;
++			}
++			memcpy(data, lqusb_device, sizeof(lqusb_device));
++			n = sizeof(lqusb_device);
++			break;
++		case 2:
++		case 7:
++			if (value & 255) {
++				break;
++			}
++			memcpy(data, lqusb_config, sizeof(lqusb_config));
++			n = sizeof(lqusb_config);
++			data[1] = (uint8_t)(value >> 8);
++			/* Configuration and other-speed configuration have opposite MPS. */
++			for (unsigned i = 0; i + 5 < n && data[i]; i += data[i]) {
++				if (data[i + 1] == 5 && (data[i + 3] & 3) == 2) {
++					unsigned m = (value >> 8) == 7 ? (u.mps == 512 ? 64 : 512) : u.mps;
++					data[i + 4] = (uint8_t)m;
++					data[i + 5] = (uint8_t)(m >> 8);
++				}
++			}
++			break;
++		case 3:
++			n = string_desc(value & 255, data);
++			break;
++		case 6:
++			if (!(value & 255)) {
++				memcpy(data, lqusb_qualifier, sizeof(lqusb_qualifier));
++				n = sizeof(lqusb_qualifier);
++			}
++			break;
++		default:
++			break;
++		}
++		if (!n) {
++			stall();
++			return;
++		}
++		break;
++	case LQUSB_ADDRESS:
++		wr(DCFG, (rd(DCFG) & ~(127u << 3)) | (value << 3));
++		break;
++	case LQUSB_CONFIG:
++		/* Reconfiguration while transfers are live is stopped, never recycled
++		 * before a controller reset drains stale completion events. */
++		if (!value && u.configured) {
++			fail("host deconfigured; reboot to reconnect");
++			return;
++		}
++		if (value) {
++			configure();
++		}
++		break;
++	case LQUSB_GET_CONFIG:
++		data[0] = u.configured ? 1 : 0;
++		n = 1;
++		break;
++	case LQUSB_STATUS:
++		data[0] = data[1] = 0;
++		n = 2;
++		break;
++	case LQUSB_INTERFACE:
++		break;
++	case LQUSB_GET_INTERFACE:
++		data[0] = 0;
++		n = 1;
++		break;
++	case LQUSB_SET_LINE:
++		u.set_line = true;
++		break;
++	case LQUSB_GET_LINE:
++		memcpy(data, u.coding, 7);
++		n = 7;
++		break;
++	case LQUSB_CONTROL:
++		if (u.configured) {
++			bool old = u.dtr;
++			u.dtr = (value & 1) != 0;
++			u.notify = true;
++			if (u.dtr && !old) {
++				printf("LIUQIN USB: console open; help/status/ping/replay (read only)\n");
++			}
++		}
++		break;
++	case LQUSB_BREAK:
++		break;
++	case LQUSB_CLEAR_HALT:
++		/* An active transfer cannot be made safe by CLEARSTALL alone. */
++		if (u.busy[(index & 15) * 2 + ((index >> 7) & 1)]) {
++			fail("clear-halt on active endpoint");
++			return;
++		}
++		(void)epcmd((index & 15) * 2 + ((index >> 7) & 1), CLEAR_STALL, 0, 0, 0);
++		break;
++	default:
++		stall();
++		return;
++	}
++	if (u.failed) {
++		return;
++	}
++	if (!length) {
++		u.phase = WAIT2;
++		return;
++	}
++	u.phase = DATA_PHASE;
++	if (u.data_in) {
++		transfer(1, DATA, n < length ? n : length, T_DATA);
++	} else if (u.set_line) {
++		transfer(0, DATA, 64, T_DATA);
++	} else {
++		stall();
++	}
++}
++static void
++command_line(void)
++{
++	u.command[u.command_n] = 0;
++	if (u.command_overflow) {
++		printf("LIUQIN DEBUG: command too long\n");
++	} else if (!strcmp(u.command, "ping")) {
++		printf("LIUQIN DEBUG: pong LIQDBG001\n");
++	} else if (!strcmp(u.command, "status")) {
++		printf("LIUQIN DEBUG: LIQDBG001 sid=%x events=%u tx=%llu rx=%llu log=%llu dropped=%llu\n",
++		    u.sid, u.events, u.tx_bytes, u.rx_bytes,
++		    liuqin_debug_total(), liuqin_debug_dropped());
++	} else if (!strcmp(u.command, "replay")) {
++		u.cursor = 0;
++		printf("LIUQIN DEBUG: replay retained RAM log\n");
++	} else if (u.command_n) {
++		printf("LIUQIN DEBUG: commands help status ping replay; queries only\n");
++	}
++	u.command_n = 0;
++	u.command_overflow = false;
++}
++static void
++receive_done(unsigned length)
++{
++	sync_dma(RX, RX_SIZE);
++	u.rx_bytes += length;
++	const uint8_t *p = (const uint8_t *)(u.dma + RX);
++	for (unsigned i = 0; i < length; i++) {
++		if (p[i] == '\r' || p[i] == '\n') {
++			command_line();
++		} else if (p[i] >= 32 && p[i] <= 126) {
++			if (u.command_n < (unsigned)sizeof(u.command) - 1) {
++				u.command[u.command_n++] = (char)p[i];
++			} else {
++				u.command_overflow = true;
++			}
++		}
++	}
++	receive_arm();
++}
++static void
++transmit(void)
++{
++	if (!u.configured || !u.dtr || u.failed) {
++		return;
++	}
++	if (u.notify && !u.busy[5]) {
++		const uint8_t msg[10] = { 0xa1, 0x20, 0, 0, 0, 0, 2, 0, 3, 0 };
++		memcpy((void *)(u.dma + NOTIFY), msg, sizeof(msg));
++		u.notify = false;
++		transfer(5, NOTIFY, sizeof(msg), T_NORMAL);
++	}
++	if (u.busy[3]) {
++		return;
++	}
++	unsigned n = liuqin_debug_copy(&u.cursor, (char *)(u.dma + TX), TX_SIZE);
++	/* The serial stream needs a short packet: never pad or invent bytes. */
++	if (n && !(n % u.mps)) {
++		n--;
++		u.cursor--;
++	}
++	if (n) {
++		transfer(3, TX, n, T_NORMAL);
++		u.tx_bytes += n;
++	}
++}
++static void
++event(uint32_t e)
++{
++	if (e & 1) {
++		if ((e & 0xfe) != 0) {
++			fail("unexpected device event format");
++			return;
++		}
++		unsigned type = (e >> 8) & 15;
++		if (type == 1) {
++			if (u.configured) {
++				stop_data();
++				fail("bus reset after configuration; reboot to reconnect");
++				return;
++			}
++			wr(DCFG, rd(DCFG) & ~(127u << 3));
++			printf("LIUQIN USB: bus reset\n");
++		} else if (type == 2) {
++			unsigned speed = rd(DSTS) & 7;
++			if (speed != 0 && speed != 1 && speed != 3) {
++				fail("unexpected non-USB2 speed");
++				return;
++			}
++			u.mps = speed == 0 ? 512 : 64;
++			(void)epcmd(0, SET_CONFIG, (64u << 3) | (2u << 30), (1u << 8) | (1u << 10), 0);
++			(void)epcmd(1, SET_CONFIG, (64u << 3) | (2u << 30), (1u << 8) | (1u << 10) | (1u << 25), 0);
++			printf("LIUQIN USB: connected speed=%u\n", speed);
++		} else if (!type && u.configured) {
++			fail("cable disconnect; reboot to reconnect");
++		} else if (type == 9 || type == 11) {
++			fail("controller/event overflow");
++		}
++		return;
++	}
++	unsigned ep = (e >> 1) & 31, type = (e >> 6) & 15, status = (e >> 12) & 15;
++	if (type == 1) {
++		int n = complete(ep);
++		if (n < 0) {
++			return;
++		}
++		if (status & 1) {
++			fail("USB transfer bus error");
++			return;
++		}
++		if (ep == 2) {
++			receive_done((unsigned)n);
++			return;
++		}
++		if (ep > 1) {
++			return;
++		}
++		switch (u.phase) {
++		case SETUP_PHASE:
++			if (ep != 0 || n != 8) {
++				fail("setup length");
++			} else {
++				handle_setup();
++			}
++			break;
++		case DATA_PHASE:
++			if (u.set_line) {
++				if (ep != 0 || n != 7) {
++					fail("line coding length");
++					break;
++				}
++				sync_dma(DATA, 64);
++				memcpy(u.coding, (void *)(u.dma + DATA), 7);
++			}
++			u.phase = WAIT3;
++			break;
++		case STATUS_PHASE:
++			setup_arm();
++			break;
++		default:
++			fail("control completion order");
++			break;
++		}
++	} else if (ep <= 1 && type == 3 && status == 2 && (u.phase == WAIT2 || u.phase == WAIT3)) {
++		unsigned direction = u.phase == WAIT2 ? 1 : (u.data_in ? 0 : 1);
++		if (ep != direction) {
++			fail("control status direction");
++			return;
++		}
++		unsigned kind = u.phase == WAIT3 ? T_STATUS3 : T_STATUS2;
++		u.phase = STATUS_PHASE;
++		transfer(ep, DATA, 0, kind);
++	}
++}
++static void
++usb_thread(void *arg __unused, wait_result_t result __unused)
++{
++	while (!u.failed) {
++		unsigned count = rd(GEVNTCOUNT) & 0xffff;
++		if (count > EVENT_SIZE || (count & 3)) {
++			fail("event ring size/alignment");
++			break;
++		}
++		if (count) {
++			sync_dma(EVENTS, EVENT_SIZE);
++			for (unsigned i = 0; i < count && !u.failed; i += 4) {
++				uint32_t e = *(volatile uint32_t *)(u.dma + u.pos);
++				u.pos = (u.pos + 4) % EVENT_SIZE;
++				u.events++;
++				event(e);
++			}
++			wr(GEVNTCOUNT, count);
++		}
++		transmit();
++		uint64_t deadline;
++		clock_interval_to_deadline(1, NSEC_PER_MSEC, &deadline);
++		(void)assert_wait_deadline(&u.sleep_channel, THREAD_UNINT, deadline);
++		thread_block(THREAD_CONTINUE_NULL);
++	}
++	wr(DEVTEN, 0);
++	wr(DCTL, rd(DCTL) & ~RUN);
++	thread_terminate(current_thread());
++}
++/* Require the exact nonsecure SMMU layout and a unique identity route for the
++ * USB stream ID. Never create a mapping or weaken isolation for debug USB. */
++static bool
++smmu_identity(void)
++{
++	vm_offset_t s = u.smmu;
++	printf("LIUQIN USB: SMMU idr0=%08x idr1=%08x idr5=%08x idr7=%08x\n",
++	    read_reg(s, 0x0), read_reg(s, 0x20), read_reg(s, 0x24), read_reg(s, 0x28));
++	unsigned matches = 0;
++	uint32_t route = 0;
++	for (unsigned i = 0; i < SMMU_SMR_COUNT; i++) {
++		if (lqusb_stream_match(read_reg(s, 0x800 + 4 * i), u.sid)) {
++			matches++;
++			route = read_reg(s, 0xc00 + 4 * i);
++		}
++	}
++	if (matches != 1) {
++		printf("LIUQIN USB: SID%x matches %u\n", u.sid, matches);
++		return false;
++	}
++	unsigned cb = route & 255;
++	uint32_t cbar = 0, sctlr = 1;
++	if (((route >> 16) & 3) == 0) {
++		if (cb >= 70) {
++			return false;
++		}
++		cbar = read_reg(s, 0x1000 + 4 * cb);
++		sctlr = read_reg(s, 0x80000 + 0x1000 * cb);
++	}
++	printf("LIUQIN USB: SID%x route=%08x cbar=%08x sctlr=%08x\n", u.sid, route, cbar, sctlr);
++	return lqusb_route_identity(route, cbar, sctlr) != 0;
++}
++
++static bool lq_number(const char **text, uint64_t *value);
++
++void
++liuqin_fb_marker_boot(void)
++{
++	{
++		char spec[64];
++		uint64_t base = 0xb8000000ULL, width = 1800, height = 2880, stride = 7200;
++		if (PE_parse_boot_argn("fb", spec, sizeof(spec))) {
++			const char *text = spec;
++			uint64_t part[4];
++			unsigned n = 0;
++			while (n < 4 && lq_number(&text, &part[n])) {
++				n++;
++				if (*text != ',') {
++					break;
++				}
++				text++;
++			}
++			if (n == 4) {
++				base = part[0];
++				width = part[1];
++				height = part[2];
++				stride = part[3];
++			}
++		}
++		/* liuqin: do not bind here. ml_io_map needs kernel_map, and its
++		 * allocations wait for the pageout thread, which starts only at the end of
++		 * kernel_bootstrap_thread -- calling this from bsd_init deadlocks. The
++		 * console already paints through the identity mapping of the boot tables,
++		 * which is the same framebuffer. */
++		(void)base;
++		(void)width;
++		(void)height;
++		(void)stride;
++		liuqin_fb_band(0, 0xff00ffffu);
++		{ extern void liuqin_fb_bigband(unsigned, unsigned, uint32_t);
++		  liuqin_fb_bigband(2400, 240, 0xffff00ffu); }
++	}
++}
++
++static bool
++lq_number(const char **text, uint64_t *value)
++{
++	const char *s = *text;
++	uint64_t v = 0;
++	unsigned base = 10, digits = 0;
++
++	while (*s == ' ') {
++		s++;
++	}
++	if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
++		base = 16;
++		s += 2;
++	}
++	for (;; s++) {
++		unsigned d;
++		if (*s >= '0' && *s <= '9') {
++			d = (unsigned)(*s - '0');
++		} else if (base == 16 && *s >= 'a' && *s <= 'f') {
++			d = (unsigned)(*s - 'a') + 10;
++		} else if (base == 16 && *s >= 'A' && *s <= 'F') {
++			d = (unsigned)(*s - 'A') + 10;
++		} else {
++			break;
++		}
++		v = v * base + d;
++		if (++digits > 16) {
++			return false;
++		}
++	}
++	if (!digits) {
++		return false;
++	}
++	*text = s;
++	*value = v;
++	return true;
++}
++void
++liuqin_usb_debug_start(void)
++{
++	static bool attempted;
++	int enabled = 0;
++	PE_parse_boot_argn("liuqin_usb", &enabled, sizeof(enabled));
++	if (enabled != 1 || attempted) {
++		if (enabled != 1) {
++			liuqin_fb_band(6, 0xffff8000u);
++		}
++		return;
++	}
++	attempted = true;
++
++	u.mps = 512;
++	u.coding[0] = 0;
++	u.coding[1] = 0xc2;
++	u.coding[2] = 1;
++	u.coding[6] = 8;
++	u.sid = USB_SID_DEF;
++	PE_parse_boot_argn("liuqin_usb_sid", &u.sid, sizeof(u.sid));
++	u.dma_lo = DMA_LO_DEF;
++	u.dma_hi = DMA_HI_DEF;
++	{
++		char win[64];
++		if (PE_parse_boot_argn("liuqin_usb_dma", win, sizeof(win))) {
++			char *sep = strchr(win, ',');
++			if (sep) {
++				*sep = 0;
++				u.dma_lo = strtouq(win, NULL, 0);
++				u.dma_hi = strtouq(sep + 1, NULL, 0);
++			}
++		}
++	}
++	printf("LIUQIN USB: CDC ACM debug port, RAM log and read-only commands\n");
++
++	/* Guard 1: the USB30_PRIM power domain and its three branch clocks must
++	 * already be running. This driver never programs GCC. */
++	vm_offset_t gcc = liuqin_io_map(GCC_PA, 0x1000);
++	if (!gcc) {
++		return;
++	}
++	uint32_t gdsc = read_reg(gcc, GCC_GDSC_OFF), master = read_reg(gcc, GCC_MASTER_OFF);
++	uint32_t cfg = read_reg(gcc, GCC_CFG_OFF), aggre = read_reg(gcc, GCC_AGGRE_OFF);
++	printf("LIUQIN USB: GCC gdsc=%08x master=%08x cfg=%08x aggre=%08x\n",
++	    gdsc, master, cfg, aggre);
++	if (!(gdsc & (1u << 31))) {
++		liuqin_fb_band(11, 0xffff0000u);
++		printf("LIUQIN USB: usb30_prim power domain off; controller untouched\n");
++		return;
++	}
++	if ((master | cfg | aggre) & (1u << 31)) {
++		liuqin_fb_band(12, 0xffff0000u);
++		printf("LIUQIN USB: USB clocks halted; controller untouched\n");
++		return;
++	}
++	liuqin_fb_band(1, 0xff00ff00u);
++
++	/* Guard 2: DWC3 identity and device mode, as left behind by ABL/UEFI. */
++	u.regs = liuqin_io_map(DWC3_PA, DWC3_SIZE);
++	u.smmu = liuqin_io_map(SMMU_PA, SMMU_SIZE);
++	if (!u.regs || !u.smmu) {
++		return;
++	}
++	uint32_t id = rd(0xc120), hw = rd(0xc140);
++	unsigned width = hw >> 24;
++	printf("LIUQIN USB: id=%08x hwparams0=%08x awidth=%u gctl=%08x dctl=%08x dsts=%08x\n",
++	    id, hw, width, rd(GCTL), rd(DCTL), rd(DSTS));
++	if ((id >> 16) != 0x5533 && (id >> 16) != 0x3331) {
++		liuqin_fb_band(13, 0xffff0000u);
++		printf("LIUQIN USB: unknown controller; controller untouched\n");
++		return;
++	}
++	if (((rd(GCTL) >> 12) & 3) != 2) {
++		liuqin_fb_band(14, 0xffff0000u);
++		printf("LIUQIN USB: controller not in device mode; controller untouched\n");
++		return;
++	}
++	liuqin_fb_band(2, 0xff0000ffu);
++
++	/* Guard 3: SMMU identity route for the USB stream ID. */
++	{
++		int check = 1;
++		PE_parse_boot_argn("liuqin_usb_smmu", &check, sizeof(check));
++		if (check) {
++			if (!smmu_identity()) {
++				liuqin_fb_band(15, 0xffff0000u);
++				printf("LIUQIN USB: SMMU route refused; controller untouched\n");
++				return;
++			}
++		} else {
++			printf("LIUQIN USB: SMMU route check skipped by liuqin_usb_smmu=0\n");
++		}
++	liuqin_fb_band(3, 0xffffff00u);
++	}
++
++	/* Guard 4: one permanent 16 KiB contiguous DMA block inside the window. */
++	if (kmem_alloc_contig(kernel_map, &u.dma, DMA_SIZE, PAGE_MASK, 0, 0,
++	    KMA_DATA | KMA_ZERO | KMA_PERMANENT, VM_KERN_MEMORY_IOKIT) != KERN_SUCCESS) {
++		liuqin_fb_band(16, 0xffff0000u);
++		printf("LIUQIN USB: DMA allocation failed\n");
++		return;
++	}
++	ppnum_t pn = pmap_find_phys(kernel_pmap, (addr64_t)u.dma);
++	if (!pn) {
++		return;
++	}
++	u.pa = ptoa_64(pn);
++	if (!lqusb_dma_allowed(u.pa, DMA_SIZE, width, u.dma_lo, u.dma_hi)) {
++		liuqin_fb_band(17, 0xffff0000u);
++		printf("LIUQIN USB: DMA %llx refused by window %llx-%llx width %u\n",
++		    u.pa, u.dma_lo, u.dma_hi, width);
++		return;
++	}
++	for (unsigned off = 0; off < DMA_SIZE; off += PAGE_SIZE) {
++		ppnum_t page = pmap_find_phys(kernel_pmap, (addr64_t)(u.dma + off));
++		if (!page || ptoa_64(page) != u.pa + off) {
++			liuqin_fb_band(18, 0xffff0000u);
++			printf("LIUQIN USB: DMA not contiguous at %x\n", off);
++			return;
++		}
++	}
++
++	liuqin_fb_band(4, 0xffffffffu);
++	vm_offset_t qs = liuqin_io_map(QSCRATCH_PA, 0x100);
++	if (!qs) {
++		return;
++	}
++	/* Stop any old device DMA first: the soft reset must finish before the
++	 * descriptors are replaced. PHY and global bus settings stay as ABL left
++	 * them. */
++	wr(DEVTEN, 0);
++	wr(DCTL, rd(DCTL) & ~RUN);
++	unsigned i;
++	for (i = 0; i < 500 && !(rd(DSTS) & HALTED); i++) {
++		delay(1000);
++	}
++	if (!(rd(DSTS) & HALTED)) {
++		fail("controller halt timeout");
++		return;
++	}
++	wr(DCTL, RESET);
++	for (i = 0; i < 500 && (rd(DCTL) & RESET); i++) {
++		delay(1000);
++	}
++	if (rd(DCTL) & RESET) {
++		fail("controller reset timeout");
++		return;
++	}
++	sync_dma(0, DMA_SIZE);
++	wr(GEVNTADRLO, (uint32_t)u.pa);
++	wr(GEVNTADRHI, (uint32_t)(u.pa >> 32));
++	if (rd(GEVNTADRHI) != (uint32_t)(u.pa >> 32)) {
++		fail("event address readback");
++		return;
++	}
++	wr(GEVNTSIZ, (1u << 31) | EVENT_SIZE);
++	wr(GEVNTCOUNT, rd(GEVNTCOUNT) & 0xffff);
++	wr(DCFG, rd(DCFG) & ~(7u | (127u << 3)));   /* high speed only */
++	if (epcmd(0, START_CONFIG, 0, 0, 0) ||
++	    epcmd(0, SET_CONFIG, 64u << 3, (1u << 8) | (1u << 10), 0) ||
++	    epcmd(0, SET_RESOURCE, 1, 0, 0) ||
++	    epcmd(1, SET_CONFIG, 64u << 3, (1u << 8) | (1u << 10) | (1u << 25), 0) ||
++	    epcmd(1, SET_RESOURCE, 1, 0, 0)) {
++		return;
++	}
++	wr(DALEPENA, 3);
++	setup_arm();
++	if (u.failed) {
++		return;
++	}
++	/* Qualcomm wrapper VBUS-valid override, the same bits the SM8450 family
++	 * glue writes: HS UTMI VBUS_VALID + SW_SESSVLD_SEL, SS LANE0 power. */
++	uint32_t hs = read_reg(qs, 0x10), ss = read_reg(qs, 0x30);
++	*(volatile uint32_t *)(qs + 0x10) = hs | (1u << 20) | (1u << 28);
++	*(volatile uint32_t *)(qs + 0x30) = ss | (1u << 24);
++	__asm__ volatile("dsb sy" ::: "memory");
++	wr(DEVTEN, 7 | (1u << 9) | (1u << 11));
++	wr(DCTL, rd(DCTL) | RUN);
++	for (i = 0; i < 500 && (rd(DSTS) & HALTED); i++) {
++		delay(1000);
++	}
++	if (rd(DSTS) & HALTED) {
++		fail("controller run timeout");
++		return;
++	}
++	thread_t thread;
++	if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
++		fail("poll thread creation");
++		wr(DCTL, rd(DCTL) & ~RUN);
++		return;
++	}
++	thread_deallocate(thread);
++	liuqin_fb_band(5, 0xffff00ffu);
++	printf("LIUQIN USB: running; DMA=%llx; Windows serial LIQDBG001; awaiting enumeration\n", u.pa);
++}
+diff --git a/bsd/dev/liuqin_usb_protocol.h b/bsd/dev/liuqin_usb_protocol.h
+new file mode 100644
+index 0000000..26cca0f
+--- /dev/null
++++ b/bsd/dev/liuqin_usb_protocol.h
+@@ -0,0 +1,75 @@
++/* CDC ACM descriptors and request whitelist for the liuqin USB debug port.
++ * Lab VID/PID 1209:0002, synthetic serial LIQDBG001. Ported from vermeer.
++ */
++#ifndef LIUQIN_USB_PROTOCOL_H
++#define LIUQIN_USB_PROTOCOL_H
++#ifdef LIUQIN_HOST_TEST
++#include <stdint.h>
++#else
++#include <sys/types.h>
++#endif
++static const uint8_t lqusb_device[18] = {
++	18, 1, 0x00, 0x02, 2, 2, 1, 64, 0x09, 0x12, 0x02, 0x00, 0, 4, 1, 2, 3, 1
++};
++static const uint8_t lqusb_config[67] = {
++	9, 2, 67, 0, 2, 1, 0, 0x80, 250,
++	9, 4, 0, 0, 1, 2, 2, 1, 0,
++	5, 0x24, 0, 0x10, 1,
++	5, 0x24, 1, 0, 1,
++	4, 0x24, 2, 2,
++	5, 0x24, 6, 0, 1,
++	7, 5, 0x82, 3, 16, 0, 9,
++	9, 4, 1, 0, 2, 0x0a, 0, 0, 0,
++	7, 5, 0x01, 2, 0, 2, 0,
++	7, 5, 0x81, 2, 0, 2, 0
++};
++static const uint8_t lqusb_qualifier[10] = { 10, 6, 0, 2, 2, 2, 1, 64, 1, 0 };
++
++/* The DMA block must be one aligned contiguous run inside the caller supplied
++ * window, and the controller must be able to address all of it. */
++static inline int lqusb_dma_allowed(uint64_t pa, unsigned size, unsigned bits,
++    uint64_t lo, uint64_t hi)
++{
++	if (size != 0x4000 || (pa & 0x3fff)) return 0;
++	if (!lo || hi <= lo || pa < lo || pa >= hi) return 0;
++	if (size > hi - pa) return 0;
++	if (bits < 32 || bits > 64) return 0;
++	return bits == 64 || pa + size - 1 < (1ULL << bits);
++}
++
++/* Exactly one nonsecure stream must match the USB stream ID and its route must
++ * be identity (or bypass): the port never creates or weakens a mapping. */
++static inline int lqusb_stream_match(uint32_t smr, uint32_t sid)
++{
++	return (smr >> 31) && !((smr ^ sid) & ~((smr >> 16) & 0x7fff) & 0xffff);
++}
++static inline int lqusb_route_identity(uint32_t s2cr, uint32_t cbar, uint32_t sctlr)
++{
++	unsigned type = (s2cr >> 16) & 3;
++	return type == 1 || (type == 0 && ((cbar >> 16) & 3) == 1 && !(sctlr & 1));
++}
++
++/* Recognised request kinds only; malformed class OUT lengths stall. */
++enum {
++	LQUSB_BAD, LQUSB_DESC, LQUSB_ADDRESS, LQUSB_CONFIG, LQUSB_GET_CONFIG,
++	LQUSB_STATUS, LQUSB_INTERFACE, LQUSB_GET_INTERFACE, LQUSB_SET_LINE,
++	LQUSB_GET_LINE, LQUSB_CONTROL, LQUSB_BREAK, LQUSB_CLEAR_HALT
++};
++static inline int lqusb_request(uint8_t type, uint8_t req, uint16_t value,
++    uint16_t index, uint16_t len)
++{
++	if (type == 0x80 && req == 6 && ((value >> 8) >= 1 && (value >> 8) <= 7)) return LQUSB_DESC;
++	if (type == 0 && req == 5 && !index && !len && value < 128) return LQUSB_ADDRESS;
++	if (type == 0 && req == 9 && !index && !len && value <= 1) return LQUSB_CONFIG;
++	if (type == 0x80 && req == 8 && !value && !index && len == 1) return LQUSB_GET_CONFIG;
++	if ((type == 0x80 || type == 0x81 || type == 0x82) && req == 0 && !value && len == 2) return LQUSB_STATUS;
++	if (type == 1 && req == 11 && index <= 1 && !value && !len) return LQUSB_INTERFACE;
++	if (type == 0x81 && req == 10 && index <= 1 && !value && len == 1) return LQUSB_GET_INTERFACE;
++	if (type == 0x21 && req == 0x20 && !index && !value && len == 7) return LQUSB_SET_LINE;
++	if (type == 0xa1 && req == 0x21 && !index && !value && len == 7) return LQUSB_GET_LINE;
++	if (type == 0x21 && req == 0x22 && !index && !len && !(value & ~3)) return LQUSB_CONTROL;
++	if (type == 0x21 && req == 0x23 && !index && !len) return LQUSB_BREAK;
++	if (type == 2 && req == 1 && !value && !len && (index == 1 || index == 0x81 || index == 0x82)) return LQUSB_CLEAR_HALT;
++	return LQUSB_BAD;
++}
++#endif
+diff --git a/osfmk/arm/arm_init.c b/osfmk/arm/arm_init.c
+--- a/osfmk/arm/arm_init.c
++++ b/osfmk/arm/arm_init.c
+@@ -352,7 +352,8 @@
+ 	uint64_t        xmaxmem;
+ 	thread_t        thread;
+ 	DTEntry chosen = NULL;
+ 	unsigned int dt_entry_size = 0;
++	{ extern void liuqin_stage(unsigned); liuqin_stage(1); }
+ 
+ 	arm_setup_pre_sign();
+ 
+@@ -370,7 +370,8 @@
+ #endif /* defined(HAS_APPLE_PAC) */
+ 
+ 	PE_init_platform(FALSE, args); /* Get platform expert set up */
+ 	boot_progress_init();
++	{ extern void liuqin_stage(unsigned); liuqin_stage(2); }
+ 
+ #if __arm64__
+ 	configure_timer_apple_regs();
+@@ -522,7 +522,9 @@
+ #endif  /* __ARM_PAN_AVAILABLE__ */
+ 
+ 	boot_progress_stage("arm_vm_init enter");
++	{ extern void liuqin_stage(unsigned); liuqin_stage(3); }
+ 	arm_vm_init(xmaxmem, args);
++	{ extern void liuqin_stage(unsigned); liuqin_stage(4); }
+ 	boot_progress_stage("arm_vm_init returned");
+ 
+ 	if (debug_boot_arg) {
+diff --git a/osfmk/arm64/arm_vm_init.c b/osfmk/arm64/arm_vm_init.c
+index a688021..1d6d047 100644
+--- a/osfmk/arm64/arm_vm_init.c
++++ b/osfmk/arm64/arm_vm_init.c
+@@ -1829,6 +1829,7 @@
+ 	uint64_t         mem_segments;
+ 	vm_offset_t      ptpage_vaddr;
+ 	vm_map_address_t dynamic_memory_begin;
++	{ extern void liuqin_stage(unsigned); liuqin_stage(5); }
+ 
+ 	/*
+ 	 * Get the virtual and physical kernel-managed memory base from boot_args.
+@@ -1864,6 +1865,7 @@
+ 		panic("Unsupported memory configuration %lx", mem_size);
+ 	}
+ #endif
++	{ extern void liuqin_stage(unsigned); liuqin_stage(8); }
+ 
+ #if defined(ARM_LARGE_MEMORY)
+ 	unsigned long physmap_l1_entries = ((real_phys_size + ARM64_PHYSMAP_SLIDE_RANGE) >> ARM_TT_L1_SHIFT) + 1;
+@@ -1920,6 +1922,7 @@
+ 
+ 	boot_tte = (tt_entry_t *)&bootstrap_pagetables;
+ 	boot_ttep = kvtophys((vm_offset_t)boot_tte);
++	{ extern void liuqin_stage(unsigned); liuqin_stage(9); }
+ 
+ #if DEVELOPMENT || DEBUG
+ 	/* Sanity check - assert that BOOTSTRAP_TABLE_SIZE is sufficiently-large to
+@@ -1978,6 +1981,7 @@
+ 	 *   the so called physical aperture should be statically mapped
+ 	 */
+ 	init_ptpages(cpu_tte, gVirtBase, dynamic_memory_begin, TRUE, ARM_TTE_TABLE_AP(ARM_TTE_TABLE_AP_USER_NA));
++	{ extern void liuqin_stage(unsigned); liuqin_stage(10); }
+ 
+ #if defined(ARM_LARGE_MEMORY)
+ 	/*
+@@ -2102,6 +2106,7 @@
+ 	vm_prelink_edata = segPRELINKDATAB + segSizePRELINKDATA;
+ 
+ 	arm_vm_prot_init(args);
++	{ extern void liuqin_stage(unsigned); liuqin_stage(11); }
+ 
+ 	/*
+ 	 * Initialize the page tables for the low globals:
+@@ -2148,16 +2153,18 @@
+ 	arm_set_user_tbi();
+ 
+ 	arm_vm_physmap_init(args);
++	{ extern void liuqin_stage(unsigned); liuqin_stage(12); }
+ 	set_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);
+ 
+ #if XNU_MONITOR
+ 	ml_enable_monitor();
+ #endif
+ 
+-	set_mmu_ttb(invalid_ttep & TTBR_BADDR_MASK);
++	set_mmu_ttb(boot_ttep & TTBR_BADDR_MASK);	/* liuqin: keep the V=P map so the panel stays writable */
+ 
+ 	flush_mmu_tlb();
+ 	kva_active = TRUE;
++	{ extern void liuqin_stage(unsigned); liuqin_stage(13); }
+ 	// global table pointers may need to be different due to physical aperture remapping
+ 	cpu_tte = (tt_entry_t*)(phystokv(cpu_ttep));
+ 	invalid_tte = (tt_entry_t*)(phystokv(invalid_ttep));
+@@ -2209,6 +2216,7 @@
+ 		flush_mmu_tlb();
+ 	}
+ 
++	{ extern void liuqin_stage(unsigned); liuqin_stage(14); }
+ 	sane_size = mem_size - (avail_start - gPhysBase);
+ 	max_mem = mem_size;
+ 	vm_kernel_slid_base = segLOWESTTEXT;
+@@ -2253,7 +2261,9 @@
+     }
+ #endif
+ #endif
++	{ extern void liuqin_stage(unsigned); liuqin_stage(15); }
+ 	pmap_bootstrap(dynamic_memory_begin);
++	{ extern void liuqin_stage(unsigned); liuqin_stage(7); }
+ 
+ 	disable_preemption();
+ 
+diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+index f394e74..32144da 100644
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -568,6 +568,14 @@ void
+ bsd_init(void)
+ {
+ 	boot_progress_stage("bsd_init enter");
++	extern void liuqin_usb_debug_start(void);
++	extern void liuqin_fb_marker_boot(void);
++	extern void liuqin_milestone(const char *, const char *);
++	liuqin_milestone("B", "bsd_init");
++	liuqin_fb_marker_boot();
++	liuqin_milestone("B", "usb_start");
++	liuqin_usb_debug_start();
++	liuqin_milestone("B", "usb_done");
+ 	struct uthread *ut;
+ 	vnode_t init_rootvnode = NULLVP;
+ 	struct proc_ro_data kernproc_ro_data = {
+@@ -582,7 +590,9 @@ bsd_init(void)
+ 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
+ #endif
+ 
+-#define DEBUG_BSDINIT 0
++/* liuqin: the panel is the only console and the boot stops somewhere inside
++ * bsd_init(), so turn the built-in step trace on. */
++#define DEBUG_BSDINIT 1
+ 
+ #if DEBUG_BSDINIT
+ #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
+@@ -591,8 +601,11 @@ bsd_init(void)
+ #endif
+ 
+ 	throttle_init();
++	liuqin_milestone("B", "throttle_done");
+ 
+ 	printf(copyright);
++	liuqin_milestone("B", "copyright_done");
+ 
+ #if CONFIG_DEV_KMEM
++	liuqin_milestone("B", "at_dev_kmem");
+ 	bsd_init_kprintf("calling dev_kmem_init\n");
+@@ -600,4 +600,5 @@
+ 
+ 	/* Initialize kauth subsystem before instancing the first credential */
++	liuqin_milestone("B", "at_kauth");
+ 	bsd_init_kprintf("calling kauth_init\n");
+ 	kauth_init();
+@@ -628,4 +628,5 @@
+ 
+ 	/* give kernproc a name */
++	liuqin_milestone("B", "at_process_name");
+ 	bsd_init_kprintf("calling process_name\n");
+ 	process_name("kernel_task", kernproc);
+@@ -655,4 +655,5 @@
+ 	}
+ 
++	liuqin_milestone("B", "at_bsdthread_info");
+ 	bsd_init_kprintf("calling get_bsdthread_info\n");
+ 	ut = current_uthread();
+@@ -749,4 +749,5 @@
+ 	 * Charge root for one process: launchd.
+ 	 */
++	liuqin_milestone("B", "at_chgproccnt");
+ 	bsd_init_kprintf("calling chgproccnt\n");
+ 	(void)chgproccnt(0, 1);
+@@ -756,4 +756,5 @@
+ 	 *	for temporary copying (execve()).
+ 	 */
++	liuqin_milestone("B", "at_kmem_suballoc");
+ 	bsd_init_kprintf("calling kmem_suballoc\n");
+ 	bsd_pageable_map = kmem_suballoc(kernel_map,
+@@ -772,4 +772,5 @@
+ 	 *		the kernel task.
+ 	 */
++	liuqin_milestone("B", "at_bsd_bufferinit");
+ 	bsd_init_kprintf("calling bsd_bufferinit\n");
+ 	bsd_bufferinit();
+@@ -779,2 +779,3 @@
+ 	 */
++	liuqin_milestone("B", "at_iokit_time");
+ 	bsd_init_kprintf("calling IOKitInitializeTime\n");
+@@ -783,2 +783,3 @@
+ 	/* Initialize the file systems. */
++	liuqin_milestone("B", "at_vfsinit");
+ 	bsd_init_kprintf("calling vfsinit\n");
+@@ -788,2 +788,3 @@
+ 	/* Initial proc_uuid_policy subsystem */
++	liuqin_milestone("B", "at_proc_uuid");
+ 	bsd_init_kprintf("calling proc_uuid_policy_init()\n");
+@@ -799,2 +799,3 @@
+ 	/* Initialize mbuf's. */
++	liuqin_milestone("B", "at_mbinit");
+ 	bsd_init_kprintf("calling mbinit\n");
+@@ -818,2 +818,3 @@
+ 	/* Initialize event handler */
++	liuqin_milestone("B", "at_evthandler");
+ 	bsd_init_kprintf("calling eventhandler_init\n");
+@@ -887,2 +887,3 @@
+ 
++	liuqin_milestone("B", "at_autoconf");
+ 	bsd_init_kprintf("calling bsd_autoconf\n");
+@@ -962,2 +962,3 @@
+ 
++	liuqin_milestone("B", "at_inittodr");
+ 	bsd_init_kprintf("calling inittodr\n");
+@@ -969,2 +969,3 @@
+ 
++	liuqin_milestone("B", "at_setconf");
+ 		bsd_init_kprintf("calling setconf\n");
+@@ -971,2 +971,3 @@
+ 		setconf();
++	liuqin_milestone("B", "setconf_done");
+ #if CONFIG_NETBOOT
+@@ -975,2 +975,3 @@
+ 
++	liuqin_milestone("B", "at_mountroot");
+ 		bsd_init_kprintf("vfs_mountroot\n");
+@@ -1000,2 +1000,3 @@
+ 
++	liuqin_milestone("B", "at_vfsroot");
+ 	bsd_init_kprintf("calling VFS_ROOT\n");
+@@ -1126,2 +1126,3 @@
+ 	/* Initialize signal state for process 0. */
++	liuqin_milestone("B", "at_siginit");
+ 	bsd_init_kprintf("calling siginit\n");
+@@ -1191,2 +1191,3 @@
+ {
++	liuqin_milestone("B", "at_kminit");
+ 	kprintf("bsd_autoconf: calling kminit\n");
+@@ -1193,2 +1193,3 @@
+ 	kminit();
++	liuqin_milestone("B", "kminit_done");
+ 
+@@ -1200,2 +1200,3 @@
+ 
++	liuqin_milestone("B", "at_pseudo");
+ 		for (pi = pseudo_inits; pi->ps_func; pi++) {
+@@ -1218,2 +1218,3 @@
+ 	err = IOFindBSDRoot(rootdevice, sizeof(rootdevice), &rootdev, &flags);
++	liuqin_milestone("B", "iofindroot_done");
+ 	if (err) {
+diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
+index 715c545..1050c9c 100644
+--- a/osfmk/console/serial_console.c
++++ b/osfmk/console/serial_console.c
+@@ -1,4 +1,5 @@
+ #include <kern/boot_progress.h>
++extern void liuqin_debug_putc(char c);
+ /*
+  * Copyright (c) 2000-2020 Apple, Inc. All rights reserved.
+  *
+@@ -252,6 +253,7 @@
+ static inline void
+ _cnputc(char c, bool poll)
+ {
++	liuqin_debug_putc(c);
+ 	if (boot_progress_active()) { boot_progress_putc(c); return; }
+ 	bool in_debugger = (kernel_debugger_entry_count > 0);
+ 	const uint32_t idx = get_cons_ops_index();
+diff --git a/pexpert/arm/pe_kprintf.c b/pexpert/arm/pe_kprintf.c
+index 3c440ec..934452b 100644
+--- a/pexpert/arm/pe_kprintf.c
++++ b/pexpert/arm/pe_kprintf.c
+@@ -1,4 +1,5 @@
+ #include <kern/boot_progress.h>
++extern void liuqin_debug_putc(char c);
+ /*
+  * Copyright (c) 2000-2019 Apple Inc. All rights reserved.
+  */
+@@ -158,6 +159,7 @@
+ static void
+ serial_putc_crlf(char c)
+ {
++	liuqin_debug_putc(c);
+ 	if (c == '\n') {
+ 		uart_putc('\r');
+ 	}
+diff --git a/osfmk/arm64/machine_routines.c b/osfmk/arm64/machine_routines.c
+--- a/osfmk/arm64/machine_routines.c
++++ b/osfmk/arm64/machine_routines.c
+@@ -2393,6 +2393,9 @@
+ 	uint64_t cntvctl = CNTV_CTL_EL0_ENABLE; /* One wants to use 32 bits, but "mrs" prefers it this way */
+ 
+ 	__builtin_arm_wsr64("CNTV_CTL_EL0", cntvctl);
+-	/* disable the physical timer as a precaution, as its registers reset to architecturally unknown values */
+-	__builtin_arm_wsr64("CNTP_CTL_EL0", CNTP_CTL_EL0_IMASKED);
++	/* liuqin: the CNTP_CTL_EL0 write below raises an undefined-instruction
++	 * exception on this silicon (panic at fiq_context_init+0x14, instr
++	 * 0xd51be228): firmware traps the physical timer and does not emulate it.
++	 * It only masks a timer this kernel never uses -- the virtual timer set
++	 * above is the one we run on -- so skip it. */
+ }
+diff --git a/osfmk/kern/startup.c b/osfmk/kern/startup.c
+index 8a82186..b324b1e 100755
+--- a/osfmk/kern/startup.c
++++ b/osfmk/kern/startup.c
+@@ -219,10 +219,39 @@
+ 
+ TUNABLE(startup_debug_t, startup_debug, "startup_debug", 0);
+ 
++/* liuqin: panel-only milestone trace. Runs before kprintf is usable and must
++ * survive a hang, so it never touches the console layer. */
++void
++liuqin_milestone(const char *tag, const char *msg)
++{
++	extern void liuqin_debug_puts(const char *s);
++	extern void liuqin_debug_putc(char c);
++	static unsigned count;
++	char num[12];
++	unsigned n = ++count;
++	unsigned i = 0;
++
++	/* the panel scrolls whole pages, so print a sequence number as well: the
++	 * last line then always carries the highest number and the order is not a
++	 * matter of reading the wrap point correctly. */
++	liuqin_debug_putc(tag[0]);
++	do {
++		num[i++] = (char)('0' + n % 10);
++		n /= 10;
++	} while (n != 0);
++	while (i != 0) {
++		liuqin_debug_putc(num[--i]);
++	}
++	liuqin_debug_putc(':');
++	liuqin_debug_puts(msg);
++	liuqin_debug_putc('\n');
++}
++
+ static inline void
+ kernel_bootstrap_log(const char *message)
+ {
+ 	boot_progress_stage(message);
++	liuqin_milestone("K:", message);
+ 	if ((startup_debug & STARTUP_DEBUG_VERBOSE) &&
+ 	    startup_phase >= STARTUP_SUB_KPRINTF) {
+ 		kprintf("kernel_bootstrap: %s\n", message);
+@@ -234,6 +247,7 @@
+ kernel_bootstrap_thread_log(const char *message)
+ {
+ 	boot_progress_stage(message);
++	liuqin_milestone("T:", message);
+ 	if ((startup_debug & STARTUP_DEBUG_VERBOSE) &&
+ 	    startup_phase >= STARTUP_SUB_KPRINTF) {
+ 		kprintf("kernel_bootstrap_thread: %s\n", message);

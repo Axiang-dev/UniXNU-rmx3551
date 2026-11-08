@@ -1,10 +1,21 @@
 # RMX3551 · UniXNU / iPadOS 18 移植交接文档
 
-> 目标只有一个：**让屏幕出图**（参考实现的里程碑是「3 次 swap + 苹果 logo」）。
-> Home Screen 之后的事情一律不管。
+> 用户于 2026-11-08 明确的最终目标：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
+> 「3 次 swap + 苹果 logo」只是中间里程碑；其他功能在桌面可用后逐步修复。
 
 写作时间：2026-11-08 15:30（GMT+8）
 接手者请先读完「五、必须知道的坑」，那里每一条都是花掉整晚换来的。
+
+接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
+`D:\unixnu\ud\diagnostics-20261108-154736`。旧运行未启用快照，但设备上的
+`libpong-ui18.dylib` 已包含探针；准备好的 boot 镜像与产物元数据哈希一致。
+已完成一次临时启动，取得 7 个进程的 35s/90s 共 14 份快照，证据在
+`D:\unixnu\ud\diagnostics-snapshot-20261108-1555`，内核日志 CRC 正确。
+SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd 的 90s 样本也在
+同一等待链。lsd 的服务线程明确等待数据库 seeding，注册线程则仍在执行应用注册。
+目前仅能确定首帧之前的实际等待链，尚不能判断 seeding 慢或永久停滞。
+16:01 已再次临时启动同一镜像，进行约 20 分钟观察。以下日志路径、符号化和 Wi-Fi
+说明已根据实际源码、APFS 目录及匹配 UUID 的符号文件纠正。
 
 ---
 
@@ -165,15 +176,18 @@ backboardd 的 selector 调用序列（完整、按时间）：
 （参考实现的做法，见官方 display 页），日志 `default surface WxH BGRA ready`。
 
 **改造点提示**：`userland/ui_compat18.c` 会按 UUID（`faf7d7ea-18f0-3c2d-816c-ac56d16c40a3`）
-校验 SpringBoard 后改两处：
+校验 **QuartzCore** 后改两处；这两个地址并非 SpringBoard 可执行文件地址。
+`software_composition` 和 `scanout_format` 在 backboardd 分支启用，旧日志也确认补丁成功：
 
 ```c
 0x184393468 → 改成 return nullptr      // "stock CPU compositor"：让 GPU 渲染器工厂返回空
 0x184396060 → 改成返回 BGRA 常量        // "software scanout BGRA"
 ```
 
-**这两处是当前最可疑的地方**：如果系统里没有软件渲染器接上，「返回空」就等于
-「没有渲染器」→ CA 永不提交 swap。这也是下面第一优先级的验证目标。
+匹配 SystemOS 的本地符号确认：前者是 `CA::WindowServer::AccelServer::renderer()`，
+后者是 `CA::WindowServer::IOMFBDisplay::framebuffer_pixel_format()`，均命中函数入口。
+源码注释记录 `renderer()` 返回空后经 `Server::render_update` / `sw_renderer()` 进入
+原生 SWContext；因此不能仅凭返回空就推断「没有渲染器」，仍须等待栈或反汇编证据。
 
 ---
 
@@ -185,10 +199,16 @@ backboardd 的 selector 调用序列（完整、按时间）：
 
 ```bash
 fastboot boot out/rmx3551-boot-payload.img
-# 等 2 分钟（探针在 35s 和 90s 各写一次）
-# 进 TWRP 后：
-adb pull /data/logs/            # /private/var/logs 在 TWRP 里就是 /data/logs
+# 进入内核后至少等 4 分钟；35s/90s 是进程启动后的计时，不是按 fastboot 命令计时。
+# 进 TWRP 后，在 device 仓库运行（输出目录必须尚不存在）：
+python tools/read-recovery-apfs.py --serial 9ea882b4 collect Data --out D:/unixnu/ud/NEW-DIAGNOSTICS
 ```
+
+实测 TWRP 未挂载嵌在 SHNGROOT 中的 APFS Data，直接 `adb pull /data/logs` 不可用。
+上面的工具校验 SHNGROOT 目录并通过 adb 只读解析 APFS，自动收集内核日志、
+`/logs/PongBoot-*`、`/mobile/Library/Logs/PongBoot-*` 和 Wi-Fi helper 日志。
+探针按 euid 选择路径：root 写 `/private/var/logs`，非 root 写
+`/private/var/mobile/Library/Logs`；不能只查前一个目录。
 
 期望拿到：`PongBoot-SpringBoard.txt`、`PongBoot-backboardd.txt`、
 `PongBoot-PosterBoard.txt`、`PongBoot-wifid.txt` …
@@ -196,20 +216,27 @@ adb pull /data/logs/            # /private/var/logs 在 TWRP 里就是 /data/log
 文件里有每个线程的 `pc / lr / fp / sp` 和 16 层栈回溯。
 
 **符号化方法**：
-`PC - slide` 后对 `SpringBoard` 二进制查（`slide` 在文件头 `image_slide=` 里），
-或用 `atos -o SpringBoard -l <load addr>`。重点看 **主线程**卡在哪个符号。
+`image_slide=` 仅适用于主可执行文件。共享缓存中的框架/系统库地址必须使用
+`cache=` 减去 dyld cache 的 `sharedRegionStart` 所得的 cache slide；不能混用。
+`tools/symbolicate-pong-snapshot.py` 可读取匹配 UUID 的主 cache 与 `.symbols` 文件，
+解析快照中的 PC/LR/帧地址，明确保留未解析的主程序地址。两份符号输入已只读提取到
+`D:\unixnu\ud\diagnostics-20261108-154736`。重点查看启动线程及两次采样的变化；
+仅凭线程数组索引不能确定某线程就是主线程。
 
 ### P1 · 判定 wifi 端口阻塞是否仍在
 
 策略代码注释记录过：`services105 proves SpringBoard blocked in wifi_manager_open … preventing its first frame`。
 
 实测 `wifid` 在 `WiFiManagerCreate` 里卡了 **36 秒**（16:02:07 → 16:02:43）。
-`wifi-bootstrap` 的作用就是提前抢占这个 MIG 端口。
+`wifi-bootstrap` **不占有这个 MIG 端口**。实际策略在 `board_services18.py` 中把
+wifid 的 `com.apple.wifi.manager` 设为 `HideUntilCheckIn=True`，直到真实服务 check-in
+才可被发现。helper 只在真实 WLAN 注册后请求本机 Wi-Fi 电源和配置。
 
 这一版已把 `wifi-bootstrap` 加进 `applog_name`，日志里应该能看到它到底跑没跑。
 
-- 跑了且抢到 → 看 P0 的快照，SpringBoard 应该不在 wifi 上
-- 没跑 → 查它的 plist 为什么没被 launchd 加载（缓存里已确认有作业，二进制也在 `/pong/wifi-bootstrap`）
+- 本次只读取得 `/logs/pong-wifi-bootstrap.log`：三条 `real WLAN not registered; no power request`。
+  这证明 helper 曾运行，但当时未发现 WLAN；不能据此判断 SpringBoard 当前等待位置。
+- 看 P0 的快照，判断 SpringBoard 是否仍在 `wifi_manager_open`；必要时核验设备实际 launchd 缓存中的端口策略。
 
 ### P2 · 如果 P0 指向渲染器
 
@@ -283,3 +310,49 @@ fb_threads=4
 **不要再从「参数猜测」入手。** 这一晚证明了：日志能回答的问题，不要靠推理。
 先把 `/data/logs/PongBoot-SpringBoard.txt` 取回来，它会告诉你 SpringBoard
 停在哪个函数的哪一行——那才是这条链真正的入口。
+
+---
+
+## 十一、两线同步记录（2026-11-08 17:25）
+
+这份文档由两条线共同维护，合并时以此节为准。
+
+### 已完成（Codex 线，实测）
+
+- 系统**已进入桌面**：图标、Dock、壁纸、状态栏全部正常，显示链路彻底打通
+- 快照探针实测：SpringBoard 阻塞在 **LaunchServices 数据库请求**，backboardd 的 90s 样本在同一等待链，`lsd` 服务线程等数据库 seeding、注册线程仍在执行应用注册
+- 纠正了三处早期判断：
+  1. 两个改写地址在 **QuartzCore**（`AccelServer::renderer()` / `IOMFBDisplay::framebuffer_pixel_format()`），不是 SpringBoard
+  2. `renderer()` 返回空会进入 `sw_renderer()` 原生软件路径，不能推断「没有渲染器」
+  3. `wifi-bootstrap` 不占 MIG 端口；端口由 `HideUntilCheckIn` 策略控制，helper 只在真实 WLAN 注册后请求电源
+- 工具：`tools/read-recovery-apfs.py`（TWRP 里直接解 APFS 读日志）、`tools/symbolicate-pong-snapshot.py`（按 UUID 匹配符号）
+
+### 已完成（内核线，本轮）
+
+- 触摸与按键**同时**失效的根因：内核按绝对路径 `/arm-io/pong-touch`、`/arm-io/pong-buttons` 查找，DTS 却把节点声明在根上，生成器据此产出 `/rmx3551-touch`、`/pong-buttons` → 两个驱动都 `SKIP`
+- 修复：节点移入 `apss: soc` 总线，并由 `unixnu,adt-name` 命名（与 `ufs → /arm-io/ufshc` 同一机制）
+- 证据（本次启动日志）：
+  ```
+  Pong touch: missing/incompatible Pong DT; SKIP
+  Pong keys: missing/incompatible DT; SKIP
+  Pong touch HID: real touch device unavailable (Operation timed out); SKIP
+  Pong keys HID: verified PMIC input unavailable; SKIP
+  ```
+
+### 下一步（按顺序）
+
+1. 构建 `a6e0273` 的产物 → 打包 boot → `fastboot boot`
+2. 验证三行是否出现：
+   ```
+   Pong touch: Berlin-D ready, SPI 0x990000 ..., axes 1080x2412
+   Pong keys: ... ready
+   Pong touch HID: display-integrated digitizer opened
+   ```
+3. 若触摸仍不通：用 `tools/read-recovery-apfs.py` 收集日志，重点看 `Pong touch HID: type=… finger=… xy=…`（有这行说明内核出点、用户态在投递）
+4. 若出点但 UI 无响应：问题在 HID 事件投递/坐标映射，改 `userland/touch.c`，不再是 DT
+
+### 协作约定
+
+- 两线共用一个工作区。**提交前先 `git status`**，别把对方的未提交改动覆盖掉
+- 构建只认 `main` 上的提交；工作区改动不会被 CI 采纳
+- 日志/镜像统一放 `D:/unixnu/ud`，诊断目录带时间戳

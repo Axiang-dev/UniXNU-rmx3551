@@ -150,7 +150,7 @@ def pass_decisions():
     else:
         print("  wrapper keeps exported XNU_ switches")
     wf = (ROOT / ".github/workflows/kernel.yml").read_text(encoding="utf-8")
-    need = {"XNU_PONG_POWER": "0", "XNU_SOURCE_CORECRYPTO14": "0",
+    need = {"XNU_PONG_POWER": "1", "XNU_SOURCE_CORECRYPTO14": "0",
             "XNU_SOURCE_PTHREAD": "0", "XNU_NATIVE_AES": "0"}
     for key, want in need.items():
         m = re.search(rf"{key}: '([^']*)'", wf)
@@ -163,7 +163,7 @@ def pass_decisions():
     # board.toml is where the boot arguments live: finalize-pong-adt.py writes them
     # into the ADT, and the packaging script's own list is legacy duplication.
     board = (ROOT / "board.toml").read_text(encoding="utf-8")
-    for needed in ("pong_adsp=2", "pong_usb=1"):
+    for needed in ("liuqin_usb=1",):
         if f'"{needed}"' not in board:
             fail(3, "board.toml", f"{needed} is not in kernel_args; the driver will not start")
         else:

@@ -163,7 +163,7 @@ jobs:
         # audio container, using weak stubs for the audio symbols it names.
         env:
           PONG_SHENG_ROOT: ${{ env.PONG_INPUT_ROOT }}/sheng
-          XNU_PONG_POWER: '0'
+          XNU_PONG_POWER: '1'
           XNU_SOURCE_CORECRYPTO14: '0'
           # The CRLF fix also revived XNU_SOURCE_PTHREAD, and that recipe refuses to
           # run without XNU_SOURCE_CORECRYPTO14=1, whose archive this runner never

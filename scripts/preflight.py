@@ -117,6 +117,10 @@ def pass_decisions():
         fail(3, "build-pong-power-native.py", "the no-container branch does not compile PongPower.cpp")
     else:
         print("  power unit builds PongPower.cpp without the audio container")
+    if "'PongBattery.cpp'" not in power:
+        fail(3, "build-pong-power-native.py", "PongBattery.cpp missing: pong_battery_usb_online would not link")
+    else:
+        print("  PongBattery.cpp present for the cable question")
     if "'GeniI2c.c'" not in power:
         fail(3, "build-pong-power-native.py", "GeniI2c.c missing: the USB repeater path links against it")
     else:

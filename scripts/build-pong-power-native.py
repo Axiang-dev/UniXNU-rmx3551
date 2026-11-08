@@ -51,10 +51,12 @@ def main():
   # what selects the full list above, but losing USB with it is what left the board
   # with no console at all: build the power unit with weak stubs instead.
   stub=out/'pong-usb-stubs.cpp'
-  stub.write_text('/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path\n   links without the amplifier profile this public tree does not carry.  Every\n   symbol is weak: a real definition elsewhere wins, and nothing here touches\n   audio hardware. */\nextern "C" {\n__attribute__((weak)) void PongAudioServiceStaticInit(void) {}\n__attribute__((weak)) void sheng_adsp_probe(void) {}\n__attribute__((weak)) void sheng_audio_probe(void) {}\n__attribute__((weak)) void sheng_battery_start(void) {}\n__attribute__((weak)) void PongBatteryStaticInit(void) {}\n__attribute__((weak)) void pong_rpmh_init(void) {}\n}')
+  stub.write_text(chr(10).join(['/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path', '   links without the amplifier profile this public tree does not carry.  Every', '   symbol is weak: a real definition elsewhere wins, and nothing here touches', '   audio hardware.  The mux lives in PongAudioService.cpp; until it is split out,', '   publish nothing -- the CDC console does not use it. */', 'extern "C" {', '__attribute__((weak)) void PongAudioServiceStaticInit(void) {}', '__attribute__((weak)) void sheng_adsp_probe(void) {}', '__attribute__((weak)) void sheng_audio_probe(void) {}', '__attribute__((weak)) void sheng_battery_start(void) {}', '__attribute__((weak)) void PongBatteryStaticInit(void) {}', '__attribute__((weak)) void pong_rpmh_init(void) {}', '__attribute__((weak)) bool pong_usb_mux_publish(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_session(bool) {}', '__attribute__((weak)) bool pong_usb_mux_receive(const void *,unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_can_receive(unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_bridge_ready(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_attached(bool) {}', '}']))
   # GeniI2c.c carries the transfers PongUsb's repeater path calls; without it the
   # link stops at geni_i2c_prepare/poll/start_read.
-  sources=('GeniI2c.c','PongPlatformResources.cpp','PongPower.cpp',str(stub))
+  # PongBattery.cpp answers pong_battery_usb_online(), the cable question PongUsb asks
+  # before it starts; GeniI2c.c carries the transfers its repeater path calls.
+  sources=('GeniI2c.c','PongBattery.cpp','PongPlatformResources.cpp','PongPower.cpp',str(stub))
   print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
  objects=[]
  for name in sources:

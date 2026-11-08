@@ -1,0 +1,844 @@
+== configuration pong_ipados18_ci_defconfig -> /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+== tree /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/tree
++ /usr/local/bin/dtc -I dts -O dtb -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb -i /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/UniXNU-sm8475-common/dts /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/dts/rmx3551.dts
+Building Darwin 24; log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T150524Z.log
+Inner XNU build failed (exit 1); log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T150524Z.log
+     INSTALLHDR attr_private.h
+     INSTALLHDR commpage.h
+     INSTALLHDR syscall.h
+     INSTALLHDR sysproto.h
+     INSTALLHDR coalition_private.h
+     INSTALLHDR code_signing.h
+     INSTALLHDR codesign.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR csr.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR event_log.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fsgetpath_private.h
+     INSTALLHDR guarded.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR reason.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR __endian.h
+     INSTALLHDR _endian.h
+     INSTALLHDR _select.h
+     INSTALLHDR _structs.h
+     INSTALLHDR _types.h
+     INSTALLHDR acct.h
+     INSTALLHDR appleapiopts.h
+     INSTALLHDR aio.h
+     INSTALLHDR attr.h
+     INSTALLHDR attr_private.h
+     INSTALLHDR buf.h
+     INSTALLHDR cdefs.h
+     INSTALLHDR clonefile.h
+     INSTALLHDR coalition.h
+     INSTALLHDR codesign.h
+     INSTALLHDR coalition_private.h
+     INSTALLHDR commpage.h
+     INSTALLHDR conf.h
+     INSTALLHDR constrained_ctypes.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR crossarch.h
+     INSTALLHDR csr.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR dirent.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR dir.h
+     INSTALLHDR disk.h
+     INSTALLHDR disklabel.h
+     INSTALLHDR dkstat.h
+     INSTALLHDR domain.h
+     INSTALLHDR dtrace.h
+     INSTALLHDR dtrace_glue.h
+     INSTALLHDR dtrace_impl.h
+     INSTALLHDR errno.h
+     INSTALLHDR ev.h
+     INSTALLHDR event.h
+     INSTALLHDR event_log.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fasttrap.h
+     INSTALLHDR fasttrap_isa.h
+     INSTALLHDR fcntl.h
+     INSTALLHDR file.h
+     INSTALLHDR fileport.h
+     INSTALLHDR filedesc.h
+     INSTALLHDR filio.h
+     INSTALLHDR fsctl.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR fsgetpath.h
+     INSTALLHDR fsgetpath_private.h
+     INSTALLHDR fslog.h
+     INSTALLHDR gmon.h
+     INSTALLHDR guarded.h
+     INSTALLHDR imgsrc.h
+     INSTALLHDR ioccom.h
+     INSTALLHDR ioctl.h
+     INSTALLHDR ipc.h
+     INSTALLHDR ioctl_compat.h
+     INSTALLHDR ipcs.h
+     INSTALLHDR kas_info.h
+     INSTALLHDR kdebug.h
+     INSTALLHDR kauth.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kdebug_signpost.h
+     INSTALLHDR kdebug_triage.h
+     INSTALLHDR kern_control.h
+     INSTALLHDR kern_debug.h
+     INSTALLHDR kern_event.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR kern_memorystatus_freeze.h
+     INSTALLHDR kern_overrides.h
+     INSTALLHDR kern_sysctl.h
+     INSTALLHDR kernel.h
+     INSTALLHDR kernel_types.h
+     INSTALLHDR lctx.h
+     INSTALLHDR loadable_fs.h
+     INSTALLHDR lock.h
+     INSTALLHDR lockf.h
+     INSTALLHDR lockstat.h
+     INSTALLHDR log_data.h
+     INSTALLHDR malloc.h
+     INSTALLHDR mbuf.h
+     INSTALLHDR memory_maintenance.h
+     INSTALLHDR monotonic.h
+     INSTALLHDR mount.h
+     INSTALLHDR mman.h
+     INSTALLHDR msgbuf.h
+     INSTALLHDR msg.h
+     INSTALLHDR netport.h
+     INSTALLHDR os_log_coprocessor.h
+     INSTALLHDR param.h
+     INSTALLHDR paths.h
+     INSTALLHDR persona.h
+     INSTALLHDR pgo.h
+     INSTALLHDR poll.h
+     INSTALLHDR posix_sem.h
+     INSTALLHDR pipe.h
+     INSTALLHDR posix_shm.h
+     INSTALLHDR priv.h
+     INSTALLHDR proc.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR proc_uuid_policy.h
+     INSTALLHDR process_policy.h
+     INSTALLHDR protosw.h
+     INSTALLHDR ptrace.h
+     INSTALLHDR quota.h
+     INSTALLHDR queue.h
+     INSTALLHDR random.h
+     INSTALLHDR reason.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resource.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR sdt.h
+     INSTALLHDR select.h
+     INSTALLHDR sem.h
+     INSTALLHDR semaphore.h
+     INSTALLHDR sfi.h
+     INSTALLHDR shm.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR signal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR snapshot.h
+     INSTALLHDR socket.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR sockio.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR spawn.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR stdio.h
+     INSTALLHDR stat.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslog.h
+     INSTALLHDR termios.h
+     INSTALLHDR time.h
+     INSTALLHDR timeb.h
+     INSTALLHDR times.h
+     INSTALLHDR timex.h
+     INSTALLHDR trace.h
+     INSTALLHDR tty.h
+     INSTALLHDR tree.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR uio.h
+     INSTALLHDR ulock.h
+     INSTALLHDR un.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR user.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR utsname.h
+     INSTALLHDR ux_exception.h
+     INSTALLHDR vcmd.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vadvise.h
+     INSTALLHDR vm.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vnode.h
+     INSTALLHDR wait.h
+     INSTALLHDR vsock.h
+     INSTALLHDR vstat.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _symbol_aliasing.h
+     INSTALLHDR syscall.h
+     INSTALLHDR _posix_availability.h
+     INSTALLHDR appleapiopts.h
+     INSTALLHDR attr.h
+     INSTALLHDR buf.h
+     INSTALLHDR cdefs.h
+     INSTALLHDR conf.h
+     INSTALLHDR constrained_ctypes.h
+     INSTALLHDR dirent.h
+     INSTALLHDR dir.h
+     INSTALLHDR disk.h
+     INSTALLHDR disklabel.h
+     INSTALLHDR errno.h
+     INSTALLHDR dkstat.h
+     INSTALLHDR ev.h
+     INSTALLHDR event.h
+     INSTALLHDR fcntl.h
+     INSTALLHDR file.h
+     INSTALLHDR filio.h
+     INSTALLHDR ioccom.h
+     INSTALLHDR ioctl.h
+     INSTALLHDR ipc.h
+     INSTALLHDR kernel.h
+     INSTALLHDR ioctl_compat.h
+     INSTALLHDR kernel_types.h
+     INSTALLHDR kern_event.h
+     INSTALLHDR lock.h
+     INSTALLHDR lockf.h
+     INSTALLHDR kauth.h
+     INSTALLHDR kdebug.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kdebug_kernel.h
+     INSTALLHDR kern_control.h
+     INSTALLHDR md5.h
+     INSTALLHDR imgact.h
+     INSTALLHDR malloc.h
+     INSTALLHDR namei.h
+     INSTALLHDR mman.h
+     INSTALLHDR mbuf.h
+     INSTALLHDR mount.h
+     INSTALLHDR netport.h
+     INSTALLHDR param.h
+     INSTALLHDR proc.h
+     INSTALLHDR paths.h
+     INSTALLHDR random.h
+     INSTALLHDR queue.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR resource.h
+     INSTALLHDR posix_sem.h
+     INSTALLHDR posix_shm.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR sem.h
+     INSTALLHDR shm.h
+     INSTALLHDR select.h
+     INSTALLHDR signal.h
+     INSTALLHDR socket.h
+     INSTALLHDR sockio.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR stdio.h
+     INSTALLHDR stat.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslog.h
+     INSTALLHDR systm.h
+     INSTALLHDR time.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR uio.h
+     INSTALLHDR un.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR unicode.h
+     INSTALLHDR vm.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vnode.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vsock.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _structs.h
+     INSTALLHDR _select.h
+     INSTALLHDR _types.h
+     INSTALLHDR _endian.h
+     INSTALLHDR protosw.h
+     INSTALLHDR __endian.h
+     INSTALLHDR domain.h
+     INSTALLHDR kpi_mbuf.h
+     INSTALLHDR kpi_socket.h
+     INSTALLHDR kpi_socketfilter.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR termios.h
+     INSTALLHDR wait.h
+     INSTALLHDR msg.h
+     INSTALLHDR spawn.h
+     INSTALLHDR timex.h
+     INSTALLHDR commpage.h
+     INSTALLHDR acct.h
+     INSTALLHDR attr_private.h
+     INSTALLHDR codesign.h
+     INSTALLHDR cprotect.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR csr.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR disktab.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR event_log.h
+     INSTALLHDR eventhandler.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fbt.h
+     INSTALLHDR fileport.h
+     INSTALLHDR fsctl.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR fslog.h
+     INSTALLHDR kpi_private.h
+     INSTALLHDR kern_memorystatus_freeze.h
+     INSTALLHDR ktrace.h
+     INSTALLHDR kdebug_triage.h
+     INSTALLHDR linker_set.h
+     INSTALLHDR mach_swapon.h
+     INSTALLHDR monotonic.h
+     INSTALLHDR msgbuf.h
+     INSTALLHDR persona.h
+     INSTALLHDR eventvar.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR pthread_shims.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR quota.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sem_internal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR timeb.h
+     INSTALLHDR times.h
+     INSTALLHDR tprintf.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR tty.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR user.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR vfs_context.h
+     INSTALLHDR reason.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR priv.h
+     INSTALLHDR pgo.h
+     INSTALLHDR memory_maintenance.h
+     INSTALLHDR doc_tombstone.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR kern_sysctl.h
+     INSTALLHDR vsock_transport.h
+     INSTALLHDR trust_caches.h
+     INSTALLHDR code_signing.h
+     INSTALLHDR lockdown_mode.h
+     INSTALLHDR sysproto.h
+Compiled generic DT platform archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armdt-platform/libArmDTPlatform.a
+Compiled Pong PSCI/GICv3 CPU archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armcpu/libArmCpu.a
+Derived 16 original storage imports from 22H374 (190 slots)
+Linked UFS with actual 22H374 storage dispatch and public base constructor/destructor
+Compiled Pong NativeUfs read/write path (boot-arg gated): /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/native-ufs/libNativeUfs.a
+audio container tfa98xx.cnt absent; building the power unit, the USB mux and the audio stubs
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/pong-power/pong-usb-mux.cpp:1:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:80:71: warning: implicit conversion loses integer precision: 'size_t' (aka 'unsigned long') to 'uint32_t' (aka 'unsigned int') [-Wshorten-64-to-32]
+   80 |    if(selector==6)a->scalarOutput[1]=done;else a->structureOutputSize=done;
+      |                                                                      ~^~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:50: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+  141 |  if(!service||!service->init()||!service->attach(IOService::getPlatform())||!service->start(IOService::getPlatform()))return false;
+      |                                                  ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOServicePM.h:40:7: note: 'IOPlatformExpert' is not defined, but forward declared here; conversion would be valid if it was derived from 'IOService'
+   40 | class IOPlatformExpert;
+      |       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOService.h:1135:35: note: passing argument to parameter 'provider' here
+ 1135 |         virtual bool attach( IOService * provider );
+      |                                          ^
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/pong-power/pong-usb-mux.cpp:1:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:93: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+  141 |  if(!service||!service->init()||!service->attach(IOService::getPlatform())||!service->start(IOService::getPlatform()))return false;
+      |                                                                                             ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOServicePM.h:40:7: note: 'IOPlatformExpert' is not defined, but forward declared here; conversion would be valid if it was derived from 'IOService'
+   40 | class IOPlatformExpert;
+      |       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOService.h:616:34: note: passing argument to parameter 'provider' here
+  616 |         virtual bool start( IOService * provider );
+      |                                         ^
+1 warning and 2 errors generated.
+
+build-xnu-ipados18.sh: line 279: python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-power-native.py" --tree "$ROOT" failed
+Inner build error excerpts:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:50: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:93: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+build-xnu-ipados18.sh: line 279: python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-power-native.py" --tree "$ROOT" failed
+Build failed; log retained: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T150524Z.log
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 35, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 30, in main
+    subprocess.run(command, cwd=source, check=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-ipados18-pong-macos.py', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--jobs', '4', '--skip-image-verification', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 54, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 44, in main
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-pong-profile-kernel.py'),
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py', '--source', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb', '--jobs', '4']' returned non-zero exit status 1.
+===== resolved config =====
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
+CONFIG_XNU_PONG_ADRENO_PLATFORM=n
+CONFIG_XNU_PONG_WIFI=n
+===== pong-power archive =====
+===== /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T150524Z.log =====
+     INSTALLHDR attr_private.h
+     INSTALLHDR commpage.h
+     INSTALLHDR syscall.h
+     INSTALLHDR sysproto.h
+     INSTALLHDR coalition_private.h
+     INSTALLHDR code_signing.h
+     INSTALLHDR codesign.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR csr.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR event_log.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fsgetpath_private.h
+     INSTALLHDR guarded.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR reason.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR __endian.h
+     INSTALLHDR _endian.h
+     INSTALLHDR _select.h
+     INSTALLHDR _structs.h
+     INSTALLHDR _types.h
+     INSTALLHDR acct.h
+     INSTALLHDR appleapiopts.h
+     INSTALLHDR aio.h
+     INSTALLHDR attr.h
+     INSTALLHDR attr_private.h
+     INSTALLHDR buf.h
+     INSTALLHDR cdefs.h
+     INSTALLHDR clonefile.h
+     INSTALLHDR coalition.h
+     INSTALLHDR codesign.h
+     INSTALLHDR coalition_private.h
+     INSTALLHDR commpage.h
+     INSTALLHDR conf.h
+     INSTALLHDR constrained_ctypes.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR crossarch.h
+     INSTALLHDR csr.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR dirent.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR dir.h
+     INSTALLHDR disk.h
+     INSTALLHDR disklabel.h
+     INSTALLHDR dkstat.h
+     INSTALLHDR domain.h
+     INSTALLHDR dtrace.h
+     INSTALLHDR dtrace_glue.h
+     INSTALLHDR dtrace_impl.h
+     INSTALLHDR errno.h
+     INSTALLHDR ev.h
+     INSTALLHDR event.h
+     INSTALLHDR event_log.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fasttrap.h
+     INSTALLHDR fasttrap_isa.h
+     INSTALLHDR fcntl.h
+     INSTALLHDR file.h
+     INSTALLHDR fileport.h
+     INSTALLHDR filedesc.h
+     INSTALLHDR filio.h
+     INSTALLHDR fsctl.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR fsgetpath.h
+     INSTALLHDR fsgetpath_private.h
+     INSTALLHDR fslog.h
+     INSTALLHDR gmon.h
+     INSTALLHDR guarded.h
+     INSTALLHDR imgsrc.h
+     INSTALLHDR ioccom.h
+     INSTALLHDR ioctl.h
+     INSTALLHDR ipc.h
+     INSTALLHDR ioctl_compat.h
+     INSTALLHDR ipcs.h
+     INSTALLHDR kas_info.h
+     INSTALLHDR kdebug.h
+     INSTALLHDR kauth.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kdebug_signpost.h
+     INSTALLHDR kdebug_triage.h
+     INSTALLHDR kern_control.h
+     INSTALLHDR kern_debug.h
+     INSTALLHDR kern_event.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR kern_memorystatus_freeze.h
+     INSTALLHDR kern_overrides.h
+     INSTALLHDR kern_sysctl.h
+     INSTALLHDR kernel.h
+     INSTALLHDR kernel_types.h
+     INSTALLHDR lctx.h
+     INSTALLHDR loadable_fs.h
+     INSTALLHDR lock.h
+     INSTALLHDR lockf.h
+     INSTALLHDR lockstat.h
+     INSTALLHDR log_data.h
+     INSTALLHDR malloc.h
+     INSTALLHDR mbuf.h
+     INSTALLHDR memory_maintenance.h
+     INSTALLHDR monotonic.h
+     INSTALLHDR mount.h
+     INSTALLHDR mman.h
+     INSTALLHDR msgbuf.h
+     INSTALLHDR msg.h
+     INSTALLHDR netport.h
+     INSTALLHDR os_log_coprocessor.h
+     INSTALLHDR param.h
+     INSTALLHDR paths.h
+     INSTALLHDR persona.h
+     INSTALLHDR pgo.h
+     INSTALLHDR poll.h
+     INSTALLHDR posix_sem.h
+     INSTALLHDR pipe.h
+     INSTALLHDR posix_shm.h
+     INSTALLHDR priv.h
+     INSTALLHDR proc.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR proc_uuid_policy.h
+     INSTALLHDR process_policy.h
+     INSTALLHDR protosw.h
+     INSTALLHDR ptrace.h
+     INSTALLHDR quota.h
+     INSTALLHDR queue.h
+     INSTALLHDR random.h
+     INSTALLHDR reason.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resource.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR sdt.h
+     INSTALLHDR select.h
+     INSTALLHDR sem.h
+     INSTALLHDR semaphore.h
+     INSTALLHDR sfi.h
+     INSTALLHDR shm.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR signal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR snapshot.h
+     INSTALLHDR socket.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR sockio.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR spawn.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR stdio.h
+     INSTALLHDR stat.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslog.h
+     INSTALLHDR termios.h
+     INSTALLHDR time.h
+     INSTALLHDR timeb.h
+     INSTALLHDR times.h
+     INSTALLHDR timex.h
+     INSTALLHDR trace.h
+     INSTALLHDR tty.h
+     INSTALLHDR tree.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR uio.h
+     INSTALLHDR ulock.h
+     INSTALLHDR un.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR user.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR utsname.h
+     INSTALLHDR ux_exception.h
+     INSTALLHDR vcmd.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vadvise.h
+     INSTALLHDR vm.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vnode.h
+     INSTALLHDR wait.h
+     INSTALLHDR vsock.h
+     INSTALLHDR vstat.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _symbol_aliasing.h
+     INSTALLHDR syscall.h
+     INSTALLHDR _posix_availability.h
+     INSTALLHDR appleapiopts.h
+     INSTALLHDR attr.h
+     INSTALLHDR buf.h
+     INSTALLHDR cdefs.h
+     INSTALLHDR conf.h
+     INSTALLHDR constrained_ctypes.h
+     INSTALLHDR dirent.h
+     INSTALLHDR dir.h
+     INSTALLHDR disk.h
+     INSTALLHDR disklabel.h
+     INSTALLHDR errno.h
+     INSTALLHDR dkstat.h
+     INSTALLHDR ev.h
+     INSTALLHDR event.h
+     INSTALLHDR fcntl.h
+     INSTALLHDR file.h
+     INSTALLHDR filio.h
+     INSTALLHDR ioccom.h
+     INSTALLHDR ioctl.h
+     INSTALLHDR ipc.h
+     INSTALLHDR kernel.h
+     INSTALLHDR ioctl_compat.h
+     INSTALLHDR kernel_types.h
+     INSTALLHDR kern_event.h
+     INSTALLHDR lock.h
+     INSTALLHDR lockf.h
+     INSTALLHDR kauth.h
+     INSTALLHDR kdebug.h
+     INSTALLHDR kdebug_private.h
+     INSTALLHDR kdebug_kernel.h
+     INSTALLHDR kern_control.h
+     INSTALLHDR md5.h
+     INSTALLHDR imgact.h
+     INSTALLHDR malloc.h
+     INSTALLHDR namei.h
+     INSTALLHDR mman.h
+     INSTALLHDR mbuf.h
+     INSTALLHDR mount.h
+     INSTALLHDR netport.h
+     INSTALLHDR param.h
+     INSTALLHDR proc.h
+     INSTALLHDR paths.h
+     INSTALLHDR random.h
+     INSTALLHDR queue.h
+     INSTALLHDR sbuf.h
+     INSTALLHDR resource.h
+     INSTALLHDR posix_sem.h
+     INSTALLHDR posix_shm.h
+     INSTALLHDR resource_private.h
+     INSTALLHDR sem.h
+     INSTALLHDR shm.h
+     INSTALLHDR select.h
+     INSTALLHDR signal.h
+     INSTALLHDR socket.h
+     INSTALLHDR sockio.h
+     INSTALLHDR socketvar.h
+     INSTALLHDR stdio.h
+     INSTALLHDR stat.h
+     INSTALLHDR syslimits.h
+     INSTALLHDR sysctl.h
+     INSTALLHDR syslog.h
+     INSTALLHDR systm.h
+     INSTALLHDR time.h
+     INSTALLHDR sys_domain.h
+     INSTALLHDR types.h
+     INSTALLHDR ubc.h
+     INSTALLHDR ucontext.h
+     INSTALLHDR ucred.h
+     INSTALLHDR uio.h
+     INSTALLHDR un.h
+     INSTALLHDR unistd.h
+     INSTALLHDR unpcb.h
+     INSTALLHDR utfconv.h
+     INSTALLHDR unicode.h
+     INSTALLHDR vm.h
+     INSTALLHDR vmparam.h
+     INSTALLHDR vnode.h
+     INSTALLHDR vnode_if.h
+     INSTALLHDR vsock.h
+     INSTALLHDR xattr.h
+     INSTALLHDR _structs.h
+     INSTALLHDR _select.h
+     INSTALLHDR _types.h
+     INSTALLHDR _endian.h
+     INSTALLHDR protosw.h
+     INSTALLHDR __endian.h
+     INSTALLHDR domain.h
+     INSTALLHDR kpi_mbuf.h
+     INSTALLHDR kpi_socket.h
+     INSTALLHDR kpi_socketfilter.h
+     INSTALLHDR ttycom.h
+     INSTALLHDR termios.h
+     INSTALLHDR wait.h
+     INSTALLHDR msg.h
+     INSTALLHDR spawn.h
+     INSTALLHDR timex.h
+     INSTALLHDR commpage.h
+     INSTALLHDR acct.h
+     INSTALLHDR attr_private.h
+     INSTALLHDR codesign.h
+     INSTALLHDR cprotect.h
+     INSTALLHDR content_protection.h
+     INSTALLHDR csr.h
+     INSTALLHDR decmpfs.h
+     INSTALLHDR disktab.h
+     INSTALLHDR dirent_private.h
+     INSTALLHDR event_log.h
+     INSTALLHDR eventhandler.h
+     INSTALLHDR event_private.h
+     INSTALLHDR fbt.h
+     INSTALLHDR fileport.h
+     INSTALLHDR fsctl.h
+     INSTALLHDR kern_memorystatus.h
+     INSTALLHDR fslog.h
+     INSTALLHDR kpi_private.h
+     INSTALLHDR kern_memorystatus_freeze.h
+     INSTALLHDR ktrace.h
+     INSTALLHDR kdebug_triage.h
+     INSTALLHDR linker_set.h
+     INSTALLHDR mach_swapon.h
+     INSTALLHDR monotonic.h
+     INSTALLHDR msgbuf.h
+     INSTALLHDR persona.h
+     INSTALLHDR eventvar.h
+     INSTALLHDR preoslog.h
+     INSTALLHDR proc_info.h
+     INSTALLHDR pthread_shims.h
+     INSTALLHDR proc_info_private.h
+     INSTALLHDR quota.h
+     INSTALLHDR reboot.h
+     INSTALLHDR resourcevar.h
+     INSTALLHDR sem_internal.h
+     INSTALLHDR signalvar.h
+     INSTALLHDR shm_internal.h
+     INSTALLHDR socket_private.h
+     INSTALLHDR sockio_private.h
+     INSTALLHDR stackshot.h
+     INSTALLHDR timeb.h
+     INSTALLHDR times.h
+     INSTALLHDR tprintf.h
+     INSTALLHDR ttychars.h
+     INSTALLHDR tty.h
+     INSTALLHDR ttydefaults.h
+     INSTALLHDR ttydev.h
+     INSTALLHDR user.h
+     INSTALLHDR variant_internal.h
+     INSTALLHDR vmmeter.h
+     INSTALLHDR vfs_context.h
+     INSTALLHDR reason.h
+     INSTALLHDR spawn_internal.h
+     INSTALLHDR priv.h
+     INSTALLHDR pgo.h
+     INSTALLHDR memory_maintenance.h
+     INSTALLHDR doc_tombstone.h
+     INSTALLHDR fsevents.h
+     INSTALLHDR work_interval.h
+     INSTALLHDR kern_sysctl.h
+     INSTALLHDR vsock_transport.h
+     INSTALLHDR trust_caches.h
+     INSTALLHDR code_signing.h
+     INSTALLHDR lockdown_mode.h
+     INSTALLHDR sysproto.h
+Compiled generic DT platform archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armdt-platform/libArmDTPlatform.a
+Compiled Pong PSCI/GICv3 CPU archive: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/armcpu/libArmCpu.a
+Derived 16 original storage imports from 22H374 (190 slots)
+Linked UFS with actual 22H374 storage dispatch and public base constructor/destructor
+Compiled Pong NativeUfs read/write path (boot-arg gated): /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/native-ufs/libNativeUfs.a
+audio container tfa98xx.cnt absent; building the power unit, the USB mux and the audio stubs
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/pong-power/pong-usb-mux.cpp:1:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:80:71: warning: implicit conversion loses integer precision: 'size_t' (aka 'unsigned long') to 'uint32_t' (aka 'unsigned int') [-Wshorten-64-to-32]
+   80 |    if(selector==6)a->scalarOutput[1]=done;else a->structureOutputSize=done;
+      |                                                                      ~^~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:50: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+  141 |  if(!service||!service->init()||!service->attach(IOService::getPlatform())||!service->start(IOService::getPlatform()))return false;
+      |                                                  ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOServicePM.h:40:7: note: 'IOPlatformExpert' is not defined, but forward declared here; conversion would be valid if it was derived from 'IOService'
+   40 | class IOPlatformExpert;
+      |       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOService.h:1135:35: note: passing argument to parameter 'provider' here
+ 1135 |         virtual bool attach( IOService * provider );
+      |                                          ^
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/pong-power/pong-usb-mux.cpp:1:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:93: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+  141 |  if(!service||!service->init()||!service->attach(IOService::getPlatform())||!service->start(IOService::getPlatform()))return false;
+      |                                                                                             ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOServicePM.h:40:7: note: 'IOPlatformExpert' is not defined, but forward declared here; conversion would be valid if it was derived from 'IOService'
+   40 | class IOPlatformExpert;
+      |       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/IOKit/IOService.h:616:34: note: passing argument to parameter 'provider' here
+  616 |         virtual bool start( IOService * provider );
+      |                                         ^
+1 warning and 2 errors generated.
+
+build-xnu-ipados18.sh: line 279: python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-power-native.py" --tree "$ROOT" failed
+===== error lines =====
+3733:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:50: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+3743:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/drivers/PongUsb/PongUsbMux.h:141:93: error: cannot initialize a parameter of type 'IOService *' with an rvalue of type 'IOPlatformExpert *'
+3754:build-xnu-ipados18.sh: line 279: python3 "$PONG_NATIVE_DRIVER_SOURCE/scripts/build-pong-power-native.py" --tree "$ROOT" failed

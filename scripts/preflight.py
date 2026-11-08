@@ -117,6 +117,11 @@ def pass_decisions():
         fail(3, "build-pong-power-native.py", "the no-container branch does not compile PongPower.cpp")
     else:
         print("  power unit builds PongPower.cpp without the audio container")
+    branch = power.split("if container.is_file():")[-1]
+    for banned in ("PongAudio.cpp", "PongAudioService.cpp"):
+        if f"'{banned}'" in branch:
+            fail(3, "build-pong-power-native.py", f"{banned} needs the amplifier profile and cannot join the no-container list")
+    print("  amp-profile sources stay out of the no-container list")
     if "'PongBattery.cpp'" not in power:
         fail(3, "build-pong-power-native.py", "PongBattery.cpp missing: pong_battery_usb_online would not link")
     else:

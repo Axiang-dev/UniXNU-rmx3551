@@ -54,9 +54,14 @@ def main():
   stub.write_text(chr(10).join(['/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path', '   links without the amplifier profile this public tree does not carry.  Every', '   symbol is weak: a real definition elsewhere wins, and nothing here touches', '   audio hardware.  The mux lives in PongAudioService.cpp; until it is split out,', '   publish nothing -- the CDC console does not use it. */', 'extern "C" {', '__attribute__((weak)) void PongAudioServiceStaticInit(void) {}', '__attribute__((weak)) void sheng_adsp_probe(void) {}', '__attribute__((weak)) void sheng_audio_probe(void) {}', '__attribute__((weak)) void sheng_battery_start(void) {}', '__attribute__((weak)) void PongBatteryStaticInit(void) {}', '__attribute__((weak)) void pong_rpmh_init(void) {}', '__attribute__((weak)) bool pong_usb_mux_publish(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_session(bool) {}', '__attribute__((weak)) bool pong_usb_mux_receive(const void *,unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_can_receive(unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_bridge_ready(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_attached(bool) {}', '}']))
   # GeniI2c.c carries the transfers PongUsb's repeater path calls; without it the
   # link stops at geni_i2c_prepare/poll/start_read.
-  # PongBattery.cpp answers pong_battery_usb_online(), the cable question PongUsb asks
-  # before it starts; GeniI2c.c carries the transfers its repeater path calls.
-  sources=('GeniI2c.c','PongBattery.cpp','PongPlatformResources.cpp','PongPower.cpp',str(stub))
+  # Everything except the two files that need the amplifier profile: PongAudio.cpp
+  # and PongAudioService.cpp.  PongBattery.cpp pulls the battery/ADSP chain
+  # (ShengBattmgr, ShengGpr, QcomGlink ...) and PongUsb pulls QcomRpmh for rail
+  # votes, so the list is the full one less those two.
+  sources=('QcomRpmh.c','QcomSmem.c','QcomSmp2p.c','QcomGlink.c','QcomMdt.c','QcomQmp.c',
+           'ShengBattmgr.c','ShengGpr.c','ShengAudioReach.c','GeniI2c.c','PongFirmware.c',
+           'PongAdsp.cpp','PongBattery.cpp','PongPlatformResources.cpp','PongPower.cpp',
+           'PongBacklight.cpp',str(stub))
   print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
  objects=[]
  for name in sources:

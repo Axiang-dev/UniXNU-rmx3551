@@ -146,11 +146,23 @@ jobs:
             --output apple/ipados18-22H374/components/kernelcache.release.ipad7c.decompressed/kernelcache.release.ipad7c.decompressed
           ls -l apple/ipados18-22H374/components/
 
+      - name: Fetch the shared sheng sources
+        # PongUsbDevice.h includes QcomRpmh.h, which lives in the shared sheng package.
+        # The device tree never fetched it, so the USB entry could not compile even when
+        # it was selected.  Pin the revision rather than tracking main.
+        run: |
+          set -euo pipefail
+          if [ ! -d "${PONG_INPUT_ROOT}/sheng/.git" ]; then
+            git clone --filter=blob:none --no-checkout https://github.com/UniXNU/UniXNU-sheng.git "${PONG_INPUT_ROOT}/sheng"
+          fi
+          git -C "${PONG_INPUT_ROOT}/sheng" checkout --force 689400177f93219a38bd7cf5ae2e9f5782adc594
+
       - name: Resolve configuration and build the kernel
         working-directory: device
         # The power archive now builds PongPower.cpp (the USB entry) even without the
         # audio container, using weak stubs for the audio symbols it names.
         env:
+          PONG_SHENG_ROOT: ${{ env.PONG_INPUT_ROOT }}/sheng
           XNU_PONG_POWER: '1'
           XNU_SOURCE_CORECRYPTO14: '0'
         # The wrapper used to drop every XNU_ variable it inherited, keeping only

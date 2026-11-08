@@ -154,7 +154,7 @@
  * /rmx3551-touch and /pong-buttons instead. */
 &apss {
     pong-touch {
-        compatible = "pong,goodix-berlin";
+        compatible = "pong,synaptics-s3910";
         unixnu,adt-name = "pong-touch";
         spi-base = /bits/ 64 <0x990000>;
         tlmm-base = /bits/ 64 <0xf000000>;
@@ -162,8 +162,8 @@
         rsc-base = /bits/ 64 <0x17a20000>;
         cmd-db-base = /bits/ 64 <0x80860000>;
         gpio-offset = <0x100000>;
-        pins = <16 17 18 19 21 20>;
-        max-x = <1080>; max-y = <2412>;
+        pins = <16 17 18 19 21 20 97>;
+        max-x = <8640>; max-y = <19296>;
     };
     pong-buttons {
         compatible = "pong,pm8350-keys";

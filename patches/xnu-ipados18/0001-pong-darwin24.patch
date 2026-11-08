@@ -366,15 +366,148 @@ index 0000000..7c6c450
 +    if (kernel_thread_start(keys_thread,NULL,&t)==KERN_SUCCESS) thread_deallocate(t);
 +}
 +#endif
+diff --git a/bsd/dev/pong_s3910_protocol.h b/bsd/dev/pong_s3910_protocol.h
+new file mode 100644
+index 0000000..e98b61f
+--- /dev/null
++++ b/bsd/dev/pong_s3910_protocol.h
+@@ -0,0 +1,126 @@
++/* SPDX-License-Identifier: BSD-2-Clause-Patent
++ * Pure TouchComm wire helpers shared by the S3910 kernel driver and its host
++ * test. The including translation unit supplies uintN_t, size_t and memset. */
++#ifndef PONG_S3910_PROTOCOL_H
++#define PONG_S3910_PROTOCOL_H
++
++#define S3910_CONTACTS          10
++#define S3910_PAYLOAD_MAX       512
++
++struct s3910_contact {
++	uint16_t x, y;
++	uint8_t active;
++};
++
++struct s3910_frame {
++	struct s3910_contact contact[S3910_CONTACTS];
++};
++
++struct s3910_bus {
++	void *context;
++	int (*read)(void *, uint8_t *, size_t);
++	int (*write)(void *, const uint8_t *, size_t);
++	void (*sleep_ms)(void *, unsigned);
++};
++
++struct s3910 {
++	struct s3910_bus bus;
++	uint16_t max_x, max_y, config_size, max_write, max_read;
++	uint8_t mode, code, ready, crc, version, sequence;
++	uint16_t length;
++	uint8_t command;
++	const char *stage;
++	int32_t detail;
++	uint8_t payload[S3910_PAYLOAD_MAX];
++};
++
++static inline uint16_t
++s3910_le16(const uint8_t *p)
++{
++	return (uint16_t)(p[0] | (uint16_t)p[1] << 8);
++}
++
++static inline uint32_t
++s3910_le32(const uint8_t *p)
++{
++	return s3910_le16(p) | (uint32_t)s3910_le16(p + 2) << 16;
++}
++
++static inline uint8_t
++s3910_crc6(const uint8_t *p, unsigned bits)
++{
++	uint8_t crc = 0x3f;
++
++	for (unsigned i = 0; i < bits; i++) {
++		unsigned bit = ((crc >> 5) ^ (p[i / 8] >> (7 - i % 8))) & 1;
++
++		crc = (uint8_t)(((crc << 1) & 0x3f) ^ (bit ? 3 : 0));
++	}
++	return crc;
++}
++
++static inline uint16_t
++s3910_crc16(const uint8_t *p, unsigned size)
++{
++	uint16_t crc = 0xffff;
++
++	for (unsigned i = 0; i < size; i++) {
++		crc ^= (uint16_t)p[i] << 8;
++		for (unsigned bit = 0; bit < 8; bit++) {
++			crc = (uint16_t)((crc << 1) ^ ((crc & 0x8000) ? 0x1021 : 0));
++		}
++	}
++	return crc;
++}
++
++/* Synaptics clocks 0xff on MOSI for every byte returned from the chip. */
++static inline void
++s3910_prepare_read(uint8_t *data, size_t size)
++{
++	memset(data, 0xff, size);
++}
++
++static inline uint16_t
++s3910_normalize(uint16_t value, uint16_t maximum)
++{
++	if (value >= maximum) {
++		return 65535;
++	}
++	return (uint16_t)((uint32_t)value * 65535u / maximum);
++}
++
++static inline int
++s3910_decode(const uint8_t *p, size_t length, uint16_t maximum_x, uint16_t maximum_y,
++    struct s3910_frame *out)
++{
++	struct s3910_frame frame;
++	uint16_t seen = 0;
++
++	if (!p || !out || !maximum_x || !maximum_y || !length || p[0] > S3910_CONTACTS ||
++	    length != 1u + 6u * p[0]) {
++		return -71;
++	}
++	memset(&frame, 0, sizeof(frame));
++	for (unsigned n = 0; n < p[0]; n++) {
++		const uint8_t *contact = p + 1 + n * 6;
++		unsigned id = contact[0];
++		uint16_t x = s3910_le16(contact + 2);
++		uint16_t y = s3910_le16(contact + 4);
++
++		if (id >= S3910_CONTACTS || (seen & (1u << id)) || x > maximum_x || y > maximum_y) {
++			return -71;
++		}
++		seen |= (uint16_t)(1u << id);
++		/* Finger and glove are contacts; palms and stylus reports are not. */
++		if (contact[1] != 1 && contact[1] != 2) {
++			continue;
++		}
++		frame.contact[id].active = 1;
++		frame.contact[id].x = s3910_normalize(x, maximum_x);
++		frame.contact[id].y = s3910_normalize(y, maximum_y);
++	}
++	*out = frame;
++	return 0;
++}
++
++#endif /* PONG_S3910_PROTOCOL_H */
 diff --git a/bsd/dev/pong_goodix.c b/bsd/dev/pong_goodix.c
 new file mode 100644
-index 0000000..00feebd
+index 0000000..ec8da0e
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,919 @@
-+/* Goodix Berlin-D / Pong SM8475. Adapted from the earlier redwood_goodix.c
-+ * (APSL 2.0). Hardware resources are the Pong live DT, checked against the
-+ * NothingOSS cape pinctrl and waipio GCC source. No Redwood peripherals. */
+@@ -0,0 +1,1307 @@
++/* Synaptics S3910 / RMX3551 SM8475 TouchComm over QUP0/SE4.
++ * The SPI, GENI and PMIC plumbing started in the Pong Goodix driver; the
++ * chip protocol is the TouchComm v1/v2 implementation used by upstream S3910.
++ * Board resources are taken from the RMX3551 recovery DT. */
 +#include <pexpert/arm64/board_config.h>
 +#if defined(PONG)
 +#include <kern/clock.h>
@@ -386,6 +519,7 @@ index 0000000..00feebd
 +#include <kern/sched_prim.h>
 +#include <pexpert/device_tree.h>
 +#include <sys/systm.h>
++#include "pong_s3910_protocol.h"
 +
 +
 +
@@ -395,7 +529,7 @@ index 0000000..00feebd
 +
 +static vm_offset_t tlmm, gcc, se, rsc, cmd_db;
 +static uint64_t tlmm_phys, gcc_phys, se_phys, rsc_phys, cmd_db_phys;
-+static uint32_t pins[6], gpio_offset, max_x, max_y;
++static uint32_t pins[7], gpio_offset, max_x, max_y;
 +
 +static bool
 +property(DTEntry entry, const char *name, void *out, unsigned size)
@@ -418,10 +552,10 @@ index 0000000..00feebd
 +        property(entry,"max-y",&max_y,4) && se_phys==0x990000 && tlmm_phys==0xf000000 &&
 +        gcc_phys==0x100000 && rsc_phys==0x17a20000 && cmd_db_phys==0x80860000 &&
 +        gpio_offset==0x100000 && pins[0]==16 && pins[1]==17 && pins[2]==18 &&
-+        pins[3]==19 && pins[4]==21 && pins[5]==20 && max_x==1080 && max_y==2412;
-+    if (!ok) printf("Pong touch: DT spi=%#llx tlmm=%#llx gcc=%#llx rsc=%#llx cmd=%#llx off=%#x pins=%u,%u,%u,%u,%u,%u max=%ux%u\n",
++        pins[3]==19 && pins[4]==21 && pins[5]==20 && pins[6]==97 && max_x==8640 && max_y==19296;
++    if (!ok) printf("Pong touch: DT spi=%#llx tlmm=%#llx gcc=%#llx rsc=%#llx cmd=%#llx off=%#x pins=%u,%u,%u,%u,%u,%u,%u max=%ux%u\n",
 +        se_phys, tlmm_phys, gcc_phys, rsc_phys, cmd_db_phys, gpio_offset,
-+        pins[0], pins[1], pins[2], pins[3], pins[4], pins[5], max_x, max_y);
++        pins[0], pins[1], pins[2], pins[3], pins[4], pins[5], pins[6], max_x, max_y);
 +    return ok;
 +}
 +
@@ -468,7 +602,8 @@ index 0000000..00feebd
 +#define PIN_CS                  pins[3]
 +#define PIN_INT                 pins[4]      /* low = the chip has a report */
 +#define PIN_RESET               pins[5]     /* low = in reset */
-+#define PIN_FUNCTION_SPI        1       /* "qup15" */
++#define PIN_ENABLE_1V8          pins[6]     /* high enables the S3910 1.8 V rail */
++#define PIN_FUNCTION_SPI        1           /* TLMM function qup4 for GPIO16..19 */
 +
 +static void
 +gpio_configure(unsigned pin, unsigned function, unsigned pull, unsigned ma, bool output)
@@ -622,18 +757,22 @@ index 0000000..00feebd
 +	return done;
 +}
 +
-+/* Pong DT: AVDD=pm8350c_l3 at 2.7 V, IOVDD=pm8350c_l12 at 1.8 V. */
++/* RMX3551 recovery DT: AVDD=pm8350c_l3 at 3.008 V,
++ * IOVDD=pm8450_l4 at 1.8 V. RPMh VRM voltage data is in millivolts. */
 +static bool
 +io_supply_on(void)
 +{
-+    uint32_t avdd=rpmh_address("ldoc3"), iovdd=rpmh_address("ldoc12");
-+    if (!avdd || !iovdd || ((avdd>>16)&15)!=4 || ((iovdd>>16)&15)!=4) return false;
-+    uint32_t address[3]={iovdd,iovdd+4,iovdd+8}, data[3]={1800,1,7};
++    uint32_t avdd=rpmh_address("ldoc3"), iovdd=rpmh_address("ldoh4");
++    if (!avdd || !iovdd || ((avdd>>16)&15)!=4 || ((iovdd>>16)&15)!=4) {
++        printf("Pong touch: regulator lookup failed avdd=%#x iovdd=%#x\n", avdd, iovdd);
++        return false;
++    }
++    uint32_t address[3]={avdd,avdd+4,avdd+8}, data[3]={3008,1,7};
 +    if (!rpmh_write(address,data,3)) return false;
 +    sleep_ms(3);
-+    address[0]=avdd;address[1]=avdd+4;address[2]=avdd+8;data[0]=2700;
++    address[0]=iovdd;address[1]=iovdd+4;address[2]=iovdd+8;data[0]=1800;
 +    if (!rpmh_write(address,data,3)) return false;
-+    sleep_ms(15);return true;
++    sleep_ms(3);return true;
 +}
 +
 +/* ---- clocks (GCC) -------------------------------------------------------------------------------- */
@@ -968,327 +1107,708 @@ index 0000000..00feebd
 +
 +static bool (*spi_transfer)(const uint8_t *tx, uint8_t *rx, uint32_t length);
 +
-+/* ---- the Goodix chip ------------------------------------------------------------------------------- */
++/* ---- Synaptics S3910 (TouchComm v1/v2) -------------------------------------------- */
 +
-+#define GOODIX_FW_VERSION       0x10014         /* 28 bytes */
-+#define GOODIX_IC_INFO          0x10070         /* a 16-bit length, then that many bytes */
-+#define GOODIX_MAX_READ         1024
-+#define GOODIX_MAX_TOUCHES      10
-+#define GOODIX_STATUS_TOUCH     0x80
-+#define GOODIX_STATUS_REQUEST   0x40
-+#define GOODIX_REQUEST_RESET    3
++static struct s3910 s3910;
++static struct s3910_frame s3910_previous, s3910_current;
++static uint8_t s3910_read_fill[S3910_PAYLOAD_MAX + 7];
++static uint8_t s3910_first_read[12];
++static unsigned s3910_first_read_length, s3910_touch_report_rate = 60;
 +
-+static uint8_t spi_tx[8 + GOODIX_MAX_READ], spi_rx[8 + GOODIX_MAX_READ];
-+static uint32_t touch_address, command_address;
-+
-+static bool
-+goodix_read(uint32_t address, uint8_t *data, uint32_t length)
++static int
++s3910_bus_read(void *context, uint8_t *data, size_t size)
 +{
-+	if (length > GOODIX_MAX_READ) {
-+		return false;
++	int rc;
++
++	(void)context;
++	if (!data || !size || size > sizeof(s3910_read_fill)) {
++		return -22;
 +	}
-+	spi_tx[0] = 0xf1;
-+	spi_tx[1] = (uint8_t)(address >> 24);
-+	spi_tx[2] = (uint8_t)(address >> 16);
-+	spi_tx[3] = (uint8_t)(address >> 8);
-+	spi_tx[4] = (uint8_t)address;
-+	spi_tx[5] = spi_tx[6] = spi_tx[7] = 0xff;
-+	memset(spi_tx + 8, 0, length);
-+	if (!spi_transfer(spi_tx, spi_rx, 8 + length)) {
-+		return false;
++	/* Synaptics SPI reads clock 0xff on MOSI. */
++	s3910_prepare_read(s3910_read_fill, size);
++	rc = spi_transfer(s3910_read_fill, data, (uint32_t)size);
++	if (!s3910_first_read_length && size) {
++		s3910_first_read_length = size < sizeof(s3910_first_read) ? (unsigned)size : sizeof(s3910_first_read);
++		memcpy(s3910_first_read, data, s3910_first_read_length);
 +	}
-+	memcpy(data, spi_rx + 8, length);
-+	return true;
++	return rc ? 0 : -5;
 +}
 +
-+static bool
-+goodix_write(uint32_t address, const uint8_t *data, uint32_t length)
++static int
++s3910_bus_write(void *context, const uint8_t *data, size_t size)
 +{
-+	if (length > GOODIX_MAX_READ) {
-+		return false;
++	(void)context;
++	if (!data || !size || size > 0xffffffffu) {
++		return -22;
 +	}
-+	spi_tx[0] = 0xf0;
-+	spi_tx[1] = (uint8_t)(address >> 24);
-+	spi_tx[2] = (uint8_t)(address >> 16);
-+	spi_tx[3] = (uint8_t)(address >> 8);
-+	spi_tx[4] = (uint8_t)address;
-+	memcpy(spi_tx + 5, data, length);
-+	return spi_transfer(spi_tx, NULL, 5 + length);
++	return spi_transfer(data, NULL, (uint32_t)size) ? 0 : -5;
 +}
 +
-+/* The chip's blocks end in the 16-bit sum of their bytes; all zeros or all ones is no answer at all. */
-+static bool
-+goodix_checksum_ok(const uint8_t *data, uint32_t length)
++static void
++s3910_bus_sleep(void *context, unsigned ms)
 +{
-+	uint32_t sum = 0;
-+	bool blank = true;
-+
-+	if (length < 2) {
-+		return false;
-+	}
-+	for (uint32_t i = 0; i < length - 2; i++) {
-+		sum += data[i];
-+		blank &= data[i] == 0 || data[i] == 0xff;
-+	}
-+	return !blank && (uint16_t)sum == (uint16_t)(data[length - 2] | data[length - 1] << 8);
++	(void)context;
++	sleep_ms(ms);
 +}
 +
-+static uint16_t
-+le16(const uint8_t *p)
++static int
++s3910_write_v2(uint8_t command, const uint8_t *data, unsigned length)
 +{
-+	return (uint16_t)(p[0] | p[1] << 8);
++	uint8_t packet[S3910_PAYLOAD_MAX + 6];
++	unsigned size = 4 + length + (length ? 2 : 0);
++
++	s3910.stage = "write";
++	s3910.detail = length;
++	if (length > S3910_PAYLOAD_MAX || (length && !data) ||
++	    (s3910.max_write && size > s3910.max_write)) {
++		return -90;
++	}
++	packet[0] = command;
++	packet[1] = (uint8_t)length;
++	packet[2] = (uint8_t)(length >> 8);
++	packet[3] = (uint8_t)((s3910.sequence++ & 1) << 6);
++	packet[3] |= s3910_crc6(packet, 26);
++	if (length) {
++		uint16_t crc;
++
++		memcpy(packet + 4, data, length);
++		crc = s3910_crc16(packet, length + 4);
++		packet[length + 4] = (uint8_t)(crc >> 8);
++		packet[length + 5] = (uint8_t)crc;
++	}
++	return s3910.bus.write(s3910.bus.context, packet, size);
 +}
 +
-+static uint32_t
-+le32(const uint8_t *p)
++static int
++s3910_response_v2(void)
 +{
-+	return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24;
++	uint8_t head[4], body[S3910_PAYLOAD_MAX + 6];
++	unsigned cap;
++	bool discard;
++	int rc;
++
++	s3910.stage = "header";
++	s3910.detail = 0;
++	rc = s3910.bus.read(s3910.bus.context, head, sizeof(head));
++	if (rc) {
++		return rc;
++	}
++	s3910.detail = s3910_le32(head);
++	if (s3910_crc6(head, 32)) {
++		return -74;
++	}
++	s3910.code = head[0];
++	s3910.length = s3910_le16(head + 1);
++	discard = s3910.length > S3910_PAYLOAD_MAX;
++	if (discard && (s3910.ready || s3910.code != 0x23)) {
++		return -90;
++	}
++	cap = s3910.max_read ? s3910.max_read : 256;
++	if (cap > sizeof(body)) {
++		cap = sizeof(body);
++	}
++	if (cap <= 6) {
++		s3910.stage = "read limit";
++		s3910.detail = cap;
++		return -90;
++	}
++	for (unsigned offset = 0; offset < s3910.length;) {
++		unsigned size = s3910.length - offset;
++
++		if (size > cap - 6) {
++			size = cap - 6;
++		}
++		for (unsigned retry = 0; retry < 5; retry++) {
++			rc = s3910_write_v2(retry ? 8 : 7, NULL, 0);
++			if (rc) {
++				return rc;
++			}
++			s3910.stage = "continued";
++			s3910.detail = 0;
++			rc = s3910.bus.read(s3910.bus.context, body, size + 6);
++			if (rc) {
++				return rc;
++			}
++			s3910.detail = s3910_le32(body);
++			if (!s3910_crc6(body, 32) && !s3910_crc16(body, size + 6)) {
++				break;
++			}
++			s3910.stage = "body CRC";
++			if (retry == 4) {
++				return -74;
++			}
++		}
++		if (!discard) {
++			memcpy(s3910.payload + offset, body + 4, size);
++		}
++		offset += size;
++	}
++	return 0;
++}
++
++static int
++s3910_exchange_v2(uint8_t command, const uint8_t *data, unsigned length)
++{
++	uint8_t sequence = s3910.sequence;
++
++	for (unsigned retry = 0; retry < 5; retry++) {
++		int rc;
++
++		/* A requested retransmission keeps the original sequence bit. */
++		s3910.sequence = sequence;
++		rc = s3910_write_v2(command, data, length);
++		if (rc) {
++			return rc;
++		}
++		s3910.bus.sleep_ms(s3910.bus.context, 1);
++		rc = s3910_response_v2();
++		if (rc) {
++			return rc;
++		}
++		if (s3910.code != 8 && s3910.code != 0xfe) {
++			return 0;
++		}
++	}
++	s3910.stage = "retry";
++	s3910.detail = s3910.code;
++	return -5;
++}
++
++static int
++s3910_request_v2(uint8_t command, const uint8_t *data, unsigned length)
++{
++	unsigned cap = s3910.max_write ? s3910.max_write : S3910_PAYLOAD_MAX + 6, offset = 0;
++
++	if (cap > S3910_PAYLOAD_MAX + 6) {
++		cap = S3910_PAYLOAD_MAX + 6;
++	}
++	s3910.stage = "write limit";
++	s3910.detail = cap;
++	if (length > S3910_PAYLOAD_MAX || (length && (!data || cap <= 6)) || cap < 4) {
++		return -90;
++	}
++	do {
++		unsigned size = length - offset;
++		int rc;
++
++		if (size && size > cap - 6) {
++			size = cap - 6;
++		}
++		rc = s3910_exchange_v2(offset ? 1 : command, data ? data + offset : NULL, size);
++		if (rc) {
++			return rc;
++		}
++		if (s3910.code == 0x10 && command != 2) {
++			s3910.stage = "restart";
++			return -104;
++		}
++		if (s3910.code < 0x10 && s3910.code != 1 && s3910.code != 4 && s3910.code != 7) {
++			s3910.stage = "reply";
++			s3910.detail = s3910.code;
++			return -5;
++		}
++		offset += size;
++	} while (offset < length);
++	return 0;
++}
++
++static int
++s3910_message(void)
++{
++	uint8_t head[4], body[S3910_PAYLOAD_MAX + 7];
++	int rc;
++
++	if (s3910.version == 2) {
++		return s3910_exchange_v2(0x0a, NULL, 0);
++	}
++	s3910.stage = "header";
++	s3910.detail = 0;
++	rc = s3910.bus.read(s3910.bus.context, head, sizeof(head));
++	if (rc) {
++		return rc;
++	}
++	s3910.detail = s3910_le32(head);
++	if (head[0] != 0xa5) {
++		if (!s3910.version && s3910.detail && s3910.detail != (int32_t)0xffffffffu &&
++		    !s3910_crc6(head, 32)) {
++			s3910.version = 2;
++			return 0;
++		}
++		return -71;
++	}
++	s3910.version = 1;
++	s3910.code = head[1];
++	s3910.length = s3910_le16(head + 2);
++	if (s3910.length > S3910_PAYLOAD_MAX) {
++		unsigned left = s3910.length;
++
++		/* A queued HBP frame may precede DISABLE_REPORT's response after reset. */
++		if (s3910.ready || s3910.code != 0x23) {
++			return -90;
++		}
++		while (left) {
++			unsigned size = left > S3910_PAYLOAD_MAX ? S3910_PAYLOAD_MAX : left;
++
++			s3910.stage = "continued";
++			s3910.detail = 0;
++			rc = s3910.bus.read(s3910.bus.context, body, size + 2 + (size == left ? 5 : 0));
++			if (rc) {
++				return rc;
++			}
++			s3910.detail = s3910_le32(body);
++			if (body[0] != 0xa5 || body[1] != 3) {
++				return -71;
++			}
++			if (size == left && body[size + 2] != 0x5a) {
++				s3910.stage = "padding";
++				s3910.detail = body[size + 2];
++				return -71;
++			}
++			left -= size;
++		}
++		return 0;
++	}
++	if (!s3910.length) {
++		return 0;
++	}
++	/* Read EOM, optional CRC/RC and trailing EOM as one SPI transaction. */
++	s3910.stage = "continued";
++	s3910.detail = 0;
++	rc = s3910.bus.read(s3910.bus.context, body, s3910.length + 7);
++	if (rc) {
++		return rc;
++	}
++	s3910.detail = s3910_le32(body);
++	if (body[0] != 0xa5 || body[1] != 3) {
++		return -71;
++	}
++	if (body[s3910.length + 2] != 0x5a) {
++		s3910.stage = "padding";
++		s3910.detail = body[s3910.length + 2];
++		return -71;
++	}
++	if (s3910.code == 0x10) {
++		s3910.crc = s3910_le16(body + s3910.length + 3) != 0x5a5a;
++	}
++	memcpy(s3910.payload, body + 2, s3910.length);
++	return 0;
++}
++
++static int
++s3910_command(uint8_t command, const uint8_t *data, unsigned length)
++{
++	uint8_t packet[S3910_PAYLOAD_MAX + 5];
++	int rc;
++
++	s3910.command = command;
++	s3910.stage = "write";
++	s3910.detail = length;
++	if (s3910.version == 2) {
++		rc = s3910_request_v2(command, data, length);
++	} else {
++		if (length > S3910_PAYLOAD_MAX || (length && !data) ||
++		    (s3910.max_write && length + 3 + 2 * s3910.crc > s3910.max_write)) {
++			return -90;
++		}
++		packet[0] = command;
++		packet[1] = (uint8_t)length;
++		packet[2] = (uint8_t)(length >> 8);
++		if (length) {
++			memcpy(packet + 3, data, length);
++		}
++		unsigned size = length + 3;
++		if (s3910.crc) {
++			uint16_t crc = s3910_crc16(packet, size);
++
++			packet[size++] = (uint8_t)crc;
++			packet[size++] = (uint8_t)(crc >> 8);
++		}
++		rc = s3910.bus.write(s3910.bus.context, packet, size);
++	}
++	if (rc) {
++		return rc;
++	}
++	for (unsigned n = 0; n < 300; n++) {
++		if (s3910.version != 2 || n) {
++			s3910.bus.sleep_ms(s3910.bus.context, 10);
++			rc = s3910_message();
++			if (rc) {
++				return rc;
++			}
++		}
++		if (s3910.code == 1 || (command == 2 && s3910.code == 0x10)) {
++			return 0;
++		}
++		if (s3910.code == 0x10) {
++			s3910.stage = "restart";
++			return -104;
++		}
++		if (s3910.code >= 0xfe || (s3910.code && s3910.code < 0x10 && s3910.code != 4 &&
++		    s3910.code != 7)) {
++			s3910.stage = "reply";
++			s3910.detail = s3910.code;
++			return -5;
++		}
++	}
++	return -110;
++}
++
++static int
++s3910_start(void)
++{
++	static const uint8_t format[] = { 0x18, 8, 1, 6, 8, 7, 8, 8, 16, 9, 16, 3, 0 };
++	uint8_t config[S3910_PAYLOAD_MAX] = { 0 };
++	uint8_t report;
++	int rc;
++
++	if (!s3910.bus.read || !s3910.bus.write || !s3910.bus.sleep_ms) {
++		return -22;
++	}
++	s3910.ready = 0;
++	s3910.max_write = 0;
++	s3910.max_read = 0;
++	s3910.crc = 0;
++	s3910.version = 0;
++	s3910.sequence = 0;
++	s3910.command = 0;
++	s3910.mode = 0;
++	s3910.code = 0;
++	s3910.length = 0;
++	rc = s3910_message();
++	if (rc) {
++		return rc;
++	}
++	if (s3910.code != 0x10) {
++		rc = s3910_command(2, NULL, 0);
++		if (rc) {
++			return rc;
++		}
++	}
++	s3910.stage = "identify";
++	s3910.detail = s3910.length;
++	if (s3910.length < 24) {
++		return -71;
++	}
++	s3910.mode = s3910.payload[1];
++	s3910.max_write = s3910_le16(s3910.payload + 22);
++	if (s3910.mode != 1) {
++		return -19;
++	}
++	if (s3910.version == 2 && s3910.length >= 26) {
++		s3910.max_read = s3910_le16(s3910.payload + 24);
++	}
++	report = 0x23;
++	rc = s3910_command(6, &report, 1);
++	if (rc) {
++		return rc;
++	}
++	rc = s3910_command(0x20, NULL, 0);
++	if (rc) {
++		return rc;
++	}
++	s3910.stage = "app info";
++	s3910.detail = s3910.length;
++	if (s3910.length < 38 || s3910_le16(s3910.payload + 2)) {
++		return -71;
++	}
++	s3910.config_size = s3910_le16(s3910.payload + 12);
++	s3910.max_x = s3910_le16(s3910.payload + 32);
++	s3910.max_y = s3910_le16(s3910.payload + 34);
++	s3910.stage = "limits";
++	s3910.detail = (int32_t)((uint32_t)s3910.config_size << 16 | s3910_le16(s3910.payload + 36));
++	if (!s3910.max_x || !s3910.max_y || !s3910_le16(s3910.payload + 36) ||
++	    s3910_le16(s3910.payload + 36) > S3910_CONTACTS ||
++	    s3910.config_size < sizeof(format) || s3910.config_size > S3910_PAYLOAD_MAX) {
++		return -71;
++	}
++	report = 0x11;
++	rc = s3910_command(6, &report, 1);
++	if (rc) {
++		return rc;
++	}
++	/* Disable raw HBP frames and select on-controller LBP at the requested rate. */
++	const uint8_t lbp[] = { 0x11, 2, 0 };
++	rc = s3910_command(0x24, lbp, sizeof(lbp));
++	if (rc) {
++		return rc;
++	}
++	const uint8_t key = 0x11;
++	rc = s3910_command(0x23, &key, 1);
++	if (rc) {
++		return rc;
++	}
++	s3910.stage = "LBP";
++	s3910.detail = s3910.length >= 2 ? s3910_le16(s3910.payload) : s3910.length;
++	if (s3910.length != 2 || s3910_le16(s3910.payload) != 2) {
++		return -71;
++	}
++	memcpy(config, format, sizeof(format));
++	rc = s3910_command(0x26, config, s3910.config_size);
++	if (rc) {
++		return rc;
++	}
++	rc = s3910_command(0x25, NULL, 0);
++	if (rc) {
++		return rc;
++	}
++	s3910.stage = "format";
++	s3910.detail = s3910.length >= 4 ? (int32_t)s3910_le32(s3910.payload) : s3910.length;
++	if (s3910.length < sizeof(format) || memcmp(s3910.payload, format, sizeof(format))) {
++		return -71;
++	}
++	report = 0x11;
++	rc = s3910_command(5, &report, 1);
++	if (rc) {
++		return rc;
++	}
++	s3910.ready = 1;
++	return 0;
++}
++
++static int
++s3910_poll(struct s3910_frame *out)
++{
++	int rc;
++
++	if (!out || !s3910.ready) {
++		return -19;
++	}
++	if (s3910.version == 2) {
++		s3910.command = 0x0a;
++	}
++	rc = s3910_message();
++	if (rc) {
++		return rc;
++	}
++	if (s3910.code == 0x10) {
++		s3910.ready = 0;
++		s3910.stage = "restart";
++		return -104;
++	}
++	if (s3910.code >= 0xfe || (s3910.code > 1 && s3910.code < 0x10 &&
++	    s3910.code != 4 && s3910.code != 7)) {
++		s3910.stage = "reply";
++		s3910.detail = s3910.code;
++		return -5;
++	}
++	if (s3910.code != 0x11) {
++		return 0;
++	}
++	rc = s3910_decode(s3910.payload, s3910.length, s3910.max_x, s3910.max_y, out);
++	if (rc) {
++		s3910.stage = "contacts";
++		s3910.detail = s3910.length;
++	}
++	return rc ? rc : 1;
++}
++
++static uint32_t touch_flip;
++
++static void
++s3910_emit(const struct s3910_frame *frame)
++{
++	static unsigned shown;
++
++	for (unsigned id = 0; id < S3910_CONTACTS; id++) {
++		const struct s3910_contact *current = &frame->contact[id];
++		const struct s3910_contact *previous = &s3910_previous.contact[id];
++		uint32_t x = current->active ? current->x : previous->x;
++		uint32_t y = current->active ? current->y : previous->y;
++
++		if (touch_flip & 1) {
++			x = 65535 - x;
++		}
++		if (touch_flip & 2) {
++			y = 65535 - y;
++		}
++		if (current->active && !previous->active) {
++			if (shown++ < 12) {
++				printf("s3910: finger %u down at %u, %u (of %u x %u)\n", id, current->x,
++				    current->y, s3910.max_x, s3910.max_y);
++			}
++			pong_touch_post(PONG_TOUCH_DOWN, id, x, y);
++		} else if (current->active && previous->active &&
++		    (current->x != previous->x || current->y != previous->y)) {
++			pong_touch_post(PONG_TOUCH_MOVE, id, x, y);
++		} else if (!current->active && previous->active) {
++			pong_touch_post(PONG_TOUCH_UP, id, x, y);
++		}
++	}
++	s3910_previous = *frame;
 +}
 +
 +static void
 +touch_reset(void)
 +{
 +	gpio_set(PIN_RESET, false);
-+	sleep_ms(2);
++	sleep_ms(10);
 +	gpio_set(PIN_RESET, true);
-+	sleep_ms(100);
++	sleep_ms(80);
 +}
 +
-+/* Is the chip there and running its firmware? Finds where it keeps the touch report. */
 +static bool
-+goodix_probe(bool verbose)
++power_on(void)
 +{
-+	static uint8_t info[GOODIX_MAX_READ];
-+	uint8_t version[28];
-+	uint32_t length, offset;
-+
-+	if (!goodix_read(GOODIX_FW_VERSION, version, sizeof(version))) {
++	/* Keep reset asserted and the switched 1.8 V gate off while AVDD settles. */
++	gpio_output(PIN_RESET, false, PULL_NONE, 6);
++	gpio_output(PIN_ENABLE_1V8, false, PULL_NONE, 6);
++	if (!io_supply_on()) {
++		printf("Pong touch: S3910 regulator enable failed\n");
 +		return false;
 +	}
-+	if (!goodix_checksum_ok(version, sizeof(version))) {
-+		if (verbose) {
-+			printf("goodix: no valid firmware version: %02x %02x %02x %02x %02x %02x %02x %02x ... %02x %02x\n",
-+			    version[0], version[1], version[2], version[3], version[4], version[5], version[6], version[7],
-+			    version[26], version[27]);
-+		}
-+		return false;
-+	}
-+	printf("goodix: chip \"%.6s\", firmware \"%.8s\" %02x.%02x.%02x.%02x, sensor %u\n", (const char *)version,
-+	    (const char *)version + 10, version[18], version[19], version[20], version[21], version[23]);
-+
-+	if (!goodix_read(GOODIX_IC_INFO, info, 2)) {
-+		return false;
-+	}
-+	length = le16(info);
-+	if (length < 40 || length >= GOODIX_MAX_READ || !goodix_read(GOODIX_IC_INFO, info, length) ||
-+	    !goodix_checksum_ok(info, length)) {
-+		printf("goodix: bad chip description (length %u)\n", length);
-+		return false;
-+	}
-+	/* the length, the version (16 bytes), the features (10), four counts, then five lists of 16-bit numbers */
-+	offset = 2 + 16 + 10 + 4;
-+	for (int i = 0; i < 5; i++) {
-+		if (offset >= length) {
-+			return false;
-+		}
-+		offset += 1 + 2u * info[offset];
-+	}
-+	if (offset + 48 + 2 > length) {
-+		printf("goodix: chip description too short (%u, lists end at %u)\n", length, offset);
-+		return false;
-+	}
-+	touch_address = le32(info + offset + 44);
-+	command_address = le32(info + offset + 0);      /* (the "misc" part: the command buffer comes first) */
-+    /* Pong vendor misc ABI: +48 header, +50 point size, +52/+54 real axes. */
-+    if (offset+56+2 > length || le16(info+offset+48)!=8 || le16(info+offset+50)!=8) return false;
-+    uint16_t x=le16(info+offset+52), y=le16(info+offset+54);
-+    if (x && y) { max_x=x;max_y=y; }
-+	printf("goodix: touch report at %#x, coordinates up to %u x %u\n", touch_address, max_x, max_y);
-+	return touch_address != 0;
++	gpio_output(PIN_ENABLE_1V8, true, PULL_NONE, 6);
++	gpio_configure(PIN_INT, 0, PULL_UP, 6, false);
++	sleep_ms(2);
++	touch_reset();
++	return true;
 +}
 +
-+/* What has been seen so far: said once a minute, so that the end of the log always tells. */
-+static struct {
-+	uint32_t polls, reports, touches, bad, last_x, last_y;
-+} seen;
-+
-+/* Which fingers were down in the last report, and where. */
-+static struct {
-+	bool down, seen;
-+	uint32_t x, y;
-+} contact[GOODIX_MAX_TOUCHES];
-+static uint32_t flip;           /* boot-arg touch_flip: 1 = mirror left-right, 2 = mirror top-bottom */
-+
-+static void
-+goodix_report(const uint8_t *touches, uint32_t count)
-+{
-+	static unsigned shown;
-+
-+	for (int i = 0; i < GOODIX_MAX_TOUCHES; i++) {
-+		contact[i].seen = false;
-+	}
-+	for (uint32_t i = 0; i < count; i++) {
-+		const uint8_t *t = touches + 8 * i;
-+		uint32_t id = t[0] >> 4, kind = t[0] & 0xf;
-+		uint32_t x = le16(t + 2), y = le16(t + 4);
-+
-+		if (id >= GOODIX_MAX_TOUCHES || kind == 1 || kind == 3) {       /* 1 and 3: a stylus */
-+			continue;
-+		}
-+		if (shown < 4) {
-+			shown++;
-+			printf("goodix: finger %u at %u, %u (of %u x %u)\n", id, x, y, max_x, max_y);
-+		}
-+		seen.touches++;
-+		seen.last_x = x;
-+		seen.last_y = y;
-+		x = x >= max_x ? 65535 : x * 65535 / max_x;
-+		y = y >= max_y ? 65535 : y * 65535 / max_y;
-+		if (flip & 1) {
-+			x = 65535 - x;
-+		}
-+		if (flip & 2) {
-+			y = 65535 - y;
-+		}
-+		contact[id].seen = true;
-+		if (!contact[id].down) {
-+			pong_touch_post(PONG_TOUCH_DOWN, id, x, y);
-+		} else if (contact[id].x != x || contact[id].y != y) {
-+			pong_touch_post(PONG_TOUCH_MOVE, id, x, y);
-+		}
-+		contact[id].down = true;
-+		contact[id].x = x;
-+		contact[id].y = y;
-+	}
-+	/* a finger that is no longer in the report has lifted */
-+	for (uint32_t id = 0; id < GOODIX_MAX_TOUCHES; id++) {
-+		if (contact[id].down && !contact[id].seen) {
-+			contact[id].down = false;
-+			pong_touch_post(PONG_TOUCH_UP, id, contact[id].x, contact[id].y);
-+		}
-+	}
-+}
-+
-+/* Read the report if there is one, and tell the chip it has been read. */
-+static void
-+goodix_poll(void)
-+{
-+	static uint8_t report[8 + 8 * GOODIX_MAX_TOUCHES + 2];
-+	static unsigned bad;
-+	const uint8_t zero = 0;
-+	const uint32_t first = 8 + 8 * 2 + 2;           /* the header and two fingers: all there is, most of the time */
-+	uint32_t count;
-+
-+	seen.polls++;
-+	if (!goodix_read(touch_address, report, first) || report[0] == 0) {
-+		return;
-+	}
-+	seen.reports++;
-+	count = report[2] & 0xf;
-+	if ((report[0] & GOODIX_STATUS_TOUCH) && count > 2 && count <= GOODIX_MAX_TOUCHES &&
-+	    !goodix_read(touch_address + 8, report + 8, 8 * count + 2)) {
-+		return;
-+	}
-+	goodix_write(touch_address, &zero, 1);
-+	if (!goodix_checksum_ok(report, 8)) {
-+		seen.bad++;
-+		if (bad++ < 8) {
-+			printf("goodix: bad report header: %02x %02x %02x %02x %02x %02x %02x %02x\n", report[0], report[1],
-+			    report[2], report[3], report[4], report[5], report[6], report[7]);
-+		}
-+		return;
-+	}
-+	if (report[0] & GOODIX_STATUS_REQUEST) {
-+		if ((report[2] & 0xf) == GOODIX_REQUEST_RESET || report[2] == GOODIX_REQUEST_RESET) {
-+			printf("goodix: the chip asks to be reset\n");
-+			touch_reset();
-+		}
-+		return;
-+	}
-+	if (!(report[0] & GOODIX_STATUS_TOUCH)) {
-+		return;
-+	}
-+	if (count > GOODIX_MAX_TOUCHES || (count && !goodix_checksum_ok(report + 8, count * 8 + 2))) {
-+		seen.bad++;
-+		if (bad++ < 8) {
-+			printf("goodix: bad report (%u touches)\n", count);
-+		}
-+		return;
-+	}
-+	goodix_report(report + 8, count);
-+}
-+
-+
-+/* No firmware upload, FocalTech strap scan, GPU or other Redwood subsystem. */
 +static bool
-+bring_up(void)
++bring_up(uint32_t stage)
 +{
-+    gpio_output(PIN_RESET,true,PULL_UP,6);
-+    gpio_configure(PIN_INT,0,PULL_UP,6,false);
-+    if (clocks_on()) {
-+        const char *problem=geni_spi_init(4000000);
-+        if (!problem) {
-+            gpio_configure(PIN_MISO,1,PULL_NONE,6,false);
-+            gpio_configure(PIN_MOSI,1,PULL_NONE,6,false);
-+            gpio_configure(PIN_CLK,1,PULL_NONE,6,false);
-+            gpio_configure(PIN_CS,1,PULL_NONE,6,false);
-+            spi_transfer=geni_transfer;
-+            if (goodix_probe(false)) return true;
-+            if (io_supply_on()) { touch_reset();if (goodix_probe(true)) return true; }
-+        } else printf("Pong touch: GENI unavailable: %s; use GPIO SPI\n",problem);
-+    }
-+    /* Only the two known data pins can exchange direction; no arbitrary scan. */
-+    spi_transfer=bitbang_transfer;
-+    for (unsigned attempt=0;attempt<2;attempt++) {
-+        bitbang_in=pins[attempt];bitbang_out=pins[1-attempt];bitbang_init();
-+        if (goodix_probe(false)) return true;
-+        if (attempt==0 && io_supply_on()) {touch_reset();if (goodix_probe(true)) return true;}
-+    }
-+    return false;
++	if (!power_on()) {
++		printf("Pong touch: S3910 power-on failed\n");
++		return false;
++	}
++	printf("Pong touch: S3910 rails on; ATTN=%u RESET=%u EN1V8=%u\n", gpio_get(PIN_INT),
++	    gpio_get(PIN_RESET), gpio_get(PIN_ENABLE_1V8));
++	if (stage == 1) {
++		return true;
++	}
++	if (!clocks_on()) {
++		printf("Pong touch: S3910 QUP0/SE4 clocks failed\n");
++		return false;
++	}
++	gpio_configure(PIN_MISO, PIN_FUNCTION_SPI, PULL_NONE, 2, false);
++	gpio_configure(PIN_MOSI, PIN_FUNCTION_SPI, PULL_NONE, 6, false);
++	gpio_configure(PIN_CLK, PIN_FUNCTION_SPI, PULL_NONE, 6, false);
++	gpio_configure(PIN_CS, PIN_FUNCTION_SPI, PULL_NONE, 6, false);
++	printf("Pong touch: S3910 QUP0/SE4 source=%u Hz FW=%#x IF_DISABLE=%#x FIFO=%u\n",
++	    se_source_hz, rd(GENI_FW_REVISION_RO), rd(GENI_IF_DISABLE_RO), rd(SE_HW_PARAM_0) >> 16 & 0x3f);
++	if (stage == 2) {
++		return true;
++	}
++	const char *problem = geni_spi_init(4000000);
++
++	if (problem) {
++		printf("Pong touch: S3910 GENI unavailable: %s\n", problem);
++		return false;
++	}
++	s3910.bus.context = NULL;
++	s3910.bus.read = s3910_bus_read;
++	s3910.bus.write = s3910_bus_write;
++	s3910.bus.sleep_ms = s3910_bus_sleep;
++	printf("Pong touch: S3910 SPI 4 MHz; first response follows\n");
++	s3910_first_read_length = 0;
++	int rc = s3910_start();
++	if (rc) {
++		printf("Pong touch: S3910 identify failed rc=%d stage=%s detail=%d version=%u command=%#x\n", rc,
++		    s3910.stage ? s3910.stage : "start", s3910.detail, s3910.version, s3910.command);
++		if (s3910_first_read_length) {
++			printf("Pong touch: S3910 first read:");
++			for (unsigned i = 0; i < s3910_first_read_length; i++) {
++				printf(" %02x", s3910_first_read[i]);
++			}
++			printf("\n");
++		}
++		return false;
++	}
++	printf("Pong touch: S3910 identified v%u mode=%u crc=%u write=%u read=%u axes=%ux%u contacts=%u first=%02x%02x%02x%02x\n",
++	    s3910.version, s3910.mode, s3910.crc, s3910.max_write, s3910.max_read, s3910.max_x,
++	    s3910.max_y, s3910_le16(s3910.payload + 36),
++	    s3910_first_read_length > 0 ? s3910_first_read[0] : 0,
++	    s3910_first_read_length > 1 ? s3910_first_read[1] : 0,
++	    s3910_first_read_length > 2 ? s3910_first_read[2] : 0,
++	    s3910_first_read_length > 3 ? s3910_first_read[3] : 0);
++	return true;
 +}
++
++static uint32_t touch_stage;
 +
 +static void
 +touch_thread(__unused void *parameter, __unused wait_result_t result)
 +{
-+    tlmm=ml_io_map(TLMM_PHYS,TLMM_SIZE);gcc=ml_io_map(GCC_PHYS,GCC_SIZE);
-+    se=ml_io_map(SE_PHYS,SE_SIZE);rsc=ml_io_map(RSC_PHYS,RSC_SIZE);
-+    cmd_db=ml_io_map_wcomb(CMD_DB_PHYS,CMD_DB_SIZE);
-+    if (!tlmm || !gcc || !se || !rsc || !cmd_db || !bring_up()) {
-+        printf("Pong touch: Goodix initialization failed; normal UI boot continues\n");
-+        thread_terminate(current_thread());return;
-+    }
-+    /* A readable firmware identity does not mean the controller is scanning:
-+     * Android/REC may leave it in sleep or gesture mode. Pong's vendor
-+     * brl_resume() resets this already identified Berlin controller. Resume
-+     * before publishing input, and require the real firmware/report ABI again.
-+     * No firmware upload or fabricated contacts are used. */
-+    touch_reset();
-+    if (!goodix_probe(true)) {
-+        printf("Pong touch: controller did not resume after reset; SKIP\n");
-+        thread_terminate(current_thread());return;
-+    }
-+    const uint8_t clear=0;
-+    if (!goodix_write(touch_address,&clear,1)) {
-+        printf("Pong touch: cannot acknowledge resumed report; SKIP\n");
-+        thread_terminate(current_thread());return;
-+    }
-+    if (!pong_touch_device_ready()) {thread_terminate(current_thread());return;}
-+    printf("Pong touch: Berlin-D ready, SPI 0x%llx GPIO reset=%u irq=%u, axes %ux%u\n",
-+        se_phys,PIN_RESET,PIN_INT,max_x,max_y);
-+    unsigned idle=0;
-+    for (;;) {
-+        if (!gpio_get(PIN_INT) || ++idle>=10) {idle=0;goodix_poll();}
-+        sleep_ms(8);
-+    }
++	uint32_t stage = touch_stage;
++
++	tlmm = ml_io_map(TLMM_PHYS, TLMM_SIZE);
++	gcc = ml_io_map(GCC_PHYS, GCC_SIZE);
++	se = ml_io_map(SE_PHYS, SE_SIZE);
++	rsc = ml_io_map(RSC_PHYS, RSC_SIZE);
++	cmd_db = ml_io_map_wcomb(CMD_DB_PHYS, CMD_DB_SIZE);
++	if (!tlmm || !gcc || !se || !rsc || !cmd_db) {
++		printf("Pong touch: S3910 MMIO mapping failed\n");
++		thread_terminate(current_thread());
++		return;
++	}
++	printf("Pong touch: S3910 diagnostic stage %u\n", stage);
++	if (!bring_up(stage)) {
++		thread_terminate(current_thread());
++		return;
++	}
++	if (stage < 4) {
++		printf("Pong touch: S3910 stage %u complete; HID publication disabled\n", stage);
++		thread_terminate(current_thread());
++		return;
++	}
++	if (!pong_touch_device_ready()) {
++		thread_terminate(current_thread());
++		return;
++	}
++	printf("Pong touch: S3910 ready, QUP0/SE4 GPIO reset=%u irq=%u enable=%u, axes %ux%u, report=%u Hz\n",
++	    PIN_RESET, PIN_INT, PIN_ENABLE_1V8, s3910.max_x, s3910.max_y, s3910_touch_report_rate);
++	unsigned idle = 0, errors = 0;
++	for (;;) {
++		if (!gpio_get(PIN_INT) || ++idle >= 10) {
++			int rc;
++
++			idle = 0;
++			memset(&s3910_current, 0, sizeof(s3910_current));
++			rc = s3910_poll(&s3910_current);
++			if (rc == 1) {
++				s3910_emit(&s3910_current);
++				errors = 0;
++			} else if (rc < 0) {
++				if (errors++ < 8) {
++					printf("Pong touch: S3910 poll failed rc=%d stage=%s detail=%d version=%u\n", rc,
++					    s3910.stage ? s3910.stage : "poll", s3910.detail, s3910.version);
++				}
++				if (!s3910.ready) {
++					touch_reset();
++					s3910_first_read_length = 0;
++					if (s3910_start() == 0) {
++						printf("Pong touch: S3910 recovered after reset\n");
++						errors = 0;
++					}
++				}
++			}
++		}
++		sleep_ms(8);
++	}
 +}
 +
 +void
 +pong_goodix_init(void)
 +{
-+    uint32_t enabled=0;thread_t thread;
-+    if (!PE_parse_boot_argn("pong_touch",&enabled,sizeof(enabled)) || !enabled) return;
-+    if (!configuration()) {printf("Pong touch: missing/incompatible Pong DT; SKIP\n");return;}
-+    if (kernel_thread_start(touch_thread,NULL,&thread)==KERN_SUCCESS) thread_deallocate(thread);
++	uint32_t stage = 0, enabled = 0;
++	thread_t thread;
++
++	if (!PE_parse_boot_argn("pong_s3910", &stage, sizeof(stage))) {
++		stage = PE_parse_boot_argn("pong_touch", &enabled, sizeof(enabled)) && enabled ? 4 : 0;
++	}
++	if (stage > 4) {
++		stage = 4;
++	}
++	if (!stage) {
++		return;
++	}
++	if (!configuration()) {
++		printf("Pong touch: S3910 board configuration rejected; SKIP\n");
++		return;
++	}
++	touch_stage = stage;
++	if (kernel_thread_start(touch_thread, NULL, &thread) == KERN_SUCCESS) {
++		thread_deallocate(thread);
++	}
 +}
 +#endif /* PONG */
 diff --git a/bsd/dev/pong_input.c b/bsd/dev/pong_input.c

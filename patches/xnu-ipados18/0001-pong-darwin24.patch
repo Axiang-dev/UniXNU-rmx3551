@@ -411,7 +411,7 @@ index 0000000..00feebd
 +    DTEntry entry;
 +    if (SecureDTLookupEntry(NULL, "/arm-io/pong-touch", &entry) != kSuccess &&
 +        SecureDTLookupEntry(NULL, "/pong-touch", &entry) != kSuccess) return false;
-+    bool ok = return property(entry,"spi-base",&se_phys,8) && property(entry,"tlmm-base",&tlmm_phys,8) &&
++    int ok = property(entry,"spi-base",&se_phys,8) && property(entry,"tlmm-base",&tlmm_phys,8) &&
 +        property(entry,"gcc-base",&gcc_phys,8) && property(entry,"rsc-base",&rsc_phys,8) &&
 +        property(entry,"cmd-db-base",&cmd_db_phys,8) && property(entry,"gpio-offset",&gpio_offset,4) &&
 +        property(entry,"pins",pins,sizeof(pins)) && property(entry,"max-x",&max_x,4) &&
@@ -419,7 +419,7 @@ index 0000000..00feebd
 +        gcc_phys==0x100000 && rsc_phys==0x17a20000 && cmd_db_phys==0x80860000 &&
 +        gpio_offset==0x100000 && pins[0]==16 && pins[1]==17 && pins[2]==18 &&
 +        pins[3]==19 && pins[4]==21 && pins[5]==20 && max_x==1080 && max_y==2412;
-+    if (!ok) IOLog("Pong touch: DT spi=%#llx tlmm=%#llx gcc=%#llx rsc=%#llx cmd=%#llx off=%#x pins=%u,%u,%u,%u,%u,%u max=%ux%u\n",
++    if (!ok) printf("Pong touch: DT spi=%#llx tlmm=%#llx gcc=%#llx rsc=%#llx cmd=%#llx off=%#x pins=%u,%u,%u,%u,%u,%u max=%ux%u\n",
 +        se_phys, tlmm_phys, gcc_phys, rsc_phys, cmd_db_phys, gpio_offset,
 +        pins[0], pins[1], pins[2], pins[3], pins[4], pins[5], max_x, max_y);
 +    return ok;

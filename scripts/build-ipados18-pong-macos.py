@@ -98,7 +98,17 @@ def main():
     print('Building Darwin 24; log:',log,flush=True)
     with log.open('w') as f:r=subprocess.run(['bash','scripts/build-xnu-ipados18.sh'],cwd=tree,env=env,stdout=f,stderr=subprocess.STDOUT)
     report.update(returncode=r.returncode,log=str(log));result.write_text(json.dumps(report,indent=2)+'\n')
-    if r.returncode:raise SystemExit(f'Build failed; log retained: {log}')
+    if r.returncode:
+        # Surface the actual child failure before the runner is discarded.
+        # The outer workflow cannot reliably infer this overlay's log path.
+        lines=log.read_text(encoding='utf-8',errors='replace').splitlines()
+        print(f'Inner XNU build failed (exit {r.returncode}); log: {log}',flush=True)
+        print('\n'.join(lines[-400:]),flush=True)
+        errors=[line for line in lines if any(word in line.lower() for word in
+                ('error:', 'undefined symbols', 'not found', 'no such file', 'failed'))]
+        if errors:
+            print('Inner build error excerpts:\n'+'\n'.join(errors[-80:]),flush=True)
+        raise SystemExit(f'Build failed; log retained: {log}')
     kernel=tree/'build/xnu/ios-obj/DEVELOPMENT_ARM64_PONG/mach.development.pong'
     a.artifact_dir.mkdir(parents=True,exist_ok=True);shutil.copyfile(kernel,a.artifact_dir/kernel.name)
     report.update(build_complete=True,kernel=dict(path=str(a.artifact_dir/kernel.name),bytes=kernel.stat().st_size))

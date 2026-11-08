@@ -160,6 +160,19 @@ def pass_decisions():
             fail(3, "kernel.yml", f"{key}={m.group(1)}, expected {want}")
         else:
             print(f"  {key}={want}")
+    boot = (ROOT / "scripts/build-ipados18-prelinked-boot.py").read_text(encoding="utf-8")
+    if "'pong_adsp=2'" not in boot:
+        fail(3, "build-ipados18-prelinked-boot.py", "pong_adsp=2 is needed: PongUsb waits for a PMIC session it only learns from the battery channel")
+    else:
+        print("  pong_adsp=2 keeps the battery channel up")
+    if "'pong_usb=1'" not in boot:
+        fail(3, "build-ipados18-prelinked-boot.py", "pong_usb=1 is missing: the USB worker returns before it starts without it")
+    else:
+        print("  pong_usb=1 starts the USB worker")
+    if "'pong_audio=2'" in boot:
+        fail(3, "build-ipados18-prelinked-boot.py", "pong_audio=2 asks for the audio stage this build does not carry")
+    else:
+        print("  pong_audio stays out")
     if "PONG_SHENG_ROOT" not in wf:
         fail(3, "kernel.yml", "no sheng source checkout for QcomRpmh.h")
     else:
@@ -167,19 +180,83 @@ def pass_decisions():
     for bad_flag in ("XNU_SOURCE_CORECRYPTO14: '1'", "XNU_PONG_WIFI: '1'", "XNU_PONG_BACKLIGHT: '1'"):
         if bad_flag in wf:
             fail(3, "kernel.yml", f"switch that needs an archive this runner cannot build: {bad_flag}")
+# ------------------------------------------------- pass 4: every symbol has an owner
+def pass_symbols():
+    pass_header(4, "symbol coverage for the USB entry")
+    dev = ROOT / "drivers/PongUsb/PongUsbDevice.h"
+    mux = ROOT / "drivers/PongUsb/PongUsbMux.h"
+    if not dev.exists():
+        print("  driver files not checked out; skipped")
+        return
+    script = (ROOT / "scripts/build-pong-power-native.py").read_text(encoding="utf-8")
+    decls = re.findall(r'extern "C"\s+\w[\w \*]*?\b(pong_\w+)\(', dev.read_text(encoding="utf-8"))
+    mux_defs = set()
+    if mux.exists():
+        mux_defs = set(re.findall(r'extern "C"\s+\w[\w \*]*?\b(pong_usb_mux_\w+)\(', mux.read_text(encoding="utf-8")))
+    stubs = set(re.findall(r'weak\)\) \w+ (pong_\w+)\(', script))
+    # owners outside this archive, named so the reason is on record
+    provided = {"pong_ufs_ready": "NativeUfs archive"}
+    if "'PongBattery.cpp'" in script:
+        provided["pong_battery_usb_online"] = "PongBattery.cpp"
+    mux_tu = "pong-usb-mux.cpp" in script
+    for name in sorted(set(decls)):
+        if name in provided:
+            print(f"  {name}: {provided[name]}")
+        elif name in stubs:
+            print(f"  {name}: weak stub")
+        elif name in mux_defs and mux_tu:
+            print(f"  {name}: PongUsbMux.h via its own translation unit")
+        elif name in mux_defs:
+            fail(4, "PongUsbDevice.h", f"{name} is defined in PongUsbMux.h but nothing compiles that header")
+        else:
+            fail(4, "PongUsbDevice.h", f"{name} is declared and has no owner in this archive")
 
 
+# ------------------------------------- pass 5: the source list actually resolves
+def pass_sources():
+    pass_header(5, "source list, late init and generated units")
+    script = (ROOT / "scripts/build-pong-power-native.py").read_text(encoding="utf-8")
+    at = script.find("sources=('QcomRpmh.c'")
+    if at < 0:
+        fail(5, "build-pong-power-native.py", "no-container source tuple not found")
+        return
+    tail = script[at:at + 500]
+    names = re.findall(r"'([\w.]+)'", tail)
+    print(f"  {len(names)} sources: {', '.join(names[:6])}{' ...' if len(names) > 6 else ''}")
+    for unit in ("str(mux)", "str(stub)"):
+        if unit not in tail:
+            fail(5, "build-pong-power-native.py", f"{unit} is not in the source tuple")
+        else:
+            print(f"  {unit} in the tuple")
+    if "mux.write_text" not in script:
+        fail(5, "build-pong-power-native.py", "the mux translation unit is never written")
+    else:
+        print("  mux translation unit generated")
+    if "'-I'+str(ROOT/'drivers/PongUsb')" not in script:
+        fail(5, "build-pong-power-native.py", "PongUsb headers are not on the include path")
+    else:
+        print("  PongUsb headers on the include path")
+    for name, sym in (("PongBattery.cpp", "PongBatteryStaticInit"), ("PongBacklight.cpp", "PongBacklightStaticInit")):
+        if f"name=='{name}'" not in script or sym not in script:
+            fail(5, "build-pong-power-native.py", f"{name} needs the {sym} late-init rename")
+        else:
+            print(f"  {name}: late init via {sym}")
+    for banned in ("PongAudio.cpp", "PongAudioService.cpp"):
+        if f"'{banned}'" in tail:
+            fail(5, "build-pong-power-native.py", f"{banned} needs the amplifier profile")
 def main():
     pass_patches()
     pass_syntax()
     pass_decisions()
+    pass_symbols()
+    pass_sources()
     print()
     if failures:
         print(f"{len(failures)} problem(s) would reach the build:")
         for p, where, why in failures:
             print(f"  [pass {p}] {where}: {why}")
         return 1
-    print("all three passes clean")
+    print("all five passes clean")
     return 0
 
 

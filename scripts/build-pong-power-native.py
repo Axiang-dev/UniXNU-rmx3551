@@ -35,7 +35,7 @@ def main():
  framework=a.tree/'.cache/fakeroot/System/Library/Frameworks/Kernel.framework/Versions/A'
  env=dict(os.environ,DEVELOPER_DIR=str(pong_paths.developer_dir()))
  sdk=subprocess.check_output(['xcrun','--sdk','iphoneos','--show-sdk-path'],env=env,text=True).strip()
- flags=['-target','arm64-apple-ios18.0','-isysroot',sdk,'-mkernel','-ffreestanding','-fno-builtin','-fno-stack-protector','-mgeneral-regs-only','-fblocks','-O2','-DKERNEL=1','-DKERNEL_PRIVATE=1','-DXNU_KERNEL_PRIVATE=1','-DARM64_BOARD_CONFIG_PONG=1','-I'+str(framework/'PrivateHeaders'),'-I'+str(framework/'Headers'),'-I'+str(ROOT/'drivers/PongPower'),'-I'+str(out),'-I'+str(pong_paths.sheng_root()/'package'),'-Wno-deprecated-declarations']
+ flags=['-target','arm64-apple-ios18.0','-isysroot',sdk,'-mkernel','-ffreestanding','-fno-builtin','-fno-stack-protector','-mgeneral-regs-only','-fblocks','-O2','-DKERNEL=1','-DKERNEL_PRIVATE=1','-DXNU_KERNEL_PRIVATE=1','-DARM64_BOARD_CONFIG_PONG=1','-I'+str(framework/'PrivateHeaders'),'-I'+str(framework/'Headers'),'-I'+str(ROOT/'drivers/PongPower'),'-I'+str(ROOT/'drivers/PongUsb'),'-I'+str(out),'-I'+str(pong_paths.sheng_root()/'package'),'-Wno-deprecated-declarations']
  # The amplifier profile header is derived from Nothing's tfa98xx.cnt, which the
  # public tree does not carry.  Without it only the shared platform resources are
  # built: NativeUfs calls pong_smmu_lease_lock/unlock and a -static kernel link
@@ -47,22 +47,23 @@ def main():
   subprocess.run([os.sys.executable,str(ROOT/'scripts/prepare-pong-audio.py'),'--container',str(container),'--output',str(out/'PongAmpProfiles.h')],check=True)
   sources=('QcomSmem.c','QcomSmp2p.c','QcomGlink.c','QcomMdt.c','QcomQmp.c','ShengBattmgr.c','ShengGpr.c','ShengAudioReach.c','GeniI2c.c','PongFirmware.c','PongAdsp.cpp','PongBattery.cpp','PongAudio.cpp','PongAudioService.cpp','PongPlatformResources.cpp','PongPower.cpp','PongBacklight.cpp')
  else:
-  # PongPower.cpp carries the USB entry (PongUsb::start()).  The audio container is
-  # what selects the full list above, but losing USB with it is what left the board
-  # with no console at all: build the power unit with weak stubs instead.
+  # PongPower.cpp carries the USB entry (PongUsb::start()); losing it with the audio
+  # container is what left this board with no console at all.  Build the power unit
+  # without the amplifier profile, and give the mux its own translation unit: the
+  # header is self-contained, and PongAudioService.cpp was only ever the file that
+  # happened to include it.
   stub=out/'pong-usb-stubs.cpp'
-  stub.write_text(chr(10).join(['/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path', '   links without the amplifier profile this public tree does not carry.  Every', '   symbol is weak: a real definition elsewhere wins, and nothing here touches', '   audio hardware.  The mux lives in PongAudioService.cpp; until it is split out,', '   publish nothing -- the CDC console does not use it. */', 'extern "C" {', '__attribute__((weak)) void PongAudioServiceStaticInit(void) {}', '__attribute__((weak)) void sheng_adsp_probe(void) {}', '__attribute__((weak)) void sheng_audio_probe(void) {}', '__attribute__((weak)) void sheng_battery_start(void) {}', '__attribute__((weak)) void PongBatteryStaticInit(void) {}', '__attribute__((weak)) void pong_rpmh_init(void) {}', '__attribute__((weak)) bool pong_usb_mux_publish(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_session(bool) {}', '__attribute__((weak)) bool pong_usb_mux_receive(const void *,unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_can_receive(unsigned) { return false; }', '__attribute__((weak)) bool pong_usb_mux_bridge_ready(void) { return false; }', '__attribute__((weak)) void pong_usb_mux_attached(bool) {}', '}']))
-  # GeniI2c.c carries the transfers PongUsb's repeater path calls; without it the
-  # link stops at geni_i2c_prepare/poll/start_read.
+  stub.write_text(chr(10).join(['/* Weak stand-ins for the audio entry points PongPower.cpp names, so the USB start', '   path links without the amplifier profile this public tree does not carry.  Every', '   symbol is weak: a real definition elsewhere wins, and none of these touches', '   hardware.  The mux is not stubbed: PongUsbMux.h is self-contained and gets its', '   own translation unit below. */', 'extern "C" {', '__attribute__((weak)) void PongAudioServiceStaticInit(void) {}', '__attribute__((weak)) void sheng_adsp_probe(void) {}', '__attribute__((weak)) void sheng_audio_probe(void) {}', '__attribute__((weak)) void sheng_battery_start(void) {}', '__attribute__((weak)) void PongBatteryStaticInit(void) {}', '__attribute__((weak)) void pong_rpmh_init(void) {}', '}']))
+  mux=out/'pong-usb-mux.cpp'
+  mux.write_text('#include "PongUsbMux.h"' + chr(10))
   # Everything except the two files that need the amplifier profile: PongAudio.cpp
-  # and PongAudioService.cpp.  PongBattery.cpp pulls the battery/ADSP chain
-  # (ShengBattmgr, ShengGpr, QcomGlink ...) and PongUsb pulls QcomRpmh for rail
-  # votes, so the list is the full one less those two.
+  # and PongAudioService.cpp.  PongBattery.cpp pulls the battery/ADSP chain and
+  # PongUsb pulls QcomRpmh for rail votes, so the list is the full one less those two.
   sources=('QcomRpmh.c','QcomSmem.c','QcomSmp2p.c','QcomGlink.c','QcomMdt.c','QcomQmp.c',
            'ShengBattmgr.c','ShengGpr.c','ShengAudioReach.c','GeniI2c.c','PongFirmware.c',
            'PongAdsp.cpp','PongBattery.cpp','PongPlatformResources.cpp','PongPower.cpp',
-           'PongBacklight.cpp',str(stub))
-  print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
+           'PongBacklight.cpp',str(mux),str(stub))
+  print('audio container tfa98xx.cnt absent; building the power unit, the USB mux and the audio stubs')
  # QcomRpmh.c lives in the shared sheng package; the flags already point there for
  # its headers, so the source comes from the same place.
  shared=pong_paths.sheng_root()/'package'

@@ -287,6 +287,18 @@ jobs:
             | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           find ../build -name 'payload.img' -exec ls -l {} \;
 
+      - name: Show the build script around the failing line
+        # The failing test is reported at line 953 of the script inside the build
+        # tree, while the same test sits at line 771 of the device copy, so the
+        # tree script is not byte-identical.  Print the region before guessing.
+        if: failure()
+        run: |
+          SCRIPT=$(find . -path '*tree/scripts/build-xnu-ipados18.sh' | head -1)
+          echo "script: ${SCRIPT:-<missing>}"
+          [ -n "$SCRIPT" ] && sed -n '935,965p' "$SCRIPT"
+          echo "--- variables ---"
+          grep -a -E 'XNU_SOURCE_CORECRYPTO14|XNU_PONG_POWER|CRYPTO_ARCHIVE' "${GITHUB_WORKSPACE}/kernel-build.log" 2>/dev/null | tail -20
+
       - name: Show the XNU build log when the kernel fails
         # build-ipados18-pong-macos.py only prints the path of the log it keeps,
         # and that path dies with the runner.  The tree name and the file name

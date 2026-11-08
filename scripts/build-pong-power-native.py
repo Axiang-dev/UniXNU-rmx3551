@@ -52,7 +52,9 @@ def main():
   # with no console at all: build the power unit with weak stubs instead.
   stub=out/'pong-usb-stubs.cpp'
   stub.write_text('/* Weak stand-ins for the entry points PongPower.cpp names, so the USB start path\n   links without the amplifier profile this public tree does not carry.  Every\n   symbol is weak: a real definition elsewhere wins, and nothing here touches\n   audio hardware. */\nextern "C" {\n__attribute__((weak)) void PongAudioServiceStaticInit(void) {}\n__attribute__((weak)) void sheng_adsp_probe(void) {}\n__attribute__((weak)) void sheng_audio_probe(void) {}\n__attribute__((weak)) void sheng_battery_start(void) {}\n__attribute__((weak)) void PongBatteryStaticInit(void) {}\n__attribute__((weak)) void pong_rpmh_init(void) {}\n}')
-  sources=('PongPlatformResources.cpp','PongPower.cpp',str(stub))
+  # GeniI2c.c carries the transfers PongUsb's repeater path calls; without it the
+  # link stops at geni_i2c_prepare/poll/start_read.
+  sources=('GeniI2c.c','PongPlatformResources.cpp','PongPower.cpp',str(stub))
   print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
  objects=[]
  for name in sources:

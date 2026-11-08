@@ -595,7 +595,6 @@ new file mode 100644
 +#define SMMU_PA        0x15000000ULL
 +#define SMMU_SIZE      0x0d0000
 +#define USB_SID_DEF    0x00000000U
-+#define SMMU_SMR_COUNT 128
 +#define DMA_LO_DEF     0x80000000ULL
 +#define DMA_HI_DEF     0x100000000ULL
 +
@@ -1204,11 +1203,20 @@ new file mode 100644
 +smmu_identity(void)
 +{
 +	vm_offset_t s = u.smmu;
-+	printf("LIUQIN USB: SMMU idr0=%08x idr1=%08x idr5=%08x idr7=%08x\n",
-+	    read_reg(s, 0x0), read_reg(s, 0x20), read_reg(s, 0x24), read_reg(s, 0x28));
++	uint32_t scr0 = read_reg(s, 0x0);
++	uint32_t id0 = read_reg(s, 0x20);
++	uint32_t id1 = read_reg(s, 0x24);
++	uint32_t id2 = read_reg(s, 0x28);
++	unsigned groups = id0 & 0xff;
++	unsigned banks = id1 & 0xff;
++	printf("LIUQIN USB: SMMU scr0=%08x id0=%08x id1=%08x id2=%08x groups=%u banks=%u\n",
++	    scr0, id0, id1, id2, groups, banks);
++	if (!groups || !banks) {
++		return false;
++	}
 +	unsigned matches = 0;
 +	uint32_t route = 0;
-+	for (unsigned i = 0; i < SMMU_SMR_COUNT; i++) {
++	for (unsigned i = 0; i < groups; i++) {
 +		if (lqusb_stream_match(read_reg(s, 0x800 + 4 * i), u.sid)) {
 +			matches++;
 +			route = read_reg(s, 0xc00 + 4 * i);
@@ -1221,7 +1229,7 @@ new file mode 100644
 +	unsigned cb = route & 255;
 +	uint32_t cbar = 0, sctlr = 1;
 +	if (((route >> 16) & 3) == 0) {
-+		if (cb >= 70) {
++		if (cb >= banks) {
 +			return false;
 +		}
 +		cbar = read_reg(s, 0x1000 + 4 * cb);

@@ -544,7 +544,7 @@ diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_debug.c
-@@ -0,0 +1,989 @@
+@@ -0,0 +1,960 @@
 +/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
 + *
 + * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console
@@ -628,38 +628,9 @@ new file mode 100644
 +vm_offset_t
 +liuqin_io_map(vm_offset_t pa, vm_size_t size)
 +{
-+	uint64_t *l1tab = (uint64_t *)(void *)bootstrap_pagetables;
-+	uint64_t first = (uint64_t)pa & ~0x1FFFFFULL;
-+	uint64_t last = ((uint64_t)pa + size + 0x1FFFFFULL) & ~0x1FFFFFULL;
-+	uint64_t slot = (first >> 30) & 0x1FF;
-+	uint64_t table;
-+	uint64_t va;
-+
-+	if (lq_io_l2_used || size == 0 || last <= first) {
-+		return 0;
-+	}
-+	if (((last - 1) >> 30 & 0x1FF) != slot) {
-+		return 0;
-+	}
-+	if ((l1tab[slot] & 3) != 0) {
-+		return 0;
-+	}
-+	for (unsigned i = 0; i < 512; i++) {
-+		lq_io_l2[i] = 0;
-+	}
-+	table = (uint64_t)pmap_find_phys(kernel_pmap, (addr64_t)(uintptr_t)lq_io_l2);
-+	if (table == 0) {
-+		return 0;
-+	}
-+	table = (table << 12) & 0x0000FFFFFFFFF000ULL;
-+	for (va = first; va < last; va += 0x200000ULL) {
-+		lq_io_l2[(va >> 21) & 0x1FF] =
-+		    (va & 0x0000FFFFFFE00000ULL) | 0x601ULL;
-+	}
-+	l1tab[slot] = table | 3;
-+	lq_io_l2_used = true;
-+	liuqin_tlb_flush();
-+	return pa;
++	(void)lq_io_l2;
++	(void)lq_io_l2_used;
++	return (vm_offset_t)ml_io_map(pa, size);
 +}
 +
 +extern ppnum_t pmap_find_phys(pmap_t, addr64_t);

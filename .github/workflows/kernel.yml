@@ -148,14 +148,15 @@ jobs:
 
       - name: Resolve configuration and build the kernel
         working-directory: device
-        # The board's optional components are selected by XNU_* switches that the
-        # Kconfig pass does not carry through to the build environment, so the
-        # power archive -- and PongUsb, which lives in its includes -- was never
-        # compiled and a boot with pong_usb=1 printed nothing about USB.  Export
-        # them here; the wrapper starts from os.environ and only overwrites keys
-        # that the generated .config actually contains.
+        # The wrapper used to drop every XNU_ variable it inherited, keeping only
+        # what the generated .config carries -- and that file has no line for the
+        # board symbols, so the power archive was never built.  It now keeps them;
+        # export the one this board needs and echo it so the log proves it went in.
+        env:
+          XNU_PONG_POWER: '1'
         run: |
           set -euo pipefail
+          echo "XNU_PONG_POWER=${XNU_PONG_POWER:-<unset>}"
           mkdir -p "${PONG_WORK_ROOT}" "${PONG_INPUT_ROOT}"
           # The README is explicit: the shipping defconfig needs Wi-Fi, backlight
           # and Adreno stages whose firmware this public repository does not

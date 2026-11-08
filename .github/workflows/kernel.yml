@@ -169,6 +169,8 @@ jobs:
           # run without XNU_SOURCE_CORECRYPTO14=1, whose archive this runner never
           # builds.  Keep both off; the pre-fix builds linked without them.
           XNU_SOURCE_PTHREAD: '0'
+          # Same family: NativeAES also demands the crypto prelink closure.
+          XNU_NATIVE_AES: '0'
         # The wrapper used to drop every XNU_ variable it inherited, keeping only
         # what the generated .config carries -- and that file has no line for the
         # board symbols, so the power archive was never built.  It now keeps them;

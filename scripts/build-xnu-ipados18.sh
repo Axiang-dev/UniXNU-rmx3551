@@ -3,6 +3,10 @@ set -euo pipefail
 trap 'echo "build-xnu-ipados18.sh: line $LINENO: $BASH_COMMAND failed" >&2' ERR
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"
+
+# Print the switches the build really received: the config pass rewrites some of
+# them, and guessing which is which costs a fifteen-minute build each time.
+env | grep "^XNU_" | sort | sed "s/^/XNUENV /"
 # Refuse Wi-Fi and backlight before any XNU compile when their trees are absent.
 # The later builders still refuse on their own; this only moves that refusal forward.
 if [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
@@ -10,6 +14,7 @@ if [ "${XNU_PONG_WIFI:-0}" = 1 ] || [ "${XNU_PONG_BACKLIGHT:-0}" = 1 ]; then
     echo 'refusing before compile: PONG_NATIVE_DRIVER_SOURCE is unset, so Wi-Fi and backlight inputs cannot be resolved' >&2
     exit 1
   fi
+
   python3 - <<'PY'
 import os
 import sys

@@ -65,7 +65,10 @@ def main():
   print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
  objects=[]
  for name in sources:
-  source=Path(name) if os.path.isabs(str(name)) else ROOT/'drivers/PongPower'/name
+  # QcomRpmh.c ships in the shared sheng package, not in drivers/PongPower.
+  if os.path.isabs(str(name)): source=Path(name)
+  elif name=='QcomRpmh.c': source=shared/name
+  else: source=ROOT/'drivers/PongPower'/name
   obj=out/(source.stem+'.o');cpp=source.suffix=='.cpp'
   cmd=['xcrun','clang++' if cpp else 'clang',*flags,*(['-std=gnu++17','-fno-exceptions','-fno-rtti'] if cpp else []),'-c',str(source),'-o',str(obj)]
   r=subprocess.run(cmd,env=env,capture_output=True,text=True);(out/(source.stem+'.log')).write_text(r.stdout+r.stderr)

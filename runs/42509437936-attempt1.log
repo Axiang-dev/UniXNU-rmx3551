@@ -1,0 +1,858 @@
+== configuration pong_ipados18_ci_defconfig -> /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+== tree /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/tree
++ /usr/local/bin/dtc -I dts -O dtb -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb -i /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/UniXNU-sm8475-common/dts /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/dts/rmx3551.dts
+Building Darwin 24; log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T182209Z.log
+Inner XNU build failed (exit 2); log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T182209Z.log
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_parameter_validation_kern_bsd.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk_stubs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC netns.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/tests/vm_parameter_validation_kern_bsd.c:24:34: warning: variable 'file_size' set but not used [-Wunused-but-set-variable]
+   24 |         size_t                          file_size;
+      |                                         ^
+             CC protons.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC flowidns.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk_proc_info.o
+             CC skywalk_sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/core/skywalk.c:748:7: warning: explicitly assigning value of variable of type 'char *' to itself [-Wself-assign]
+  748 |                 dst = dst;
+      |                 ~~~ ^ ~~~
+             CC channel.o
+             CC channel_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC channel_ring.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC kern_channel_event.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC channel_syscalls.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cuckoo_hashtable.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cuckoo_hashtable_test.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC net_filter_event.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_arena.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/lib/cuckoo_hashtable_test.c:411:22: warning: variable 'node' set but not used [-Wunused-but-set-variable]
+  411 |         struct cuckoo_node *node = NULL;
+      |                             ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_cache.o
+1 warning generated.
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_region.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/mem/skmem.c:32:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/xnu/ios-obj/EXPORT_HDRS/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC skmem_slab.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_test.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus.o
+             CC nexus_adapter.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_ioctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/nexus_adapter.c:1156:2: warning: result of comparison of 18-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1156 |         SK_DF(SK_VERB_NOTIFY | ((kring->ckr_tx == NR_TX) ?
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1157 |             SK_VERB_TX : SK_VERB_RX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1158 |             "%s(%d) [%s] na \"%s\" (0x%llx) kr \"%s\" (0x%llx) krflags 0x%b "
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1159 |             "flags 0x%x, kh %u kt %u | h %u t %u",
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1160 |             sk_proc_name_address(p), sk_proc_pid(p),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1161 |             (kring->ckr_tx == NR_TX) ? "W" : "R", KRNA(kring)->na_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1162 |             SK_KVA(KRNA(kring)), kring->ckr_name, SK_KVA(kring),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1163 |             kring->ckr_flags, CKRF_BITS, flags, kring->ckr_khead,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1164 |             kring->ckr_ktail, kring->ckr_rhead, kring->ckr_rtail);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+             CC nexus_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_mbq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nexus_pktq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_syscalls.o
+             CC nexus_traffic_rule.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_flowswitch.o
+             CC fsw.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_dp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_ip.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2997:16: warning: variable 'flow_adv_idx' set but not used [-Wunused-but-set-variable]
+ 2997 |         flowadv_idx_t flow_adv_idx;
+      |                       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2998:7: warning: variable 'flowadv_cap' set but not used [-Wunused-but-set-variable]
+ 2998 |         bool flowadv_cap;
+      |              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2999:18: warning: variable 'flow_adv_token' set but not used [-Wunused-but-set-variable]
+ 2999 |         flowadv_token_t flow_adv_token;
+      |                         ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3047:16: warning: variable 'flow_adv_idx' set but not used [-Wunused-but-set-variable]
+ 3047 |         flowadv_idx_t flow_adv_idx;
+      |                       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3048:7: warning: variable 'flowadv_cap' set but not used [-Wunused-but-set-variable]
+ 3048 |         bool flowadv_cap;
+      |              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3049:18: warning: variable 'flow_adv_token' set but not used [-Wunused-but-set-variable]
+ 3049 |         flowadv_token_t flow_adv_token;
+      |                         ^
+             CC fsw_ip_frag.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:4521:12: warning: variable 'fr_freed' set but not used [-Wunused-but-set-variable]
+ 4521 |                 uint32_t fr_freed, fr_resid = 0;
+      |                          ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_cellular.o
+             CC fsw_ethernet.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_flow.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_netagent.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_classq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_qos.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow.o
+             CC flow_classifier.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_classifier.c:181:11: warning: variable 'pkt_buf_size' set but not used [-Wunused-but-set-variable]
+  181 |         uint32_t pkt_buf_size;
+      |                  ^
+             CC flow_entry.o
+             CC flow_manager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC flow_namespace.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+7 warnings generated.
+             CC flow_owner.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_namespace.c:55:6: warning: variable 'so_type' set but not used [-Wunused-but-set-variable]
+   55 |         int so_type = 0;
+      |             ^
+1 warning generated.
+             CC flow_route.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_stats.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_track.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_agg.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_monitor.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_track.c:166:21: warning: variable 'src_last' set but not used [-Wunused-but-set-variable]
+  166 |         uint64_t dst_last, src_last;
+      |                            ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_track.c:755:27: warning: variable 'dst' set but not used [-Wunused-but-set-variable]
+  755 |         struct flow_track *src, *dst;
+      |                                  ^
+             CC nx_netif.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_agg.c:712:11: warning: variable 'dbuf_off' set but not used [-Wunused-but-set-variable]
+  712 |         uint16_t dbuf_off;
+      |                  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_agg.c:1036:11: warning: variable 'sl3tlen' set but not used [-Wunused-but-set-variable]
+ 1036 |         uint32_t sl3tlen = 0;
+      |                  ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+2 warnings generated.
+             CC nx_netif_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/monitor/nx_monitor.c:1376:2: warning: result of comparison of 18-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1376 |         SK_DF(SK_VERB_MONITOR | SK_VERB_NOTIFY |
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1377 |             ((kring->ckr_tx == NR_TX) ? SK_VERB_TX : SK_VERB_RX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1378 |             "kr \"%s\" (0x%llx) krflags 0x%b flags 0x%x", kring->ckr_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1379 |             SK_KVA(kring), kring->ckr_flags, CKRF_BITS, flags);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif_compat.c:817:23: warning: variable 'i' set but not used [-Wunused-but-set-variable]
+  817 |                 uint32_t p = 0, pn, i, f;
+      |                                     ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:1894:2: warning: result of comparison of 21-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1894 |         SK_DF(SK_VERB_NETIF | SK_VERB_INTR |
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1895 |             ((kring->ckr_tx == NR_RX) ? SK_VERB_RX : SK_VERB_TX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1896 |             "na \"%s\" (0x%llx) kr \"%s\" (0x%llx) krflags 0x%b",
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1897 |             KRNA(kring)->na_name, SK_KVA(KRNA(kring)), kring->ckr_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1898 |             SK_KVA(kring), kring->ckr_flags, CKRF_BITS);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:3514:6: warning: variable 'err' set but not used [-Wunused-but-set-variable]
+ 3514 |         int err, dropcnt, dropstat = -1;
+      |             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:4197:22: warning: variable 'consumed' set but not used [-Wunused-but-set-variable]
+ 4197 |         uint32_t npkts = 0, consumed = 0;
+      |                             ^
+1 warning generated.
+             CC nx_netif_host.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+2 warnings generated.
+             CC nx_netif_mit.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nx_netif_netagent.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             CC nx_netif_filter_native.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_flow.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_util.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_poll.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_gso.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_llink.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif_gso.c:692:18: warning: variable 'ip6' set but not used [-Wunused-but-set-variable]
+  692 |         struct ip6_hdr *ip6;
+      |                         ^
+             CC nx_user_pipe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_kernel_pipe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nx_kpipe_loopback.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC packet_copy.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC packet_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC pbufpool.o
+             CC pbufpool_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cpu_copy_in_cksum_gen.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC conf.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cons.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC km.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC kern_machdep.o
+             CC stubs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC systemcalls.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC liuqin_debug.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC liuqin_usb_debug.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:132:7: warning: code will never be executed [-Wunreachable-code]
+  132 |         if (!lq_fb || index > 32) {
+      |              ^~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:165:1: warning: no previous prototype for function 'liuqin_late_bind' [-Wmissing-prototypes]
+  165 | liuqin_late_bind(uint64_t va)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:164:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  164 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:171:1: warning: no previous prototype for function 'liuqin_late_unbind' [-Wmissing-prototypes]
+  171 | liuqin_late_unbind(void)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:170:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  170 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:179:1: warning: no previous prototype for function 'liuqin_fb_bigband' [-Wmissing-prototypes]
+  179 | liuqin_fb_bigband(unsigned first, unsigned height, uint32_t color)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:178:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  178 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:183:7: warning: code will never be executed [-Wunreachable-code]
+  183 |         if (!lq_fb || first + height > 2880) {
+      |              ^~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:210:1: warning: no previous prototype for function 'liuqin_early_marker' [-Wmissing-prototypes]
+  210 | liuqin_early_marker(unsigned band)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:209:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  209 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:214:24: warning: code will never be executed [-Wunreachable-code]
+  214 |         const uint64_t base = 0xb8000000ULL, stride = 7200;
+      |                               ^~~~~~~~~~~~~
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC unix_signal.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+7 warnings generated.
+             CC ctrr_test_sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:698:1: warning: no previous prototype for function 'liuqin_fb_marker_boot' [-Wmissing-prototypes]
+  698 | liuqin_fb_marker_boot(void)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:697:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  697 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:70: note: to match this '{'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:775:1: note: to match this '{'
+  775 | {
+      | ^
+1 warning and 2 errors generated.
+make[7]: *** [liuqin_usb_debug.o] Error 1
+make[7]: *** Waiting for unfinished jobs....
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/arm/unix_signal.c:418:7: warning: cast to smaller integer type 'user32_addr_t' (aka 'unsigned int') from 'mcontext32_t *' (aka 'struct mcontext32 *') [-Wpointer-to-int-cast]
+  418 |                     (user32_addr_t)&((struct user_sigframe32*)sp)->mctx);
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/arm/unix_signal.c:643:67: warning: cast to smaller integer type 'user32_addr_t' (aka 'unsigned int') from 'user32_siginfo_t *' (aka 'struct user32_siginfo *') [-Wpointer-to-int-cast]
+  643 |                     CAST_DOWN_EXPLICIT(user32_addr_t, catcher), infostyle, sig, (user32_addr_t)&((struct user_sigframe32*)sp)->sinfo,
+      |                                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 warnings generated.
+make[6]: *** [build_all] Error 2
+make[5]: *** [do_all] Error 2
+make[4]: *** [build_all] Error 2
+make[3]: *** [build_all_recurse_into_conf] Error 2
+make[2]: *** [build_all_recurse_into_bsd] Error 2
+make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+make: *** [build] Error 2
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+Inner build error excerpts:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/net/ntstat.c:5190:6: warning: variable 'failed' set but not used [-Wunused-but-set-variable]
+ 5190 |         int failed = 0;
+  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+Build failed; log retained: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T182209Z.log
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 35, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 30, in main
+    subprocess.run(command, cwd=source, check=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-ipados18-pong-macos.py', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--jobs', '4', '--skip-image-verification', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 54, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 44, in main
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-pong-profile-kernel.py'),
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py', '--source', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb', '--jobs', '4']' returned non-zero exit status 1.
+===== resolved config =====
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
+CONFIG_XNU_PONG_ADRENO_PLATFORM=n
+CONFIG_XNU_PONG_WIFI=n
+===== pong-power archive =====
+===== /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261108T182209Z.log =====
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_parameter_validation_kern_bsd.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk_stubs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC netns.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/tests/vm_parameter_validation_kern_bsd.c:24:34: warning: variable 'file_size' set but not used [-Wunused-but-set-variable]
+   24 |         size_t                          file_size;
+      |                                         ^
+             CC protons.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC flowidns.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skywalk_proc_info.o
+             CC skywalk_sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/core/skywalk.c:748:7: warning: explicitly assigning value of variable of type 'char *' to itself [-Wself-assign]
+  748 |                 dst = dst;
+      |                 ~~~ ^ ~~~
+             CC channel.o
+             CC channel_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC channel_ring.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC kern_channel_event.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC channel_syscalls.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cuckoo_hashtable.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cuckoo_hashtable_test.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC net_filter_event.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_arena.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/lib/cuckoo_hashtable_test.c:411:22: warning: variable 'node' set but not used [-Wunused-but-set-variable]
+  411 |         struct cuckoo_node *node = NULL;
+      |                             ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_cache.o
+1 warning generated.
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_region.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/mem/skmem.c:32:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/xnu/ios-obj/EXPORT_HDRS/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC skmem_slab.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC skmem_test.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus.o
+             CC nexus_adapter.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_ioctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/nexus_adapter.c:1156:2: warning: result of comparison of 18-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1156 |         SK_DF(SK_VERB_NOTIFY | ((kring->ckr_tx == NR_TX) ?
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1157 |             SK_VERB_TX : SK_VERB_RX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1158 |             "%s(%d) [%s] na \"%s\" (0x%llx) kr \"%s\" (0x%llx) krflags 0x%b "
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1159 |             "flags 0x%x, kh %u kt %u | h %u t %u",
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1160 |             sk_proc_name_address(p), sk_proc_pid(p),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1161 |             (kring->ckr_tx == NR_TX) ? "W" : "R", KRNA(kring)->na_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1162 |             SK_KVA(KRNA(kring)), kring->ckr_name, SK_KVA(kring),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1163 |             kring->ckr_flags, CKRF_BITS, flags, kring->ckr_khead,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1164 |             kring->ckr_ktail, kring->ckr_rhead, kring->ckr_rtail);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+             CC nexus_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_mbq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nexus_pktq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nexus_syscalls.o
+             CC nexus_traffic_rule.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_flowswitch.o
+             CC fsw.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_dp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_ip.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2997:16: warning: variable 'flow_adv_idx' set but not used [-Wunused-but-set-variable]
+ 2997 |         flowadv_idx_t flow_adv_idx;
+      |                       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2998:7: warning: variable 'flowadv_cap' set but not used [-Wunused-but-set-variable]
+ 2998 |         bool flowadv_cap;
+      |              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:2999:18: warning: variable 'flow_adv_token' set but not used [-Wunused-but-set-variable]
+ 2999 |         flowadv_token_t flow_adv_token;
+      |                         ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3047:16: warning: variable 'flow_adv_idx' set but not used [-Wunused-but-set-variable]
+ 3047 |         flowadv_idx_t flow_adv_idx;
+      |                       ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3048:7: warning: variable 'flowadv_cap' set but not used [-Wunused-but-set-variable]
+ 3048 |         bool flowadv_cap;
+      |              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:3049:18: warning: variable 'flow_adv_token' set but not used [-Wunused-but-set-variable]
+ 3049 |         flowadv_token_t flow_adv_token;
+      |                         ^
+             CC fsw_ip_frag.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/fsw_dp.c:4521:12: warning: variable 'fr_freed' set but not used [-Wunused-but-set-variable]
+ 4521 |                 uint32_t fr_freed, fr_resid = 0;
+      |                          ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_cellular.o
+             CC fsw_ethernet.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_flow.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_netagent.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_classq.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC fsw_qos.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow.o
+             CC flow_classifier.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_classifier.c:181:11: warning: variable 'pkt_buf_size' set but not used [-Wunused-but-set-variable]
+  181 |         uint32_t pkt_buf_size;
+      |                  ^
+             CC flow_entry.o
+             CC flow_manager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC flow_namespace.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+7 warnings generated.
+             CC flow_owner.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_namespace.c:55:6: warning: variable 'so_type' set but not used [-Wunused-but-set-variable]
+   55 |         int so_type = 0;
+      |             ^
+1 warning generated.
+             CC flow_route.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_stats.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_track.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC flow_agg.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_monitor.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_track.c:166:21: warning: variable 'src_last' set but not used [-Wunused-but-set-variable]
+  166 |         uint64_t dst_last, src_last;
+      |                            ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_track.c:755:27: warning: variable 'dst' set but not used [-Wunused-but-set-variable]
+  755 |         struct flow_track *src, *dst;
+      |                                  ^
+             CC nx_netif.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_agg.c:712:11: warning: variable 'dbuf_off' set but not used [-Wunused-but-set-variable]
+  712 |         uint16_t dbuf_off;
+      |                  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/flowswitch/flow/flow_agg.c:1036:11: warning: variable 'sl3tlen' set but not used [-Wunused-but-set-variable]
+ 1036 |         uint32_t sl3tlen = 0;
+      |                  ^
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+2 warnings generated.
+             CC nx_netif_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/monitor/nx_monitor.c:1376:2: warning: result of comparison of 18-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1376 |         SK_DF(SK_VERB_MONITOR | SK_VERB_NOTIFY |
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1377 |             ((kring->ckr_tx == NR_TX) ? SK_VERB_TX : SK_VERB_RX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1378 |             "kr \"%s\" (0x%llx) krflags 0x%b flags 0x%x", kring->ckr_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1379 |             SK_KVA(kring), kring->ckr_flags, CKRF_BITS, flags);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif_compat.c:817:23: warning: variable 'i' set but not used [-Wunused-but-set-variable]
+  817 |                 uint32_t p = 0, pn, i, f;
+      |                                     ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:1894:2: warning: result of comparison of 21-bit unsigned value == 'SK_VERB_ERROR' (9223372036854775808) is always false [-Wtautological-value-range-compare]
+ 1894 |         SK_DF(SK_VERB_NETIF | SK_VERB_INTR |
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1895 |             ((kring->ckr_tx == NR_RX) ? SK_VERB_RX : SK_VERB_TX),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1896 |             "na \"%s\" (0x%llx) kr \"%s\" (0x%llx) krflags 0x%b",
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1897 |             KRNA(kring)->na_name, SK_KVA(KRNA(kring)), kring->ckr_name,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1898 |             SK_KVA(kring), kring->ckr_flags, CKRF_BITS);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:268:33: note: expanded from macro 'SK_DF'
+  268 | #define SK_DF(_flag, _fmt, ...) _SK_D((uint64_t)_flag, _fmt, ##__VA_ARGS__)
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/os_skywalk_private.h:257:14: note: expanded from macro '_SK_D'
+  256 |         if (__improbable(((_flag) && (sk_verbose & (_flag)) == (_flag)) || \
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  257 |             (_flag) == SK_VERB_ERROR)) {                                \
+      |             ~~~~~~~~^~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/sys/cdefs.h:1226:45: note: expanded from macro '__improbable'
+ 1226 | #define __improbable(x) __builtin_expect(!!(x), 0)
+      |                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:3514:6: warning: variable 'err' set but not used [-Wunused-but-set-variable]
+ 3514 |         int err, dropcnt, dropstat = -1;
+      |             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif.c:4197:22: warning: variable 'consumed' set but not used [-Wunused-but-set-variable]
+ 4197 |         uint32_t npkts = 0, consumed = 0;
+      |                             ^
+1 warning generated.
+             CC nx_netif_host.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+2 warnings generated.
+             CC nx_netif_mit.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nx_netif_netagent.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             CC nx_netif_filter_native.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_filter_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_flow.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_vp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_util.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_poll.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_gso.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_netif_llink.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/skywalk/nexus/netif/nx_netif_gso.c:692:18: warning: variable 'ip6' set but not used [-Wunused-but-set-variable]
+  692 |         struct ip6_hdr *ip6;
+      |                         ^
+             CC nx_user_pipe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nx_kernel_pipe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC nx_kpipe_loopback.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC packet_copy.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC packet_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC pbufpool.o
+             CC pbufpool_kern.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cpu_copy_in_cksum_gen.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC conf.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cons.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC km.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC kern_machdep.o
+             CC stubs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC systemcalls.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC liuqin_debug.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC liuqin_usb_debug.o
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:132:7: warning: code will never be executed [-Wunreachable-code]
+  132 |         if (!lq_fb || index > 32) {
+      |              ^~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:165:1: warning: no previous prototype for function 'liuqin_late_bind' [-Wmissing-prototypes]
+  165 | liuqin_late_bind(uint64_t va)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:164:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  164 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:171:1: warning: no previous prototype for function 'liuqin_late_unbind' [-Wmissing-prototypes]
+  171 | liuqin_late_unbind(void)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:170:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  170 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:179:1: warning: no previous prototype for function 'liuqin_fb_bigband' [-Wmissing-prototypes]
+  179 | liuqin_fb_bigband(unsigned first, unsigned height, uint32_t color)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:178:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  178 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:183:7: warning: code will never be executed [-Wunreachable-code]
+  183 |         if (!lq_fb || first + height > 2880) {
+      |              ^~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:210:1: warning: no previous prototype for function 'liuqin_early_marker' [-Wmissing-prototypes]
+  210 | liuqin_early_marker(unsigned band)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:209:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  209 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_debug.c:214:24: warning: code will never be executed [-Wunreachable-code]
+  214 |         const uint64_t base = 0xb8000000ULL, stride = 7200;
+      |                               ^~~~~~~~~~~~~
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC unix_signal.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+7 warnings generated.
+             CC ctrr_test_sysctl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:698:1: warning: no previous prototype for function 'liuqin_fb_marker_boot' [-Wmissing-prototypes]
+  698 | liuqin_fb_marker_boot(void)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:697:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+  697 | void
+      | ^
+      | static 
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:70: note: to match this '{'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                             ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+  960 |         if (kernel_thread_start(usb_thread, NULL, &thread) != KERN_SUCCESS) {
+      |                                                                              ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:775:1: note: to match this '{'
+  775 | {
+      | ^
+1 warning and 2 errors generated.
+make[7]: *** [liuqin_usb_debug.o] Error 1
+make[7]: *** Waiting for unfinished jobs....
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/arm/unix_signal.c:418:7: warning: cast to smaller integer type 'user32_addr_t' (aka 'unsigned int') from 'mcontext32_t *' (aka 'struct mcontext32 *') [-Wpointer-to-int-cast]
+  418 |                     (user32_addr_t)&((struct user_sigframe32*)sp)->mctx);
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/arm/unix_signal.c:643:67: warning: cast to smaller integer type 'user32_addr_t' (aka 'unsigned int') from 'user32_siginfo_t *' (aka 'struct user32_siginfo *') [-Wpointer-to-int-cast]
+  643 |                     CAST_DOWN_EXPLICIT(user32_addr_t, catcher), infostyle, sig, (user32_addr_t)&((struct user_sigframe32*)sp)->sinfo,
+      |                                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 warnings generated.
+make[6]: *** [build_all] Error 2
+make[5]: *** [do_all] Error 2
+make[4]: *** [build_all] Error 2
+make[3]: *** [build_all_recurse_into_conf] Error 2
+make[2]: *** [build_all_recurse_into_bsd] Error 2
+make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+make: *** [build] Error 2
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+===== error lines =====
+6923:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/net/ntstat.c:5190:6: warning: variable 'failed' set but not used [-Wunused-but-set-variable]
+6924: 5190 |         int failed = 0;
+9512:  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+12210:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+12216:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/liuqin_usb_debug.c:960:71: error: expected '}'
+12223:make[7]: *** [liuqin_usb_debug.o] Error 1
+12232:make[6]: *** [build_all] Error 2
+12233:make[5]: *** [do_all] Error 2
+12234:make[4]: *** [build_all] Error 2
+12235:make[3]: *** [build_all_recurse_into_conf] Error 2
+12236:make[2]: *** [build_all_recurse_into_bsd] Error 2
+12237:make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+12238:make: *** [build] Error 2
+12239:build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed

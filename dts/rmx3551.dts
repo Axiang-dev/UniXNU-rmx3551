@@ -49,24 +49,6 @@
         region34@a7605000 { reg = <0x0 0xa7605000 0x0 0x8000>; no-map; };
         region35@b8000000 { reg = <0x0 0xb8000000 0x0 0x2b00000>; no-map; };
     };
-    rmx3551-touch {
-        compatible = "rmx3551,synaptics-s3910";
-        spi-base = /bits/ 64 <0x990000>;
-        tlmm-base = /bits/ 64 <0xf000000>;
-        gcc-base = /bits/ 64 <0x100000>;
-        rsc-base = /bits/ 64 <0x17a20000>;
-        cmd-db-base = /bits/ 64 <0x80860000>;
-        gpio-offset = <0x100000>;
-        pins = <16 17 18 19 21 20>;
-        max-x = <1080>; max-y = <2412>;
-    };
-    pong-buttons {
-        compatible = "pong,pm8350-keys";
-        core-base = /bits/ 64 <0xc400000>;
-        cnfg-base = /bits/ 64 <0xc42d000>;
-        observer-base = /bits/ 64 <0xc440000>;
-        ee = <0>; pon-ppid = <0x13>; volume-up-ppid = <0x18d>;
-    };
 };
 &ufs { status = "okay"; pong,gcc-ufs-page = /bits/ 64 <0x187000>; pong,smmu-stream-id = <0xe0>; pong,ufs-spi = <265>; };
 &pcie0 {
@@ -161,4 +143,34 @@
         0x200 0x0 0
         0x244 0x3 0
     >;
+};
+
+/* The kernel drivers look these up by absolute path, /arm-io/pong-touch and
+ * /arm-io/pong-buttons: configuration() in the touch and key drivers reads that
+ * exact entry and returns false otherwise, which is why both skipped with
+ * "missing/incompatible DT" while the display came up.  The ADT generator maps
+ * the children of the soc bus to /arm-io and honours unixnu,adt-name, the same
+ * way ufs becomes /arm-io/ufshc.  Declaring them at the root put them at
+ * /rmx3551-touch and /pong-buttons instead. */
+&apss {
+    pong-touch {
+        compatible = "pong,goodix-berlin";
+        unixnu,adt-name = "pong-touch";
+        spi-base = /bits/ 64 <0x990000>;
+        tlmm-base = /bits/ 64 <0xf000000>;
+        gcc-base = /bits/ 64 <0x100000>;
+        rsc-base = /bits/ 64 <0x17a20000>;
+        cmd-db-base = /bits/ 64 <0x80860000>;
+        gpio-offset = <0x100000>;
+        pins = <16 17 18 19 21 20>;
+        max-x = <1080>; max-y = <2412>;
+    };
+    pong-buttons {
+        compatible = "pong,pm8350-keys";
+        unixnu,adt-name = "pong-buttons";
+        core-base = /bits/ 64 <0xc400000>;
+        cnfg-base = /bits/ 64 <0xc42d000>;
+        observer-base = /bits/ 64 <0xc440000>;
+        ee = <0>; pon-ppid = <0x13>; volume-up-ppid = <0x18d>;
+    };
 };

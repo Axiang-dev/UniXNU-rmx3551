@@ -356,3 +356,44 @@ fb_threads=4
 - 两线共用一个工作区。**提交前先 `git status`**，别把对方的未提交改动覆盖掉
 - 构建只认 `main` 上的提交；工作区改动不会被 CI 采纳
 - 日志/镜像统一放 `D:/unixnu/ud`，诊断目录带时间戳
+
+---
+
+## 十二、USB 专项（2026-11-08 19:45）
+
+### 已确认的因果链
+
+```
+PongUsb 是纯头文件实现（drivers/PongUsb/*.h）
+        └─ 只被 drivers/PongPower/PongPower.cpp 包含
+              └─ 编译入口 scripts/build-pong-power-native.py → libPongPower.a
+                    └─ 由 build-xnu-ipados18.sh 在 XNU_PONG_POWER=1 时 force_load 进内核
+```
+
+**实测**：内核 `kernel.macho`（51777536 字节）里
+`ArmDTPlatform` 39 处、`Pong touch` 6 处，但
+`pong_power_start_optional` **0** 处、`audio classes ready` **0** 处 → **电源归档从未进内核**。
+
+所以 `pong_usb=1`、`pong_usb_mux=1`、`pong_usb_iphone=1` 全部落空，日志里一条 USB 记录都没有。
+
+### 尝试与结果
+
+| 尝试 | 结果 |
+|---|---|
+| 修 defconfig 的 CRLF + 解析器 `strip()` | 正确但有副作用：**所有**开关同时生效 |
+| 工作流显式 `env: XNU_PONG_POWER=1` | 构建停在 `test -f "$CRYPTO_ARCHIVE"` |
+| 只导出 POWER、并让环境变量优先于 .config | 仍停在同一行 |
+
+失败行在**构建树里的脚本第 953 行**，而设备仓库同一测试在第 771 行——**两者不是同一份文件**，
+说明构建树里的脚本是拼接过的。要继续必须先把这一点搞清楚（已在工作流加诊断步骤，失败时会打印该区域）。
+
+### 下一步（任选其一）
+
+1. **关掉会牵连的开关**：`CONFIG_XNU_SOURCE_CORECRYPTO14` 及其依赖链，只让 POWER 生效
+2. **单独构建归档**：先用 `scripts/build-pong-power-native.py` 生成 `libPongPower.a`，
+   再通过 `XNU_EXTRA_LD_ARCHIVES`（build-xnu-ipados18.sh 会读取）注入
+3. **修上游**：定位构建树脚本的来源（kit merged-scripts / 工具链 pin），从源头修正
+
+### 顺带结论
+
+触摸/按键驱动**在内核里**（字符串已确认），它们的失效纯粹是 DTS 路径问题，与 USB 这条链无关。

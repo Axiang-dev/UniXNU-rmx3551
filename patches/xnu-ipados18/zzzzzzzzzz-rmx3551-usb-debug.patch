@@ -105,7 +105,7 @@ new file mode 100644
 +/* Before pmap exists the panel is reachable through the identity mapping the */
 +/* boot tables provide, so early kprintf and panic text already land on it. */
 +#define LQ_FB_EARLY ((uint32_t *)(vm_offset_t)0xb8000000ULL)
-+static uint32_t *lq_fb = LQ_FB_EARLY;
++static uint32_t *lq_fb = NULL;
 +static uint32_t *lq_fb_late;
 +static uint32_t lq_fb_width = 1800, lq_fb_stride_px = 1800;
 +
@@ -344,7 +344,7 @@ new file mode 100644
 +};
 +
 +static unsigned lq_text_x, lq_text_y;
-+static bool lq_text_disabled;
++static bool lq_text_disabled = true;
 +
 +extern vm_map_t kernel_map;
 +extern int PE_parse_boot_argn(const char *, void *, unsigned int);
@@ -544,7 +544,7 @@ diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_debug.c
-@@ -0,0 +1,988 @@
+@@ -0,0 +1,989 @@
 +/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
 + *
 + * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console
@@ -571,6 +571,7 @@ new file mode 100644
 + */
 +#include <sys/param.h>
 +#include <sys/systm.h>
++#include <vm/vm_kern_xnu.h>
 +#include <kern/clock.h>
 +#include <kern/thread.h>
 +#include <kern/sched_prim.h>
@@ -1613,37 +1614,15 @@ new file mode 100644
 +	return LQUSB_BAD;
 +}
 +#endif
-diff --git a/bsd/dev/rmx3551_usb_stubs.c b/bsd/dev/rmx3551_usb_stubs.c
-new file mode 100644
---- /dev/null
-+++ b/bsd/dev/rmx3551_usb_stubs.c
-@@ -0,0 +1,16 @@
-+/*
-+ * Stand-ins for the two scaffolding symbols the vendored debug port still names.
-+ * The reference board used them to mark early boot stages on its own panel; this
-+ * port has no such panel, and the USB transport does not call them for anything
-+ * else, so they stay empty rather than dragging that machinery along.
-+ */
-+void
-+liuqin_stage(unsigned stage)
-+{
-+	(void)stage;
-+}
-+
-+void
-+liuqin_fb_marker_boot(void)
-+{
-+}
 diff --git a/bsd/conf/files.arm64 b/bsd/conf/files.arm64
 --- a/bsd/conf/files.arm64
 +++ b/bsd/conf/files.arm64
-@@ -5,7 +5,10 @@
+@@ -5,7 +5,9 @@
  bsd/dev/arm/stubs.c		standard
  bsd/dev/arm/systemcalls.c       standard
  bsd/dev/arm64/sysctl.c          standard
 +bsd/dev/liuqin_debug.c		standard
 +bsd/dev/liuqin_usb_debug.c	standard
-+bsd/dev/rmx3551_usb_stubs.c	standard
  bsd/dev/arm/unix_signal.c	standard
  
  bsd/dev/arm64/cpu_in_cksum.s	standard
@@ -1651,18 +1630,18 @@ diff --git a/bsd/conf/files.arm64 b/bsd/conf/files.arm64
 diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1096,7 +1096,11 @@
- 
- 	bsd_init_kprintf("bsd_do_post - done");
+@@ -1075,7 +1075,11 @@
+ {
+ 	proc_t p = current_proc();
  
 +	extern void liuqin_usb_debug_start(void);
 +
 +	liuqin_usb_debug_start();
 +
- 	load_init_program(p);
- 	lock_trace = 1;
- }
+ 	process_name("init", p);
  
+ 	/* Set up exception-to-signal reflection */
+ 	ux_handler_setup();
 diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
 --- a/osfmk/console/serial_console.c
 +++ b/osfmk/console/serial_console.c

@@ -544,7 +544,7 @@ diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_debug.c
-@@ -0,0 +1,960 @@
+@@ -0,0 +1,968 @@
 +/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
 + *
 + * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console

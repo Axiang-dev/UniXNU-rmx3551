@@ -189,7 +189,7 @@ kernel_args = [
   # and the same list the reference port boots with, and the reason it could
   # read a wait chain where this board only saw wifip2pd restarting.
   "applog=1",
-  "applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd",
+  "applog_name=launchd,backboardd,SpringBoard,containermanagerd,lsd,runningboardd,logd_helper,powerd,wifi-bootstrap,PosterBoard",
   # The writable Data mount is gated on the owner cache being authorized and the
   # root device being verified: native_owner_data_prepare returns ENXIO at its
   # first check (stage 0) when either is false, and /private/var then stays on the
@@ -198,6 +198,12 @@ kernel_args = [
   # offline-owner-root-check starts the verified root probe.  native-ufs-root=1 is
   # NOT set: it is the ShengUfs runtime argument and the payload step rejects it
   # without sheng-pmgr=2, which this board's power path does not provide.
+  # The reference display page asks for the display-server and SpringBoard wait
+  # chains before a stationary screen is called a framebuffer failure.  This
+  # dumps every thread's PC/LR/FP and sixteen stack frames at 35 s and 90 s into
+  # /private/var/logs/PongBoot-<process>.txt, for SpringBoard, backboardd,
+  # runningboardd, PosterBoard, lsd, wifid and the container daemons.
+  "pong_boot_snapshot=1",
   "offline-owner-root-check=1",
 ]
 

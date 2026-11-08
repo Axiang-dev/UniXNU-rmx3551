@@ -63,6 +63,9 @@ def main():
            'PongAdsp.cpp','PongBattery.cpp','PongPlatformResources.cpp','PongPower.cpp',
            'PongBacklight.cpp',str(stub))
   print('audio container tfa98xx.cnt absent; building platform resources and the USB entry with weak audio stubs')
+ # QcomRpmh.c lives in the shared sheng package; the flags already point there for
+ # its headers, so the source comes from the same place.
+ shared=pong_paths.sheng_root()/'package'
  objects=[]
  for name in sources:
   # QcomRpmh.c ships in the shared sheng package, not in drivers/PongPower.

@@ -124,6 +124,10 @@ def pass_decisions():
         if f"'{banned}'" in branch:
             fail(3, "build-pong-power-native.py", f"{banned} needs the amplifier profile and cannot join the no-container list")
     print("  amp-profile sources stay out of the no-container list")
+    if "shared=pong_paths.sheng_root()" not in power:
+        fail(3, "build-pong-power-native.py", "shared sheng package is not bound before the compile loop")
+    else:
+        print("  shared sheng package bound")
     if "source=shared/name" not in power:
         fail(3, "build-pong-power-native.py", "QcomRpmh.c resolves under drivers/PongPower instead of the sheng package")
     else:

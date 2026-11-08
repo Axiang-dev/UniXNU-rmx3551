@@ -39,7 +39,10 @@ def main():
     shutil.copyfile(DEVICE/'scripts/build-xnu-ipados18.sh',tree/'scripts/build-xnu-ipados18.sh')
     link(DEVICE/'patches/xnu-ipados18',tree/'patches/xnu')
     (tree/'build').mkdir(exist_ok=True);(tree/'.cache').mkdir(exist_ok=True)
-    env={k:v for k,v in os.environ.items() if not k.startswith(('XNU_','UNIXNU_'))}
+    # Keep an exported XNU_ switch: the board components are selected by those, and
+    # dropping them here left the .config as the only source -- which does not carry
+    # the board symbols at all, so the power archive was never built.
+    env={k:v for k,v in os.environ.items() if not k.startswith('UNIXNU_')}
     env.update(DEVELOPER_DIR=str(a.developer_dir),JOBS=str(a.jobs),PONG_NATIVE_DRIVER_SOURCE=str(DEVICE),
         UNIXNU_IOS_TARGET='18.0',SCAN_BUILD='',DO_CTFMERGE='0',CTFINSERT='',CTFCONVERT='',CTFMERGE='',CTFDUMP='')
     if a.hardware_dtb:env['PONG_HARDWARE_DTB']=str(a.hardware_dtb.resolve())

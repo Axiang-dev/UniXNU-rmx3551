@@ -152,13 +152,6 @@ jobs:
         # what the generated .config carries -- and that file has no line for the
         # board symbols, so the power archive was never built.  It now keeps them;
         # export the one this board needs and echo it so the log proves it went in.
-        env:
-          XNU_PONG_POWER: '1'
-          # The generated .config drops this switch and the Kconfig default is on,
-          # so the build enters the source-corecrypto branch and stops at
-          # test -f $CRYPTO_ARCHIVE -- an archive this build never produces.
-          # 22H374 takes its crypto from the prelinked component instead.
-          XNU_SOURCE_CORECRYPTO14: '0'
         run: |
           set -euo pipefail
           echo "XNU_PONG_POWER=${XNU_PONG_POWER:-<unset>}"

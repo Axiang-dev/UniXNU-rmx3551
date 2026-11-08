@@ -63,7 +63,8 @@ def main():
     config_path=a.config_path or DEVICE/'configs/pong_ipados18_defconfig'
     for line in config_path.read_text().splitlines():
         if line.startswith('CONFIG_XNU_'):
-            key,value=line.removeprefix('CONFIG_').split('=',1);env[key]={'y':'1','n':'0'}.get(value,value.strip('"'))
+            key,value=line.removeprefix('CONFIG_').split('=',1);value=value.strip()
+        env[key]={'y':'1','n':'0'}.get(value,value.strip('"'))
     # Only the board-specific archive has a matching 22H374 binding profile.
     # Other legacy display/AIR archives remain excluded.
     legacy_gpu = ('XNU_NATIVE_ADRENO',

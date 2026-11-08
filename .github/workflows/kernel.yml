@@ -170,10 +170,10 @@ jobs:
         # build produced, so the next round reads an answer instead of a guess.
         run: |
           set -uo pipefail
-          KERNEL=$(find build -name 'kernel-ipados18.macho' | head -1)
+          KERNEL=$(find . -name 'kernel.macho' -o -name 'kernel-ipados18.macho' | head -1)
           echo "kernel: ${KERNEL:-<missing>}"
           echo "--- pong-power archive ---"
-          find build -name 'libPongPower.a' -o -name 'pong-power' -type d | sed 's/^/  /' | head
+          find . -name 'libPongPower.a' -o -name 'pong-power' -type d | sed 's/^/  /' | head
           for symbol in "audio classes ready" "Pong touch: Berlin-D ready" "pong_power_start_optional"; do
             if [ -n "${KERNEL}" ] && grep -qa "$symbol" "$KERNEL"; then
               echo "  present: $symbol"

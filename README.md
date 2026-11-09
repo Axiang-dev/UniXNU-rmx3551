@@ -28,18 +28,17 @@ realme GT2 大师探索版（RMX3551 / SM8475 / cape）的 UniXNU 格式 2 设�
 
 ## 当前状态
 
-- [x] UEFI 点亮、显示、ConIn（音量键选择 / 电源键确认）
-- [x] 内核编译与启动（Darwin 24 / 22H374）
-- [x] APFS 三卷挂载：OS root、SystemOS → `/private/preboot`、Data → `/private/var`
-- [x] launchd 跑完 boot task，`SpringBoard` / `backboardd` / `lsd` 进程存活
-- [ ] 首帧 —— 合成器尚未创建 surface，`surftrace` 无输出
-- [ ] 触摸驱动 —— Synaptics S3910，pong 用的是 goodix-berlin，需新写
-- [ ] 背光 —— ADT 的 `pong-dsi-backlight` 未提供，亮度控制不工作
-- [ ] 屏幕驱动 —— NT37701B，pong 用的是 NT37705
-- [ ] Pixelworks 显示芯片（i2c@880000，pong 无）
+完整、按证据分级的进度和下一步见 [`PROGRESS.md`](PROGRESS.md)。
 
-首帧前的三处阻塞及各轮设备证据见
-[`migration/ipados18/services168-first-frame-blockers.md`](migration/ipados18/services168-first-frame-blockers.md)。
+- [x] UEFI 点亮、显示和 ConIn 可用
+- [x] iPadOS 18.7.10（22H374）进入 SpringBoard 桌面
+- [x] 1080×2412 显示表面、软件 UI、TextInput 和屏幕键盘可用
+- [x] 确认 S3910 与实体键的真实 ADT 节点位于 `/soc`，并提交路径修复
+- [ ] S3910 新内核编译与 stage-3 真机复测
+- [ ] 触摸 HID、实体音量键
+- [ ] USB；当前停在 SMMU 路由拒绝
+
+已经验证可进入桌面的 `22e7b2c` 镜像和 SHA-256 记录在 `PROGRESS.md`，不得覆盖。
 
 ## 构建
 

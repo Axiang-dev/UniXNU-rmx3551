@@ -1,3 +1,5 @@
+> Historical notes. For the current, evidence-based status and next actions, see [`PROGRESS.md`](PROGRESS.md).
+
 # rmx3551 移植进度（截至 2026-11-05 00:30）
 
 realme GT2 大师探索版 / RMX3551 / SM8475(cape) / 项目号 21605

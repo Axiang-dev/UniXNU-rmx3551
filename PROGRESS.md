@@ -36,7 +36,7 @@ Generated `hardware.dtb` proves the real nodes are `/soc/pong-touch` and `/soc/p
 
 GitHub Actions run `42573247020` failed before reaching the driver because the `bsd/dev/pong_goodix.c` new-file hunk header still declared 1307 lines after the DT fix made it 1308. The trailing `#endif` was therefore not applied, producing `unterminated conditional directive`. This repository now declares 1308 lines and includes this progress record.
 
-The next build is the first clean compile check for the corrected DT lookup. Hardware status is not claimed until a new stage-3 image is booted on serial `9ea882b4` and its PongBootLog is decoded.
+The next build is the first clean compile check for the corrected DT lookup. GitHub Actions run [`42581880203`](https://github.com/Axiang-dev/UniXNU-rmx3551/actions/runs/42581880203) was `in_progress` when this record was updated. Hardware status is not claimed until a new stage-3 image is booted on serial `9ea882b4` and its PongBootLog is decoded.
 
 ## Diagnostic order
 

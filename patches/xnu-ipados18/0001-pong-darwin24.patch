@@ -160,7 +160,7 @@ index 0000000..7c6c450
 +static bool configuration(void)
 +{
 +    DTEntry e;uint64_t c=0,n=0,o=0;uint32_t ee=~0u,a=0,b=0;
-+    if ((SecureDTLookupEntry(NULL,"/arm-io/pong-buttons",&e)!=kSuccess && SecureDTLookupEntry(NULL,"/pong-buttons",&e)!=kSuccess) ||
++    if ((SecureDTLookupEntry(NULL,"/soc/pong-buttons",&e)!=kSuccess && SecureDTLookupEntry(NULL,"/arm-io/pong-buttons",&e)!=kSuccess && SecureDTLookupEntry(NULL,"/pong-buttons",&e)!=kSuccess) ||
 +        !property(e,"core-base",&c,8) || !property(e,"cnfg-base",&n,8) ||
 +        !property(e,"observer-base",&o,8) || !property(e,"ee",&ee,4) ||
 +        !property(e,"pon-ppid",&a,4) || !property(e,"volume-up-ppid",&b,4) ||
@@ -543,7 +543,8 @@ index 0000000..ec8da0e
 +configuration(void)
 +{
 +    DTEntry entry;
-+    if (SecureDTLookupEntry(NULL, "/arm-io/pong-touch", &entry) != kSuccess &&
++    if (SecureDTLookupEntry(NULL, "/soc/pong-touch", &entry) != kSuccess &&
++        SecureDTLookupEntry(NULL, "/arm-io/pong-touch", &entry) != kSuccess &&
 +        SecureDTLookupEntry(NULL, "/pong-touch", &entry) != kSuccess) return false;
 +    int ok = property(entry,"spi-base",&se_phys,8) && property(entry,"tlmm-base",&tlmm_phys,8) &&
 +        property(entry,"gcc-base",&gcc_phys,8) && property(entry,"rsc-base",&rsc_phys,8) &&

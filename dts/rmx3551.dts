@@ -145,13 +145,10 @@
     >;
 };
 
-/* The kernel drivers look these up by absolute path, /arm-io/pong-touch and
- * /arm-io/pong-buttons: configuration() in the touch and key drivers reads that
- * exact entry and returns false otherwise, which is why both skipped with
- * "missing/incompatible DT" while the display came up.  The ADT generator maps
- * the children of the soc bus to /arm-io and honours unixnu,adt-name, the same
- * way ufs becomes /arm-io/ufshc.  Declaring them at the root put them at
- * /rmx3551-touch and /pong-buttons instead. */
+/* SecureDT retains the source hierarchy: children of apss live under /soc.
+ * ArmDTPlatform publishes these as platform devices, but the driver still
+ * reads board metadata from /soc/pong-touch and /soc/pong-buttons.  The C
+ * configuration helpers retain /arm-io and root-path fallbacks for other ADTs. */
 &apss {
     pong-touch {
         compatible = "pong,synaptics-s3910";

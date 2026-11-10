@@ -281,7 +281,7 @@ jobs:
           print('  placeholder' if layout.get('ci_placeholder') else '  from the userdata build')
           PY
 
-
+      - name: Prelink the Apple kexts into the kernel
         # A source build alone is not a bootable kernel: the Apple kexts and
         # platform services live in the original kernelcache, and IOKit's C++
         # runtime faults in OSMetaClass::postModLoad without them.  This mirrors

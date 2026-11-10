@@ -130,7 +130,9 @@ kernel_args = [
   # value that satisfies both: 58 signature zones, 25 type zones.
   "kt_fixed_zones=83",
   "keepsyms=1",
-  "cpus=1",
+  # Four A510 cores are the highest topology verified to reach SpringBoard.
+  # The first cpus=5 boot failed before writing a new PongBootLog.
+  "cpus=4",
   "pong_allow_unauthenticated_root=1",
   "cs_enforcement_disable=1",
   "cs_library_val_enable=0",

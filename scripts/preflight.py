@@ -164,6 +164,7 @@ def pass_decisions():
     # into the ADT, and the packaging script's own list is legacy duplication.
     board = (ROOT / "board.toml").read_text(encoding="utf-8")
     for needed in (
+        "cpus=4",
         "pong_touch=1",
         "pong_s3910=4",
         "liuqin_usb=1",

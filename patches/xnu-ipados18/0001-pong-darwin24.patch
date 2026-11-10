@@ -540,7 +540,7 @@ new file mode 100644
 index 0000000..ec8da0e
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,1375 @@
+@@ -0,0 +1,1367 @@
 +/* Synaptics S3910 / RMX3551 SM8475 TouchComm over QUP0/SE4.
 + * The SPI, GENI and PMIC plumbing started in the Pong Goodix driver; the
 + * chip protocol is the TouchComm v1/v2 implementation used by upstream S3910.
@@ -1422,7 +1422,7 @@ index 0000000..ec8da0e
 +	if (s3910.length > S3910_PAYLOAD_MAX) {
 +		unsigned left = plan.continued_payload + 1;
 +
-+		/* A queued HBP frame may precede DISABLE_REPORT's response after reset.
++		/* A queued pre-init HBP frame can appear here with report code 0x23.
 +		 * Consume the whole frame but do not overwrite the command payload. */
 +		if (s3910.ready || s3910.code != 0x23 || !left) {
 +			return -90;
@@ -1599,7 +1599,8 @@ index 0000000..ec8da0e
 +		s3910.max_read = s3910_le16(s3910.payload + 24);
 +	}
 +	/* Match syna_tcm_identify(): application mode queries app info
-+	 * immediately.  Sending DISABLE_REPORT here leaves this firmware busy. */
++	 * immediately. Treating 0x23 as a DISABLE_REPORT alias would instead
++	 * invoke GET_DYNAMIC_CONFIG and leave this firmware busy. */
 +	rc = s3910_command(0x20, NULL, 0);
 +	if (rc) {
 +		return rc;
@@ -1612,6 +1613,11 @@ index 0000000..ec8da0e
 +	s3910.config_size = s3910_le16(s3910.payload + 12);
 +	s3910.max_x = s3910_le16(s3910.payload + 32);
 +	s3910.max_y = s3910_le16(s3910.payload + 34);
++	printf("Pong touch: S3910 app info length=%u version=%u.%u static=%u dynamic=%u report_config=%u payload_limit=%u axes=%ux%u objects=%u\n",
++	    s3910.length, s3910_le16(s3910.payload), s3910_le16(s3910.payload + 4),
++	    s3910_le16(s3910.payload + 6), s3910_le16(s3910.payload + 12),
++	    s3910_le16(s3910.payload + 14), s3910.max_x, s3910.max_y,
++	    s3910_le16(s3910.payload + 36));
 +	s3910.stage = "limits";
 +	s3910.detail = (int32_t)((uint32_t)s3910.config_size << 16 | s3910_le16(s3910.payload + 36));
 +	if (!s3910.max_x || !s3910.max_y || !s3910_le16(s3910.payload + 36) ||
@@ -1624,22 +1630,8 @@ index 0000000..ec8da0e
 +	if (rc) {
 +		return rc;
 +	}
-+	/* Disable raw HBP frames and select on-controller LBP at the requested rate. */
-+	const uint8_t lbp[] = { 0x11, 2, 0 };
-+	rc = s3910_command(0x24, lbp, sizeof(lbp));
-+	if (rc) {
-+		return rc;
-+	}
-+	const uint8_t key = 0x11;
-+	rc = s3910_command(0x23, &key, 1);
-+	if (rc) {
-+		return rc;
-+	}
-+	s3910.stage = "LBP";
-+	s3910.detail = s3910.length >= 2 ? s3910_le16(s3910.payload) : s3910.length;
-+	if (s3910.length != 2 || s3910_le16(s3910.payload) != 2) {
-+		return -71;
-+	}
++	s3910.stage = "report config";
++	printf("Pong touch: S3910 touch report disabled; applying format\n");
 +	memcpy(config, format, sizeof(format));
 +	rc = s3910_command(0x26, config, s3910.config_size);
 +	if (rc) {

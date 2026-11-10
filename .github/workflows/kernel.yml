@@ -43,6 +43,9 @@ jobs:
       PONG_WORK_ROOT: ${{ github.workspace }}/pong-work
       PONG_ROOT: ${{ github.workspace }}/pong-work
       PONG_INPUT_ROOT: ${{ github.workspace }}/pong-inputs
+      # prepare-xnu-source.py uses api.github.com. Authenticate so hosted-runner
+      # shared-IP rate limits cannot stop a valid kernel build.
+      GITHUB_TOKEN: ${{ github.token }}
       # The kernel bakes three APFS volume UUIDs in as constants.  Without a
       # userdata image there is nothing to read them from, so a fixed uuid5
       # placeholder stands in - enough to compile and link, mounts nothing.

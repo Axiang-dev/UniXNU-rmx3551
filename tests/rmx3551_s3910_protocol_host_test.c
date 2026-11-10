@@ -26,12 +26,28 @@ main(void)
 		2, 9, 0x64, 0x00, 0xc8, 0x00
 	};
 	struct s3910_frame frame;
+	struct s3910_v1_read_plan plan;
 
 	CHECK(s3910_le16((const uint8_t *)"\x34\x12") == 0x1234);
 	CHECK(s3910_le32((const uint8_t *)"\x78\x56\x34\x12") == 0x12345678u);
 	CHECK(s3910_crc6(ascii, 0) == 0x3f);
 	CHECK(s3910_crc6(ascii, 9 * 8) == 0x01);
 	CHECK(s3910_crc16(ascii, 9) == 0x29b1);
+
+	CHECK(s3910_v1_plan(0, 9, &plan) == 0);
+	CHECK(plan.total_length == 5 && plan.initial_payload == 0);
+	CHECK(plan.continued_payload == 0 && plan.continued_read == 0);
+	CHECK(s3910_v1_plan(5, 9, &plan) == 0);
+	CHECK(plan.total_length == 10 && plan.initial_payload == 5);
+	CHECK(plan.continued_payload == 0 && plan.continued_read == 0);
+	CHECK(s3910_v1_plan(28, 9, &plan) == 0);
+	CHECK(plan.total_length == 33 && plan.initial_payload == 5);
+	CHECK(plan.continued_payload == 23 && plan.continued_read == 26);
+	CHECK(plan.continued_padding == 25);
+	CHECK(s3910_v1_plan(512, 9, &plan) == 0);
+	CHECK(plan.total_length == 517 && plan.initial_payload == 5);
+	CHECK(plan.continued_payload == 507 && plan.continued_read == 510);
+	CHECK(plan.continued_padding == 509);
 	head[3] |= s3910_crc6(head, 26);
 	CHECK(head[3] == 0x2e);
 

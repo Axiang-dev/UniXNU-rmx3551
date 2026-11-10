@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Clock-gate and SPI transport fixes ready for CI and hardware retest | Stage-3 reads the real board properties, reaches QUP0/SE4, and can fall back to GPIO SPI when GENI FIFO mode is unavailable |
+| S3910 touch | Predictive receive fix ready for CI and hardware retest | Stage 3 reached the real chip and returned `a5 10 1c 00`; the v1 transport now mirrors the vendor predictive read and continuation timing |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -54,6 +54,17 @@ Evidence for this run:
 region SHA-256 7c6bd416a74687b5ba24de16584de5a9171c8e68d9a10cffad3843c0c2d13062
 log SHA-256    d9f746f129c67ce1fe83ed7924e5be2eaa79c1747d83d72dedf1bf5dc2042992
 ```
+
+
+The later stage-3 run reached the chip and returned a valid TouchComm v1
+`REPORT_IDENTIFY` header (`a5 10 1c 00`), proving the board pins, power and GPIO
+SPI path are live. Its continuation read returned `ff ff ff ff` because the
+port read a four-byte header and then requested `payload + 7` bytes immediately.
+The vendor S3910 driver instead uses a nine-byte predictive first read, waits
+30 microseconds before a continued transfer, and requests only the remaining
+message bytes plus the `a5 03` status prefix. The driver now follows that
+framing; a host test pins the 28-byte identify packet to a 9-byte first read and
+a 26-byte continuation with the padding at byte 25.
 
 ## Diagnostic order
 

@@ -371,7 +371,7 @@ new file mode 100644
 index 0000000..e98b61f
 --- /dev/null
 +++ b/bsd/dev/pong_s3910_protocol.h
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,163 @@
 +/* SPDX-License-Identifier: BSD-2-Clause-Patent
 + * Pure TouchComm wire helpers shared by the S3910 kernel driver and its host
 + * test. The including translation unit supplies uintN_t, size_t and memset. */
@@ -447,6 +447,43 @@ index 0000000..e98b61f
 +	return crc;
 +}
 +
++struct s3910_v1_read_plan {
++	unsigned total_length;
++	unsigned initial_payload;
++	unsigned continued_payload;
++	unsigned continued_read;
++	unsigned continued_padding;
++};
++
++/* Predict the first TouchComm v1 transfer exactly as the Synaptics driver does:
++ * four header bytes plus five payload bytes when the message has them. */
++static inline int
++s3910_v1_plan(uint16_t payload_length, unsigned initial_length,
++    struct s3910_v1_read_plan *plan)
++{
++	unsigned available_initial;
++	unsigned remaining;
++	unsigned total_length;
++
++	if (!plan || initial_length < 4) {
++		return -22;
++	}
++	total_length = 4u + payload_length + 1u;
++	available_initial = initial_length - 4u;
++	plan->total_length = total_length;
++	plan->initial_payload = payload_length < available_initial ? payload_length : available_initial;
++	plan->continued_payload = payload_length - plan->initial_payload;
++	remaining = total_length > initial_length ? total_length - initial_length : 0;
++	plan->continued_read = remaining ? remaining + 2u : 0;
++	/* A five-byte payload ends exactly one byte beyond the predictive read.
++	 * The missing byte is the implicit end marker; no SPI continuation is sent. */
++	if (remaining == 1 && plan->continued_payload == 0) {
++		plan->continued_read = 0;
++	}
++	plan->continued_padding = plan->continued_read ? plan->continued_read - 1u : 0;
++	return 0;
++}
++
 +/* Synaptics clocks 0xff on MOSI for every byte returned from the chip. */
 +static inline void
 +s3910_prepare_read(uint8_t *data, size_t size)
@@ -503,7 +540,7 @@ new file mode 100644
 index 0000000..ec8da0e
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,1323 @@
+@@ -0,0 +1,1359 @@
 +/* Synaptics S3910 / RMX3551 SM8475 TouchComm over QUP0/SE4.
 + * The SPI, GENI and PMIC plumbing started in the Pong Goodix driver; the
 + * chip protocol is the TouchComm v1/v2 implementation used by upstream S3910.
@@ -1322,37 +1359,72 @@ index 0000000..ec8da0e
 +}
 +
 +static int
++s3910_continuation_read(uint8_t *body, unsigned request)
++{
++	int rc;
++
++	for (unsigned retry = 0; retry < 4; retry++) {
++		/* Synaptics requires a short inter-transaction gap before a continued
++		 * read. Without it the controller clocks idle bytes instead of A5 03. */
++		sleep_us(30);
++		rc = s3910.bus.read(s3910.bus.context, body, request);
++		if (rc) {
++			return rc;
++		}
++		s3910.detail = s3910_le32(body);
++		if (body[0] == 0xa5 && body[1] == 3) {
++			return 0;
++		}
++		if (body[0] != 0xff) {
++			break;
++		}
++	}
++	printf("Pong touch: S3910 continuation rejected request=%u marker=%#x status=%#x\n",
++	    request, body[0], body[1]);
++	return -71;
++}
++
++static int
 +s3910_message(void)
 +{
-+	uint8_t head[4], body[S3910_PAYLOAD_MAX + 7];
++	uint8_t head[9], body[S3910_PAYLOAD_MAX + 7];
++	struct s3910_v1_read_plan plan;
 +	int rc;
 +
 +	if (s3910.version == 2) {
 +		return s3910_exchange_v2(0x0a, NULL, 0);
 +	}
++	/* RMX3551's S3910 reports TouchComm v1 (`a5 10 ...`). Predictive reads are
++	 * part of that transport: the controller expects nine bytes in the first
++	 * transfer, not a four-byte header followed by an unrelated continuation. */
++	s3910.version = 1;
 +	s3910.stage = "header";
 +	s3910.detail = 0;
-+	rc = s3910.bus.read(s3910.bus.context, head, sizeof(head));
-+	if (rc) {
-+		return rc;
-+	}
-+	s3910.detail = s3910_le32(head);
-+	if (head[0] != 0xa5) {
-+		if (!s3910.version && s3910.detail && s3910.detail != (int32_t)0xffffffffu &&
-+		    !s3910_crc6(head, 32)) {
-+			s3910.version = 2;
-+			return 0;
++	for (unsigned retry = 0; retry < 4; retry++) {
++		rc = s3910.bus.read(s3910.bus.context, head, sizeof(head));
++		if (rc) {
++			return rc;
 +		}
-+		return -71;
++		s3910.detail = s3910_le32(head);
++		if (head[0] == 0xa5) {
++			break;
++		}
++		if (head[0] != 0xff || retry == 3) {
++			return -71;
++		}
++		printf("Pong touch: S3910 header retry marker=0xff\n");
 +	}
-+	s3910.version = 1;
 +	s3910.code = head[1];
 +	s3910.length = s3910_le16(head + 2);
++	if (s3910_v1_plan(s3910.length, sizeof(head), &plan)) {
++		return -90;
++	}
 +	if (s3910.length > S3910_PAYLOAD_MAX) {
-+		unsigned left = s3910.length;
++		unsigned left = plan.continued_payload + 1;
 +
-+		/* A queued HBP frame may precede DISABLE_REPORT's response after reset. */
-+		if (s3910.ready || s3910.code != 0x23) {
++		/* A queued HBP frame may precede DISABLE_REPORT's response after reset.
++		 * Consume the whole frame but do not overwrite the command payload. */
++		if (s3910.ready || s3910.code != 0x23 || !left) {
 +			return -90;
 +		}
 +		while (left) {
@@ -1360,46 +1432,47 @@ index 0000000..ec8da0e
 +
 +			s3910.stage = "continued";
 +			s3910.detail = 0;
-+			rc = s3910.bus.read(s3910.bus.context, body, size + 2 + (size == left ? 5 : 0));
++			rc = s3910_continuation_read(body, size + 2);
 +			if (rc) {
 +				return rc;
 +			}
-+			s3910.detail = s3910_le32(body);
-+			if (body[0] != 0xa5 || body[1] != 3) {
-+				return -71;
-+			}
-+			if (size == left && body[size + 2] != 0x5a) {
++			if (size == left && body[size + 1] != 0x5a) {
 +				s3910.stage = "padding";
-+				s3910.detail = body[size + 2];
++				s3910.detail = body[size + 1];
 +				return -71;
 +			}
 +			left -= size;
 +		}
 +		return 0;
 +	}
-+	if (!s3910.length) {
-+		return 0;
++	if (plan.continued_read) {
++		s3910.stage = "continued";
++		s3910.detail = 0;
++		rc = s3910_continuation_read(body, plan.continued_read);
++		if (rc) {
++			return rc;
++		}
++		if (body[plan.continued_padding] != 0x5a) {
++			s3910.stage = "padding";
++			s3910.detail = body[plan.continued_padding];
++			return -71;
++		}
 +	}
-+	/* Read EOM, optional CRC/RC and trailing EOM as one SPI transaction. */
-+	s3910.stage = "continued";
-+	s3910.detail = 0;
-+	rc = s3910.bus.read(s3910.bus.context, body, s3910.length + 7);
-+	if (rc) {
-+		return rc;
-+	}
-+	s3910.detail = s3910_le32(body);
-+	if (body[0] != 0xa5 || body[1] != 3) {
-+		return -71;
-+	}
-+	if (body[s3910.length + 2] != 0x5a) {
++	if (plan.total_length <= sizeof(head) && head[plan.total_length - 1] != 0x5a) {
 +		s3910.stage = "padding";
-+		s3910.detail = body[s3910.length + 2];
++		s3910.detail = head[plan.total_length - 1];
 +		return -71;
++	}
++	if (plan.initial_payload) {
++		memcpy(s3910.payload, head + 4, plan.initial_payload);
++	}
++	if (plan.continued_payload) {
++		memcpy(s3910.payload + plan.initial_payload, body + 2, plan.continued_payload);
 +	}
 +	if (s3910.code == 0x10) {
-+		s3910.crc = s3910_le16(body + s3910.length + 3) != 0x5a5a;
++		printf("Pong touch: S3910 v1 identify read: initial=%u continuation=%u payload=%u\n",
++		    (unsigned)sizeof(head), plan.continued_read, plan.initial_payload + plan.continued_payload);
 +	}
-+	memcpy(s3910.payload, body + 2, s3910.length);
 +	return 0;
 +}
 +

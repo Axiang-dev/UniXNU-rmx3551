@@ -1481,6 +1481,8 @@ index 0000000..ec8da0e
 +{
 +	uint8_t packet[S3910_PAYLOAD_MAX + 5];
 +	int rc;
++	uint32_t last_reply = 0xffffffffu;
++	unsigned busy_replies = 0;
 +
 +	s3910.command = command;
 +	s3910.stage = "write";
@@ -1505,6 +1507,11 @@ index 0000000..ec8da0e
 +			packet[size++] = (uint8_t)crc;
 +			packet[size++] = (uint8_t)(crc >> 8);
 +		}
++		printf("Pong touch: S3910 command %#x tx:", command);
++		for (unsigned i = 0; i < size; i++) {
++			printf(" %02x", packet[i]);
++		}
++		printf("\n");
 +		rc = s3910.bus.write(s3910.bus.context, packet, size);
 +	}
 +	if (rc) {
@@ -1517,6 +1524,16 @@ index 0000000..ec8da0e
 +			if (rc) {
 +				return rc;
 +			}
++		}
++		uint32_t reply = (uint32_t)s3910.detail;
++
++		if (reply != last_reply) {
++			printf("Pong touch: S3910 command %#x reply[%u] code=%#x length=%u detail=%#x\n",
++			    command, n, s3910.code, s3910.length, reply);
++			last_reply = reply;
++		}
++		if (s3910.code == 2) {
++			busy_replies++;
 +		}
 +		if (s3910.code == 1 || (command == 2 && s3910.code == 0x10)) {
 +			return 0;
@@ -1532,6 +1549,8 @@ index 0000000..ec8da0e
 +			return -5;
 +		}
 +	}
++	printf("Pong touch: S3910 command %#x timeout busy=%u last_code=%#x detail=%#x\n",
++	    command, busy_replies, s3910.code, (uint32_t)s3910.detail);
 +	return -110;
 +}
 +
@@ -1579,11 +1598,8 @@ index 0000000..ec8da0e
 +	if (s3910.version == 2 && s3910.length >= 26) {
 +		s3910.max_read = s3910_le16(s3910.payload + 24);
 +	}
-+	report = 0x23;
-+	rc = s3910_command(6, &report, 1);
-+	if (rc) {
-+		return rc;
-+	}
++	/* Match syna_tcm_identify(): application mode queries app info
++	 * immediately.  Sending DISABLE_REPORT here leaves this firmware busy. */
 +	rc = s3910_command(0x20, NULL, 0);
 +	if (rc) {
 +		return rc;

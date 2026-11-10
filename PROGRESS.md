@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Predictive receive fix ready for CI and hardware retest | Stage 3 reached the real chip and returned `a5 10 1c 00`; the v1 transport now mirrors the vendor predictive read and continuation timing |
+| S3910 touch | Transport verified; app-info sequence retest | Stage 3 returned the complete 28-byte identify payload after the predictive read fix; the next image removes the out-of-sequence `DISABLE_REPORT(0x23)` before `GET_APPLICATION_INFO(0x20)` |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -65,6 +65,14 @@ The vendor S3910 driver instead uses a nine-byte predictive first read, waits
 message bytes plus the `a5 03` status prefix. The driver now follows that
 framing; a host test pins the 28-byte identify packet to a 9-byte first read and
 a 26-byte continuation with the padding at byte 25.
+
+The predictive-read hardware run identified the chip and then timed out on
+`CMD_GET_APPLICATION_INFO (0x20)`, repeatedly observing `STATUS_BUSY`. The
+local driver had inserted `CMD_DISABLE_REPORT (0x06)` with payload `0x23`
+before app info. OnePlus' S3910 driver instead calls app info immediately after
+identify, and `0x23` is `CMD_GET_DYNAMIC_CONFIG`, not a report ID. The next
+stage-3 image removes that extra transaction and records the actual command TX
+bytes plus each changed response status for a hardware retest.
 
 ## Diagnostic order
 

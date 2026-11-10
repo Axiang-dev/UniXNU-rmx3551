@@ -163,7 +163,13 @@ def pass_decisions():
     # board.toml is where the boot arguments live: finalize-pong-adt.py writes them
     # into the ADT, and the packaging script's own list is legacy duplication.
     board = (ROOT / "board.toml").read_text(encoding="utf-8")
-    for needed in ("liuqin_usb=1", "liuqin_usb_smmu=2"):
+    for needed in (
+        "pong_touch=1",
+        "pong_s3910=4",
+        "liuqin_usb=1",
+        "liuqin_usb_smmu=2",
+        "liuqin_usb_dma=0x80000000,0x10000000000",
+    ):
         if f'"{needed}"' not in board:
             fail(3, "board.toml", f"{needed} is not in kernel_args; the driver will not start")
         else:
@@ -178,8 +184,10 @@ def pass_decisions():
         fail(3, "board.toml", "liuqin_usb=1 is not in kernel_args; the debug port stays off")
     elif '"liuqin_usb_smmu=2"' not in board_toml:
         fail(3, "board.toml", "liuqin_usb_smmu=2 is missing; SID0 bypass remains refused")
+    elif '"pong_s3910=4"' not in board_toml:
+        fail(3, "board.toml", "pong_s3910=4 is missing; the image regresses to no touch")
     else:
-        print("  board.toml starts the USB debug port and SID0 bypass planner")
+        print("  board.toml keeps S3910 stage 4 with the USB debug port")
     if "PONG_SHENG_ROOT" not in wf:
         fail(3, "kernel.yml", "no sheng source checkout for QcomRpmh.h")
     else:

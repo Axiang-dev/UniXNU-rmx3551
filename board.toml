@@ -159,6 +159,9 @@ kernel_args = [
   "pong_software_ui=1",
   "pong_ui_software=1",
   "pong_touch=1",
+  # Keep the hardware-verified controller stage explicit.  USB work must not
+  # silently fall back to the generic touch path in a freshly packaged image.
+  "pong_s3910=4",
   "pong_buttons=1",
   "pong_init_path=/pong/init",
   "pong_build=ipados18-22H374",
@@ -172,6 +175,9 @@ kernel_args = [
   "fb_threads=4",
   "liuqin_usb=1",
   "liuqin_usb_smmu=2",
+  # The controller advertises 64-bit DMA and this device allocated its
+  # event ring above 4 GiB. Keep a guarded window without assuming 32-bit.
+  "liuqin_usb_dma=0x80000000,0x10000000000",
   "pong_usb=0",
   "pong_usb_mux=1",
   "pong_usb_iphone=1",

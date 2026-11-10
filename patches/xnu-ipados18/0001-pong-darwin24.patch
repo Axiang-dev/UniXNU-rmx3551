@@ -1611,9 +1611,9 @@ index 0000000..ec8da0e
 +		return -71;
 +	}
 +	s3910.config_size = s3910_le16(s3910.payload + 12);
-+	s3910.max_x = s3910_le16(s3910.payload + 32);
-+	s3910.max_y = s3910_le16(s3910.payload + 34);
-+	printf("Pong touch: S3910 app info length=%u version=%u.%u static=%u dynamic=%u report_config=%u payload_limit=%u axes=%ux%u objects=%u\n",
++	s3910.max_x = s3910_le16(s3910.payload + 32) + 1;
++	s3910.max_y = s3910_le16(s3910.payload + 34) + 1;
++	printf("Pong touch: S3910 app info length=%u version=%#x static=%u dynamic=%u report_config=%u payload_limit=%u axes=%ux%u objects=%u\n",
 +	    s3910.length, s3910_le16(s3910.payload), s3910_le16(s3910.payload + 4),
 +	    s3910_le16(s3910.payload + 6), s3910_le16(s3910.payload + 12),
 +	    s3910_le16(s3910.payload + 14), s3910.max_x, s3910.max_y,
@@ -1622,7 +1622,7 @@ index 0000000..ec8da0e
 +	s3910.detail = (int32_t)((uint32_t)s3910.config_size << 16 | s3910_le16(s3910.payload + 36));
 +	if (!s3910.max_x || !s3910.max_y || !s3910_le16(s3910.payload + 36) ||
 +	    s3910_le16(s3910.payload + 36) > S3910_CONTACTS ||
-+	    s3910.config_size < sizeof(format) || s3910.config_size > S3910_PAYLOAD_MAX) {
++	    s3910.config_size < 128 || s3910.config_size > S3910_PAYLOAD_MAX) {
 +		return -71;
 +	}
 +	report = 0x11;

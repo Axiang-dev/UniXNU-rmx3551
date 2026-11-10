@@ -1,0 +1,858 @@
+== configuration pong_ipados18_ci_defconfig -> /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+== tree /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/tree
++ /usr/local/bin/dtc -I dts -O dtb -o /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb -i /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/UniXNU-sm8475-common/dts /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/dts/rmx3551.dts
+Building Darwin 24; log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261110T091020Z.log
+Inner XNU build failed (exit 2); log: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261110T091020Z.log
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_resident.c:4559:15: warning: variable 'saved_secluded_count' set but not used [-Wunused-but-set-variable]
+ 4559 |         unsigned int saved_secluded_count, saved_secluded_target;
+      |                      ^
+             CC pong_goodix.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:32:42: warning: passing 'void **' to parameter of type 'const void **' discards qualifiers in nested pointer types [-Wincompatible-pointer-types-discards-qualifiers]
+   32 |     if (SecureDTGetProperty(entry, name, &value, &length) != kSuccess || length != size) return false;
+      |                                          ^~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/xnu/ios-obj/EXPORT_HDRS/pexpert/pexpert/device_tree.h:304:18: note: passing argument to parameter 'propertyValue' here
+  304 |     void const **propertyValue, unsigned int *propertySize);
+      |                  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:188:38: warning: cast from 'const uint8_t *' (aka 'const unsigned char *') to 'const struct cmd_db_entry *' increases required alignment from 1 to 4 [-Wcast-align]
+  188 |                 const struct cmd_db_entry *entry = (const struct cmd_db_entry *)(db->data + slave->header_offset);
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:190:46: warning: result of comparison of constant 126976 with expression of type 'const uint16_t' (aka 'const unsigned short') is always false [-Wtautological-constant-out-of-range-compare]
+  190 |                 if (slave->id == 0 || slave->header_offset >= CMD_DB_SIZE - 0x1000 || slave->count > 512 ||
+      |                                       ~~~~~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:6:2: error: unterminated conditional directive
+    6 | #if defined(PONG)
+      |  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1359:3: error: expected '}'
+ 1359 |         }
+      |          ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1353:1: note: to match this '{'
+ 1353 | {
+      | ^
+3 warnings and 2 errors generated.
+make[7]: *** [pong_goodix.o] Error 1
+make[6]: *** [build_all] Error 2
+make[5]: *** [do_all] Error 2
+make[4]: *** [build_all] Error 2
+make[3]: *** [build_all_recurse_into_conf] Error 2
+make[2]: *** [build_all_recurse_into_bsd] Error 2
+make[2]: *** Waiting for unfinished jobs....
+             CC vm_dyld_pager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_swapfile_pager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_dyld_pager.c:881:27: warning: variable 'hdr' set but not used [-Wunused-but-set-variable]
+  881 |         struct mwl_info_hdr     *hdr;
+      |                                  ^
+1 warning generated.
+             CC vm_tests.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_upl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_tests.c:36:
+In file included from ./mach/vm32_map_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC vm_user.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_upl.c:30:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout_internal.h:33:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout.h:87:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC vm32_user.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC vm_sanitize.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm32_user.c:77:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC vm_sanitize_error_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_sanitize_error_compat.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC iokit_rpc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_sanitize.c:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC device_server.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC device_init.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             CC kext_alloc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC kmod.o
+In file included from device/device_server.c:12:
+In file included from device/device_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC subrs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/kext_alloc.c:33:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/kmod.c:45:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+1 warning generated.
+             CC kpc_common.o
+             CC cpc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC serial_general.o
+             CC serial_console.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC video_scroll.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/console/serial_console.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC video_console.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC telemetry.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC trap_telemetry.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/console/video_console.c:1771:52: warning: variable 'rowscanline' set but not used [-Wunused-but-set-variable]
+ 1771 |         uint32_t *from, *to, linelongs, i, line, rowline, rowscanline;
+      |                                                           ^
+1 warning generated.
+             CC bootprofile.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_clear.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_cmp_safe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_abort.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_try_abort.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_dit.o
+             CC cccbc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdrbg.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdrbg_nisthmac.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdigest_init.o
+             CC ccdigest_update.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccgcm.o
+             CC ccmode_gcm_gf_mult.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccmode_gcm_mult_h.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchkdf.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_init.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_update.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_final.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdigest_final_64be.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_di.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_initial_state.o
+             CC ccsha256_K.o
+1 warning generated.
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_ltc_compress.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_ltc_di.o
+             CC prng_random.o
+             CC entropy.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC psci_smp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC pong_ui_exception.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/prng/prng_random.c:234:67: warning: format specifies type 'char *' but the argument has type 'void *' [-Wformat]
+  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+      |                                                                ~~                      ^~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/panic_call.h:48:27: note: expanded from macro 'panic'
+   48 |         (panic)(ex " @%s:%d", ## __VA_ARGS__, __FILE_NAME__, __LINE__); \
+      |                 ~~               ^~~~~~~~~~~
+             CC vm_apple_protect.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm64/pong_ui_exception.c:13:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap.o
+             CC pmap_cs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC pmap_data.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_apple_protect.c:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_fault_internal.h:34:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_fault_xnu.h:41:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_cs.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:34:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/cpm_internal.h:45:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap_iommu.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:3714:42: warning: multi-character character constant [-Wfour-char-constants]
+ 3714 |         if (__improbable(io_range->signature == 'RVBR')) {
+      |                                                 ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:4326:1: warning: no previous prototype for function 'pmap_mark_page_for_cache_flush' [-Wmissing-prototypes]
+ 4326 | pmap_mark_page_for_cache_flush(pmap_paddr_t pa)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:4325:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+ 4325 | void
+      | ^
+      | static 
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_iommu.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap_misc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC pmap_ppl_interface.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_misc.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_ppl_interface.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC bsd_arm64.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC machdep_call.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             AS WKdmDecompress_16k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmCompress_16k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmDecompress_4k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmCompress_4k.o
+             AS WKdmData.o
+             AS lz4_decode_arm64.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+             AS lz4_encode_arm64.o
+             AS bcopy.o
+             AS bzero.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS caches_asm.o
+             AS data.o
+             AS locore.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+             AS iofilter_asm.o
+             AS gxf_exceptions.o
+             AS start.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS pinst.o
+2 warnings generated.
+             AS cswitch.o
+             AS machine_routines_asm.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS memcmp_zero.o
+             AS strnlen.o
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS strncmp.o
+2 warnings generated.
+             AS platform_tests_asm.o
+             AS alternate_debugger_asm.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS sha256_compress_arm64.o
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+     LDFILELIST osfmk
+make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+make: *** [build] Error 2
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+Inner build error excerpts:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/net/ntstat.c:5190:6: warning: variable 'failed' set but not used [-Wunused-but-set-variable]
+ 5190 |         int failed = 0;
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:6:2: error: unterminated conditional directive
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1359:3: error: expected '}'
+  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+Build failed; log retained: /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261110T091020Z.log
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 35, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py", line 30, in main
+    subprocess.run(command, cwd=source, check=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-ipados18-pong-macos.py', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--jobs', '4', '--skip-image-verification', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 54, in <module>
+    main()
+  File "/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-format2.py", line 44, in main
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-pong-profile-kernel.py'),
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python3', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device/scripts/build-pong-profile-kernel.py', '--source', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/device', '--artifact-dir', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/kernel', '--config-path', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config', '--hardware-dtb', '/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/device-tree/hardware.dtb', '--jobs', '4']' returned non-zero exit status 1.
+===== resolved config =====
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/build/rmx3551/ipados-18.7.10-22H374/pong_ipados18_ci/.config
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_ARMCPU=y
+CONFIG_XNU_ARM_DT_PLATFORM=y
+CONFIG_XNU_NATIVE_UFS=y
+CONFIG_XNU_PONG_POWER=y
+CONFIG_XNU_PONG_ADRENO_PLATFORM=n
+CONFIG_XNU_PONG_WIFI=n
+===== pong-power archive =====
+===== /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/build-20261110T091020Z.log =====
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_resident.c:4559:15: warning: variable 'saved_secluded_count' set but not used [-Wunused-but-set-variable]
+ 4559 |         unsigned int saved_secluded_count, saved_secluded_target;
+      |                      ^
+             CC pong_goodix.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:32:42: warning: passing 'void **' to parameter of type 'const void **' discards qualifiers in nested pointer types [-Wincompatible-pointer-types-discards-qualifiers]
+   32 |     if (SecureDTGetProperty(entry, name, &value, &length) != kSuccess || length != size) return false;
+      |                                          ^~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/build/xnu/ios-obj/EXPORT_HDRS/pexpert/pexpert/device_tree.h:304:18: note: passing argument to parameter 'propertyValue' here
+  304 |     void const **propertyValue, unsigned int *propertySize);
+      |                  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:188:38: warning: cast from 'const uint8_t *' (aka 'const unsigned char *') to 'const struct cmd_db_entry *' increases required alignment from 1 to 4 [-Wcast-align]
+  188 |                 const struct cmd_db_entry *entry = (const struct cmd_db_entry *)(db->data + slave->header_offset);
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:190:46: warning: result of comparison of constant 126976 with expression of type 'const uint16_t' (aka 'const unsigned short') is always false [-Wtautological-constant-out-of-range-compare]
+  190 |                 if (slave->id == 0 || slave->header_offset >= CMD_DB_SIZE - 0x1000 || slave->count > 512 ||
+      |                                       ~~~~~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:6:2: error: unterminated conditional directive
+    6 | #if defined(PONG)
+      |  ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1359:3: error: expected '}'
+ 1359 |         }
+      |          ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1353:1: note: to match this '{'
+ 1353 | {
+      | ^
+3 warnings and 2 errors generated.
+make[7]: *** [pong_goodix.o] Error 1
+make[6]: *** [build_all] Error 2
+make[5]: *** [do_all] Error 2
+make[4]: *** [build_all] Error 2
+make[3]: *** [build_all_recurse_into_conf] Error 2
+make[2]: *** [build_all_recurse_into_bsd] Error 2
+make[2]: *** Waiting for unfinished jobs....
+             CC vm_dyld_pager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_swapfile_pager.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_dyld_pager.c:881:27: warning: variable 'hdr' set but not used [-Wunused-but-set-variable]
+  881 |         struct mwl_info_hdr     *hdr;
+      |                                  ^
+1 warning generated.
+             CC vm_tests.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC vm_upl.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_tests.c:36:
+In file included from ./mach/vm32_map_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC vm_user.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_upl.c:30:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout_internal.h:33:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_pageout.h:87:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC vm32_user.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC vm_sanitize.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm32_user.c:77:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC vm_sanitize_error_compat.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_sanitize_error_compat.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC iokit_rpc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_sanitize.c:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map_xnu.h:35:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC device_server.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC device_init.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             CC kext_alloc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC kmod.o
+In file included from device/device_server.c:12:
+In file included from device/device_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC subrs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/kext_alloc.c:33:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/kmod.c:45:
+In file included from ./mach/host_priv_server.h:70:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+1 warning generated.
+             CC kpc_common.o
+             CC cpc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC serial_general.o
+             CC serial_console.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC video_scroll.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/console/serial_console.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+             CC video_console.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC telemetry.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC trap_telemetry.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/console/video_console.c:1771:52: warning: variable 'rowscanline' set but not used [-Wunused-but-set-variable]
+ 1771 |         uint32_t *from, *to, linelongs, i, line, rowline, rowscanline;
+      |                                                           ^
+1 warning generated.
+             CC bootprofile.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_clear.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_cmp_safe.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_abort.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_try_abort.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cc_dit.o
+             CC cccbc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdrbg.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdrbg_nisthmac.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdigest_init.o
+             CC ccdigest_update.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccgcm.o
+             CC ccmode_gcm_gf_mult.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccmode_gcm_mult_h.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchkdf.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_init.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_update.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC cchmac_final.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccdigest_final_64be.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_di.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_initial_state.o
+             CC ccsha256_K.o
+1 warning generated.
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_ltc_compress.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ccsha256_ltc_di.o
+             CC prng_random.o
+             CC entropy.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC psci_smp.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC pong_ui_exception.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/prng/prng_random.c:234:67: warning: format specifies type 'char *' but the argument has type 'void *' [-Wformat]
+  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+      |                                                                ~~                      ^~~~~~~
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/kern/panic_call.h:48:27: note: expanded from macro 'panic'
+   48 |         (panic)(ex " @%s:%d", ## __VA_ARGS__, __FILE_NAME__, __LINE__); \
+      |                 ~~               ^~~~~~~~~~~
+             CC vm_apple_protect.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm64/pong_ui_exception.c:13:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_map.h:92:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap.o
+             CC pmap_cs.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC pmap_data.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_apple_protect.c:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_fault_internal.h:34:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_fault_xnu.h:41:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_cs.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:34:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/cpm_internal.h:45:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap_iommu.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:3714:42: warning: multi-character character constant [-Wfour-char-constants]
+ 3714 |         if (__improbable(io_range->signature == 'RVBR')) {
+      |                                                 ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:4326:1: warning: no previous prototype for function 'pmap_mark_page_for_cache_flush' [-Wmissing-prototypes]
+ 4326 | pmap_mark_page_for_cache_flush(pmap_paddr_t pa)
+      | ^
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.c:4325:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+ 4325 | void
+      | ^
+      | static 
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_iommu.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC pmap_misc.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC pmap_ppl_interface.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_misc.c:28:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_internal.h:56:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_data.h:42:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/arm/pmap/pmap_ppl_interface.c:41:
+In file included from /Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_object_xnu.h:93:
+/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/osfmk/vm/vm_page.h:443:71: warning: implicit conversion loses integer precision: 'uintptr_t' (aka 'unsigned long') to 'unsigned int' [-Wshorten-64-to-32]
+  443 |         return (ppnum_t)(pmap_pong_index_pa(vm_pages_first_pong_index + index) >> PAGE_SHIFT);
+      |                          ~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+1 warning generated.
+             CC bsd_arm64.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC machdep_call.o
+clang: warning: no such include directory: '/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+3 warnings generated.
+             AS WKdmDecompress_16k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmCompress_16k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmDecompress_4k.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS WKdmCompress_4k.o
+             AS WKdmData.o
+             AS lz4_decode_arm64.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+             AS lz4_encode_arm64.o
+             AS bcopy.o
+             AS bzero.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS caches_asm.o
+             AS data.o
+             AS locore.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+             AS iofilter_asm.o
+             AS gxf_exceptions.o
+             AS start.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS pinst.o
+2 warnings generated.
+             AS cswitch.o
+             AS machine_routines_asm.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS memcmp_zero.o
+             AS strnlen.o
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+             AS strncmp.o
+2 warnings generated.
+             AS platform_tests_asm.o
+             AS alternate_debugger_asm.o
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+             AS sha256_compress_arm64.o
+2 warnings generated.
+warning: unknown warning option '-Wno-unnecessary-virtual-specifier'; did you mean '-Wno-duplicate-decl-specifier'? [-Wunknown-warning-option]
+warning: unknown warning option '-Wno-ms-bitfield-padding'; did you mean '-Wno-bitfield-width'? [-Wunknown-warning-option]
+2 warnings generated.
+     LDFILELIST osfmk
+make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+make: *** [build] Error 2
+build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
+===== error lines =====
+6914:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/net/ntstat.c:5190:6: warning: variable 'failed' set but not used [-Wunused-but-set-variable]
+6915: 5190 |         int failed = 0;
+9300:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:6:2: error: unterminated conditional directive
+9303:/Users/runner/work/UniXNU-rmx3551/UniXNU-rmx3551/pong-work/build/Pong-iPadOS18-native/tree/.cache/xnu-work/bsd/dev/pong_goodix.c:1359:3: error: expected '}'
+9310:make[7]: *** [pong_goodix.o] Error 1
+9311:make[6]: *** [build_all] Error 2
+9312:make[5]: *** [do_all] Error 2
+9313:make[4]: *** [build_all] Error 2
+9314:make[3]: *** [build_all_recurse_into_conf] Error 2
+9315:make[2]: *** [build_all_recurse_into_bsd] Error 2
+9501:  234 |                         panic("Early boot random cchkdf_expand %s failed with err %d", sp.info, result);
+9679:make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^PONG] Error 2
+9680:make: *** [build] Error 2
+9681:build-xnu-ipados18.sh: line 1120: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=PONG KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=${UNIXNU_IOS_TARGET:-18.0} -DXNU_TARGET_OS_IOS" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,${UNIXNU_IOS_TARGET:-18.0}" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BUILD_STATIC_LINK=0 BUILD_DSYM="${XNU_BUILD_DSYM:-0}" BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" RC_NONARCH_CFLAGS="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed

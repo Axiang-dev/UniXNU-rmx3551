@@ -14,6 +14,10 @@ on:
         description: 'macOS runner label. The packaging notes pin macos-15-intel; macos-latest is the arm64 fallback when that pool is out of capacity.'
         required: false
         default: macos-15-intel
+      volume_layout_release:
+        description: 'Release tag that carries ci-volume-layout.json from the userdata build. Set to "none" for a compile-only run with the uuid5 placeholder.'
+        required: false
+        default: 'userdata-22H374'
   push:
     paths:
       - 'board.toml'
@@ -57,6 +61,37 @@ jobs:
           path: device
           submodules: recursive
           fetch-depth: 1
+
+      - name: Take the volume layout from the userdata build
+        # The kernel bakes the three APFS volume UUIDs in as constants, so the
+        # payload only mounts the userdata image it was built against.  That
+        # image's build publishes ci-volume-layout.json beside its parts; read it
+        # from there instead of trusting the placeholder, which carries the
+        # restore's original UUIDs and stops matching the moment userdata is
+        # rebuilt.  Leave the input empty for a compile-only run.
+        # Push builds keep the placeholder: they answer "does it compile", and a
+        # dispatch is where a mounting payload is asked for.
+        if: github.event_name == 'workflow_dispatch' && inputs.volume_layout_release != 'none'
+        env:
+          TAG: ${{ inputs.volume_layout_release }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/layout"
+          gh release download "$TAG" --pattern ci-volume-layout.json \
+            --dir "$RUNNER_TEMP/layout" --clobber
+          python3 - "$RUNNER_TEMP/layout/ci-volume-layout.json" <<'PY'
+          import json, sys
+          from pathlib import Path
+          layout = json.loads(Path(sys.argv[1]).read_text())
+          if layout.get('ci_placeholder'):
+              raise SystemExit('that release published the placeholder layout, not a real one')
+          for key in ('os', 'systemos', 'data'):
+              uuid = layout.get(key, {}).get('uuid', '')
+              if len(uuid) != 36:
+                  raise SystemExit(f'{key} uuid missing from the layout')
+              print(f'  {key:9} {uuid}')
+          PY
+          echo "PONG_VOLUME_LAYOUT=${RUNNER_TEMP}/layout/ci-volume-layout.json" >> "$GITHUB_ENV"
 
       - name: Let the USB console start without the audio classes
         # PongPower gates PongUsb::start() on pong_audio_service_classes_ready(),
@@ -213,7 +248,40 @@ jobs:
             fi
           done
 
-      - name: Prelink the Apple kexts into the kernel
+      - name: Check the baked volume UUIDs match the layout
+        # The whole point of taking the layout from the userdata build is that the
+        # three UUIDs land inside the kernel as constants.  If the build ignored
+        # the file, the payload silently mounts nothing and the phone panics in
+        # init - an hour later, with no hint about which side is wrong.  Compare
+        # the two now.
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          layout = json.loads(Path(os.environ['PONG_VOLUME_LAYOUT']).read_text())
+          reports = sorted(Path('.').rglob('PONG_BUILD_RESULT.json'))
+          if not reports:
+              raise SystemExit('no PONG_BUILD_RESULT.json; the build did not finish')
+          settings = json.loads(reports[-1].read_text()).get('settings', {})
+          wanted = {
+              'os': 'XNU_OWNER_ROOT_VOLUME_UUID',
+              'systemos': 'XNU_OWNER_CACHE_VOLUME_UUID',
+              'data': 'XNU_OWNER_DATA_VOLUME_UUID',
+          }
+          bad = []
+          for key, env_key in wanted.items():
+              want = layout.get(key, {}).get('uuid', '')
+              got = settings.get(env_key, '')
+              print(f'  {key:9} layout={want or "<missing>"} kernel={got or "<missing>"}')
+              if not want or got != want:
+                  bad.append(f'{key}: kernel has {got!r}, layout has {want!r}')
+          if bad:
+              raise SystemExit('volume UUID mismatch: ' + '; '.join(bad))
+          print('  placeholder' if layout.get('ci_placeholder') else '  from the userdata build')
+          PY
+
+
         # A source build alone is not a bootable kernel: the Apple kexts and
         # platform services live in the original kernelcache, and IOKit's C++
         # runtime faults in OSMetaClass::postModLoad without them.  This mirrors

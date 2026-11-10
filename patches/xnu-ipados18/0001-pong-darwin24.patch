@@ -503,7 +503,7 @@ new file mode 100644
 index 0000000..ec8da0e
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,1316 @@
+@@ -0,0 +1,1323 @@
 +/* Synaptics S3910 / RMX3551 SM8475 TouchComm over QUP0/SE4.
 + * The SPI, GENI and PMIC plumbing started in the Pong Goodix driver; the
 + * chip protocol is the TouchComm v1/v2 implementation used by upstream S3910.
@@ -1700,14 +1700,21 @@ index 0000000..ec8da0e
 +	const char *problem = geni_spi_init(4000000);
 +
 +	if (problem) {
-+		printf("Pong touch: S3910 GENI unavailable: %s\n", problem);
-+		return false;
++		/* Some Pong-family SE4 images are GSI/DMA-only. Drive the same
++		 * four board pins as a serial SPI bitstream. */
++		printf("Pong touch: S3910 GENI unavailable: %s; SPI by GPIO\n", problem);
++		bitbang_in = PIN_MISO;
++		bitbang_out = PIN_MOSI;
++		bitbang_init();
++		spi_transfer = bitbang_transfer;
++	} else {
++		spi_transfer = geni_transfer;
++		printf("Pong touch: S3910 SPI 4 MHz; first response follows\n");
 +	}
 +	s3910.bus.context = NULL;
 +	s3910.bus.read = s3910_bus_read;
 +	s3910.bus.write = s3910_bus_write;
 +	s3910.bus.sleep_ms = s3910_bus_sleep;
-+	printf("Pong touch: S3910 SPI 4 MHz; first response follows\n");
 +	s3910_first_read_length = 0;
 +	int rc = s3910_start();
 +	if (rc) {

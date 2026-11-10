@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Board resources verified; clock-gate fix awaiting CI and hardware retest | Stage-3 now reads real GPIO/SPI/RPMh properties and reaches QUP0 clock setup |
+| S3910 touch | Clock-gate and SPI transport fixes ready for CI and hardware retest | Stage-3 reads the real board properties, reaches QUP0/SE4, and can fall back to GPIO SPI when GENI FIFO mode is unavailable |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -46,7 +46,7 @@ Pong touch: S3910 rails on; ATTN=1 RESET=1 EN1V8=1
 goodix: clocks stay off: 0 0x80000002 0x4220
 ```
 
-The first real post-ADT blocker is the QUP0 S-AHB branch. `0x80000002` means hardware clock gating is enabled and the branch is idle; it is not a clock failure. The USB driver already treats this exact state as valid. The touch patch now applies the same `clock_state()` rule, so CI must compile and retest next.
+The first real post-ADT blocker is the QUP0 S-AHB branch. `0x80000002` means hardware clock gating is enabled and the branch is idle; it is not a clock failure. The USB driver already treats this exact state as valid. The touch patch now applies the same `clock_state()` rule. It also assigns the GENI transfer function explicitly on success and uses the existing GPIO bit-bang transport when the SM8475 SE4 image exposes only GSI/DMA mode. This mirrors the board-level fallback confirmed on the SM8475 `zizhan` reference while retaining the S3910 TouchComm protocol.
 
 Evidence for this run:
 
@@ -90,9 +90,9 @@ Do not change touch resources while diagnosing this USB SMMU route. Finish the S
 
 ## Next actions
 
-1. Push the QUP0 hardware-gated clock fix and wait for the kernel CI compile.
+1. Compile and verify the QUP0 clock fix, explicit SPI transport assignment and GPIO fallback.
 2. Download `rmx3551-kernel` only after the kernel job succeeds.
 3. Rebuild a stage-3 image by applying only the `pong-touch` property patch to the original payload ADT, preserving all other nodes.
 4. Verify the embedded TOML still contains `pong_s3910=3`, then boot temporarily with `fastboot -s 9ea882b4 boot`.
-5. Decode PongBootLog and require `S3910 QUP0/SE4 source=...`, GENI SPI initialization and a first S3910 response before moving to stage 4.
-6. Move to `pong_s3910=4` and HID only after stage 3 identifies the controller.
+5. Decode PongBootLog and require `S3910 QUP0/SE4 source=...`, either GENI `SPI 4 MHz` or `SPI by GPIO`, and a first S3910 response before moving to stage 4.
+6. Move to `pong_s3910=4` and HID only after stage 3 identifies the controller with plausible `8640x19296` axes.

@@ -1,6 +1,6 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-09 (Asia/Shanghai)
+Updated: 2026-11-10 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Patch repaired; compile and hardware retest pending | Real path is `/soc/pong-touch`; commit `932884e` fixes the stale `/arm-io` lookup |
+| S3910 touch | Board resources verified; clock-gate fix awaiting CI and hardware retest | Stage-3 now reads real GPIO/SPI/RPMh properties and reaches QUP0 clock setup |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -36,7 +36,24 @@ Generated `hardware.dtb` proves the real nodes are `/soc/pong-touch` and `/soc/p
 
 GitHub Actions run `42573247020` failed before reaching the driver because the `bsd/dev/pong_goodix.c` new-file hunk header still declared 1307 lines after the DT fix made it 1308. The trailing `#endif` was therefore not applied, producing `unterminated conditional directive`. This repository now declares 1308 lines and includes this progress record.
 
-The next build is the first clean compile check for the corrected DT lookup. GitHub Actions run [`42581880203`](https://github.com/Axiang-dev/UniXNU-rmx3551/actions/runs/42581880203) was `in_progress` when this record was updated. Hardware status is not claimed until a new stage-3 image is booted on serial `9ea882b4` and its PongBootLog is decoded.
+A full replacement of the packaged ADT froze UniXNU at the boot menu because it also removed the original SM8475 eight-CPU, UFS and PSCI nodes. The successful stage-3 diagnostic instead changed only `/arm-io/pong-touch`, leaving every other ADT node in place.
+
+The 2026-11-10 hardware run on serial `9ea882b4` reached the real S3910 board path:
+
+```text
+Pong touch: S3910 diagnostic stage 3
+Pong touch: S3910 rails on; ATTN=1 RESET=1 EN1V8=1
+goodix: clocks stay off: 0 0x80000002 0x4220
+```
+
+The first real post-ADT blocker is the QUP0 S-AHB branch. `0x80000002` means hardware clock gating is enabled and the branch is idle; it is not a clock failure. The USB driver already treats this exact state as valid. The touch patch now applies the same `clock_state()` rule, so CI must compile and retest next.
+
+Evidence for this run:
+
+```text
+region SHA-256 7c6bd416a74687b5ba24de16584de5a9171c8e68d9a10cffad3843c0c2d13062
+log SHA-256    d9f746f129c67ce1fe83ed7924e5be2eaa79c1747d83d72dedf1bf5dc2042992
+```
 
 ## Diagnostic order
 
@@ -73,9 +90,9 @@ Do not change touch resources while diagnosing this USB SMMU route. Finish the S
 
 ## Next actions
 
-1. Wait for the CI run started by this commit and inspect its build result.
-2. Download `rmx3551-kernel` only if the kernel job succeeds.
-3. Verify `payload/payload.json`, the embedded kernel hash and `kernel_args`.
-4. Build a new stage-3 payload with `pong_s3910=3` and verify the embedded TOML and PONGFAT1 CRC before booting.
-5. Run on `9ea882b4` for at least two minutes, return to TWRP and decode PongBootLog.
-6. Continue from the first real S3910 error; move to stage 4 only after stage 3 passes.
+1. Push the QUP0 hardware-gated clock fix and wait for the kernel CI compile.
+2. Download `rmx3551-kernel` only after the kernel job succeeds.
+3. Rebuild a stage-3 image by applying only the `pong-touch` property patch to the original payload ADT, preserving all other nodes.
+4. Verify the embedded TOML still contains `pong_s3910=3`, then boot temporarily with `fastboot -s 9ea882b4 boot`.
+5. Decode PongBootLog and require `S3910 QUP0/SE4 source=...`, GENI SPI initialization and a first S3910 response before moving to stage 4.
+6. Move to `pong_s3910=4` and HID only after stage 3 identifies the controller.

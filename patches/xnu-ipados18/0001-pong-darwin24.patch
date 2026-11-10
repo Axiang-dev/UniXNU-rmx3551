@@ -540,7 +540,7 @@ new file mode 100644
 index 0000000..ec8da0e
 --- /dev/null
 +++ b/bsd/dev/pong_goodix.c
-@@ -0,0 +1,1359 @@
+@@ -0,0 +1,1375 @@
 +/* Synaptics S3910 / RMX3551 SM8475 TouchComm over QUP0/SE4.
 + * The SPI, GENI and PMIC plumbing started in the Pong Goodix driver; the
 + * chip protocol is the TouchComm v1/v2 implementation used by upstream S3910.

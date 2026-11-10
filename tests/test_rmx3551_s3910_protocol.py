@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -12,6 +13,24 @@ ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "patches/xnu-ipados18/0001-pong-darwin24.patch"
 TARGET = "bsd/dev/pong_s3910_protocol.h"
 TEST = ROOT / "tests/rmx3551_s3910_protocol_host_test.c"
+
+
+def validate_new_file_hunk_counts(patch: Path) -> None:
+    lines = patch.read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
+        match = re.fullmatch(r"@@ -0,0 \+1,(\d+) @@", line)
+        if not match:
+            continue
+        expected = int(match.group(1))
+        actual = 0
+        for added in lines[index + 1 :]:
+            if added.startswith("diff --git "):
+                break
+            if added.startswith("+") and not added.startswith("+++"):
+                actual += 1
+        if actual != expected:
+            target = next((value[6:] for value in reversed(lines[max(0, index - 5) : index]) if value.startswith("+++ b/")), "unknown")
+            raise SystemExit(f"{target}: new-file hunk declares {expected} lines but contains {actual}")
 
 
 def extract_new_file(patch: Path, target: str) -> str:
@@ -79,6 +98,7 @@ def compile_and_run(source: Path, include: Path, output: Path, temp: Path) -> No
 
 
 def main() -> None:
+    validate_new_file_hunk_counts(PATCH)
     header = extract_new_file(PATCH, TARGET)
     with tempfile.TemporaryDirectory(prefix="rmx3551-s3910-", ignore_cleanup_errors=True) as directory:
         temp = Path(directory)

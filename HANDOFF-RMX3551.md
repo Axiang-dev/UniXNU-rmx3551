@@ -1,10 +1,10 @@
 # RMX3551 · UniXNU / iPadOS 18 移植交接文档
 
-> 用户于 2026-11-08 明确的最终目标：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
-> 「3 次 swap + 苹果 logo」只是中间里程碑；其他功能在桌面可用后逐步修复。
+> 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
+> 2026-11-10 已确认 iPadOS 18.7.10（22H374）进入 SpringBoard 桌面；当前主任务是修复 S3910 触摸。
 
-写作时间：2026-11-08 15:30（GMT+8）
-接手者请先读完「五、必须知道的坑」，那里每一条都是花掉整晚换来的。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-10 17:43（GMT+8）。
+接手者先读本页顶部的「最新接手快照」。后面的“黑屏、0 次 swap、尚未进桌面”等段落是历史排查记录，已被 2026-11-10 的桌面实测结果取代。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
 `D:\unixnu\ud\diagnostics-20261108-154736`。旧运行未启用快照，但设备上的
@@ -16,6 +16,220 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 目前仅能确定首帧之前的实际等待链，尚不能判断 seeding 慢或永久停滞。
 16:01 已再次临时启动同一镜像，进行约 20 分钟观察。以下日志路径、符号化和 Wi-Fi
 说明已根据实际源码、APFS 目录及匹配 UUID 的符号文件纠正。
+
+---
+
+## 最新接手快照（2026-11-10 17:43，GMT+8；本段优先）
+
+### 结论
+
+iPadOS 18.7.10（22H374）已经进入桌面：显示发布为 `1080x2412 BGRA`，SpringBoard 可用，VSync 持续运行。最终目标中的“成功启动 iOS 并进入桌面”已经完成，当前瓶颈是把 Synaptics S3910 触摸真正接到 iPadOS。
+
+触摸整体完成度约为 **60%–65%**，距离“桌面触摸可用”还差约 **35%–40%**。这个数字按当前证据估算，不是按代码行数估算：
+
+| 环节 | 当前把握 | 证据 / 缺口 |
+|---|---:|---|
+| 供电、RESET、1.8 V、GPIO | 约 95% | 实机日志显示资源已打开，S3910 有响应 |
+| QUP0/SE4、SPI/GENI/GPIO 位流 | 约 90% | 实机已经完整读出识别包，GENI 不可用时 GPIO SPI 生效 |
+| TouchComm v1 识别与分帧 | 约 90% | 已取得 28 字节识别 payload；进入下一步初始化 |
+| `GET_APPLICATION_INFO (0x20)` 与初始化 | 约 35% | 上一轮卡在 `STATUS_BUSY`；修正错误时序后的版本尚待实机复测 |
+| 触点解析和坐标归一化 | 约 55% | 主机测试覆盖格式与边界；尚无真实触摸帧 |
+| iPadOS 虚拟触控 HID 投递 | 约 65% | `userland/touch.c` 与 `/dev/pong-touch` 通路已存在；桌面尚未验收 |
+| 真机端到端验收、方向和边缘手势 | 未验证 | 必须看到真实 down/move/up 事件并由桌面响应 |
+
+### 当前设备与绝对安全边界
+
+2026-11-10 17:40 的设备状态：
+
+```text
+9ea882b4 recovery product:twrp_ovaltine model:PGP110 device:ovaltine
+```
+
+目标机仍在本轮 TWRP 中，只检测到这一台。历史现场曾同时出现另一台：
+
+```text
+42d72758 device product:OPD2515 model:OPD2515 device:OP6548L1
+```
+
+**每一次 fastboot 命令都必须显式指定 `-s 9ea882b4`，绝不能操作 OPD2515。**
+
+必须遵守：
+
+- 只允许临时启动：`fastboot -s 9ea882b4 boot <诊断镜像>`。
+- 不刷 `boot`、`userdata` 或其他分区；不执行 `fastboot -w`。
+- 不执行 `git reset`、`git clean`；仓库里有大量不能删除的历史构建输入和日志。
+- 新镜像必须使用新文件名，文件名带提交短哈希和 CI run ID。
+- 不能覆盖已验证的桌面基线：
+  `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-usbdebug-22e7b2c-42510630419.img`
+  SHA-256：
+  `9574063d753bda2b190693aa720cd6d08c5dcfa7bc79ae03f17fff40a9c7cb63`
+
+### 已经确认的触摸事实
+
+2026-11-10 的预测读版本已经取得完整的 S3910 识别包：
+
+```text
+a5 10 1c 00 01 01 53 33 39 ...
+payload 28 bytes
+```
+
+硬件日志还确认：
+
+```text
+Pong touch: S3910 QUP0/SE4 source=19200000 Hz FW=0x102 IF_DISABLE=0x1 FIFO=16
+Pong touch: S3910 GENI unavailable ... SPI by GPIO
+```
+
+因此供电、GPIO、SPI 位流、TouchComm v1 预测读和分帧已经打通。原生触点坐标来自控制器应用信息，预计为 `8640x19296`；显示是 `1080x2412`，两轴正好相差 8 倍。不要把 `19296` 错写成 `19296` 之外的值，也不要拿显示分辨率替换控制器原生坐标。
+
+上一个实机镜像的热点不是识别，而是识别后：
+
+```text
+Pong touch: S3910 identify failed rc=-110 stage=header detail=165 version=1 command=0x20
+```
+
+`detail=165` 即 `0xa5`，随后持续看到类似 `a5 02 00 00` 的 `STATUS_BUSY`。当时在 `0x20` 前错误发送了 `0x23`。官方 OnePlus S3910 的 `syna_tcm_identify()` 在应用模式识别后直接调用 `syna_tcm_get_app_info()`；`0x23` 是 `CMD_GET_DYNAMIC_CONFIG`，不是 report ID。
+
+### 刚刚修好的 CI 错误
+
+上一轮构建是：
+
+```text
+run 42788028166
+commit 41909f1
+```
+
+编译器报：
+
+```text
+pong_goodix.c:6:2: error: unterminated conditional directive
+pong_goodix.c:1359:3: error: expected '}'
+```
+
+根因不是触摸协议，而是 `patches/xnu-ipados18/0001-pong-darwin24.patch` 里的新文件 hunk 仍声明 1359 行，实际已有 1375 行。补丁应用时最后 16 行被截掉，包括文件末尾 `#endif /* PONG */`。
+
+已做修复并推送：
+
+```text
+326d5ff fix: keep S3910 driver patch complete
+```
+
+修改内容：
+
+- 把 `pong_goodix.c` 的 hunk 从 `@@ -0,0 +1,1359 @@` 修正为 `@@ -0,0 +1,1375 @@`。
+- 在 `tests/test_rmx3551_s3910_protocol.py` 增加所有新文件 hunk 行数校验。
+- S3910 主机协议测试已经通过：
+
+```text
+rmx3551_s3910_protocol_host_test.c
+S3910 protocol host tests passed
+```
+
+当前新构建：
+
+```text
+run 42790314382
+commit 326d5ff
+workflow: RMX3551 kernel build
+状态: success
+artifact: rmx3551-kernel（artifact id 13751831596）
+```
+
+当前内核与 payload 已经下载、解压并验证完成。新 kernel 的 SHA-256 是 `0e08505d980fe2ba74978a6af59f63aeed4a6efcd10dda7d8777f9bb2014e0c5`。
+
+### 下一步必须按顺序执行
+
+1. **已完成**：CI run `42790314382` 状态为 `success`。
+2. **已完成**：artifact `rmx3551-kernel` 下载到 `D:\unixnu\UniXNU-rmx3551\out\ci-326d5ff-42790314382`，没有覆盖旧目录。
+3. **已完成**：新内核已经替换进已验证的 stage-3 payload，原 ADT/TOML 保持不变，`pong_s3910=3`。
+   - payload：`D:\unixnu\UniXNU-rmx3551\out\payload-s3910-appinfo-326d5ff-42790314382.img`，SHA-256 `fe03c9a6bfa86cd171bbf0d4fc8bc2be2516281aad922ed22ad8dc6709a971ad`
+   - boot：`D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img`，SHA-256 `e1d25a7fa0b7ef4caff754127b34126549d4813f02a12bb6fedc65ca41013bca`
+4. 用下面脚本把新内核替换进旧的 stage-3 payload，保留原 ADT 和 TOML：
+
+```powershell
+& 'C:\Users\27699\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -B `
+  'C:\Users\27699\Documents\Codex\2026-11-08\new-chat-2\tools\repack-stage3-kernel.py' `
+  --source-payload 'D:\unixnu\UniXNU-rmx3551\out\payload-s3910-stage3-v1predictive-18eb972-42782839034.img' `
+  --template-boot 'D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage3-v1predictive-18eb972-42782839034.img' `
+  --kernel '<artifact>\build\...\kernel\kernel.macho' `
+  --payload-output 'D:\unixnu\UniXNU-rmx3551\out\payload-s3910-appinfo-326d5ff-42790314382.img' `
+  --boot-output 'D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img'
+```
+
+脚本会验证：
+
+- 源 payload 的 `unixnu.toml` 仍包含 `pong_s3910=3`。
+- 新内核是 Mach-O。
+- 替换内核后 ADT 和 TOML 未被意外改变。
+- 新 boot 内的 `PONGFAT1` payload 与输出 payload 完全一致。
+
+5. 先确认目标机仍为 `9ea882b4`，再临时启动：
+
+```powershell
+adb -s 9ea882b4 reboot bootloader
+fastboot devices
+fastboot -s 9ea882b4 boot 'D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img'
+```
+
+6. 进入 UniXNU 菜单后选 iPadOS。stage 3 只验证控制器，不要期待触摸生效；它完成后会打印：
+
+```text
+Pong touch: S3910 stage 3 complete; HID publication disabled
+```
+
+7. 让系统运行到用户态并产生日志，然后回 TWRP 读取日志。成功条件：
+
+```text
+Pong touch: S3910 command 0x20 tx: 20 00 00
+Pong touch: S3910 command 0x20 reply[...] code=0x1
+Pong touch: S3910 identified ... axes=8640x19296
+Pong touch: S3910 stage 3 complete; HID publication disabled
+```
+
+如果看到 `identified ... axes=8640x19296`，说明应用信息查询和初始化已成功，触摸完成度可上调到约 **75%**。
+
+8. 只有 stage 3 成功后，才制作 `pong_s3910=4` 镜像。stage 4 才会创建设备节点并持续轮询触点；第一次真机验收要看到：
+
+```text
+Pong touch HID: display-integrated digitizer opened
+Pong touch HID: type=1 finger=0 xy=...
+s3910: finger 0 down at ...
+```
+
+9. 桌面触摸出现后，再校准方向、边缘手势和抬手。内核目前有 `touch_flip` 变换变量，但尚未根据 RMX3551 实测初始化；若方向相反，在这一层修，必须每次同时验证四角。
+
+### 如果 `0x20` 仍然 BUSY
+
+不要同时改 HID。按以下顺序缩小问题：
+
+1. 先确认 TX 真的是 `20 00 00`，不是旧内核或 `0x23`。
+2. 记录每次 `reply` 的 code、length 和 detail，确认是否仍全部为 `a5 02 00 00`。
+3. 对照官方 `syna_tcm_identify()`、`syna_tcm_get_app_info()` 和 `syna_tcm_reset()` 的复位时序。
+4. 对照 `D:\unixnu\UniXNU-OnePlus-Ace5\ios16\giulia_touch.c`；其中明确处理了冷启动 MISO 低电平重试，并在 app info 成功后才发送 disable raw report、LBP 和 report format。
+5. 在 app info 成功前不要再修改触点解析器或 iPadOS HID；否则会把初始化故障与用户态故障混在一起。
+
+### 关键源码与参考
+
+- 驱动补丁：
+  `D:\unixnu\UniXNU-rmx3551-device\patches\xnu-ipados18\0001-pong-darwin24.patch`
+- 主机测试：
+  `D:\unixnu\UniXNU-rmx3551-device\tests\test_rmx3551_s3910_protocol.py`
+  `D:\unixnu\UniXNU-rmx3551-device\tests\rmx3551_s3910_protocol_host_test.c`
+- iPadOS HID 桥：
+  `D:\unixnu\UniXNU-rmx3551-device\userland\touch.c`
+  `D:\unixnu\UniXNU-rmx3551-device\userland\touch.h`
+- 官方 S3910 参考：
+  `D:\unixnu\reference\oneplus-synaptics_tcm_S3910.c`
+  `D:\unixnu\reference\oneplus-synaptics_tcm_S3910.h`
+- 另一套 UniXNU S3910 实机实现：
+  `D:\unixnu\UniXNU-OnePlus-Ace5\ios16\giulia_touch.c`
+  `D:\unixnu\UniXNU-OnePlus-Ace5\ios16\giulia_touch_wire.h`
+- 历史实机日志：
+  `C:\Users\27699\Documents\Codex\2026-11-08\new-chat-2\pong-debug-20261110-v1predictive-165507`
+
+### 给下一个 AI 的直接接手话术
+
+> 继续接手 RMX3551 的 UniXNU iPadOS 18 触控修复。先完整阅读 `D:\unixnu\UniXNU-rmx3551-device\HANDOFF-RMX3551.md` 顶部“最新接手快照”，并核对设备仓库 HEAD 是否至少包含 `326d5ff`。iPadOS 桌面已经可进，当前只处理 Synaptics S3910。CI run `42790314382` 已成功，stage-3 镜像已生成：`D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img`。确认目标机是 `9ea882b4` 后，只对它执行临时 `fastboot boot`，进入菜单选 iPadOS；不要刷分区、不要碰第二台设备、不要改 HID，直到 `0x20` 成功并打印 `axes=8640x19296`。随后回 TWRP 读取 PongBootLog，并把结果完整写回本交接文档再继续。
 
 ---
 

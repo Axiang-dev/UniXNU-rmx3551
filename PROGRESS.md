@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Transport verified; app-info sequence retest | Stage 3 returned the complete 28-byte identify payload after the predictive read fix; the next image removes the out-of-sequence `DISABLE_REPORT(0x23)` before `GET_APPLICATION_INFO(0x20)` |
+| S3910 touch | Transport verified; app-info hardware test ready | Stage 3 returned the complete 28-byte identify payload. Commit `326d5ff` fixed a truncated new-file hunk, CI run `42790314382` succeeded, and a new stage-3 image now queries `GET_APPLICATION_INFO(0x20)` immediately after identify |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -73,6 +73,25 @@ before app info. OnePlus' S3910 driver instead calls app info immediately after
 identify, and `0x23` is `CMD_GET_DYNAMIC_CONFIG`, not a report ID. The next
 stage-3 image removes that extra transaction and records the actual command TX
 bytes plus each changed response status for a hardware retest.
+
+The later S3910 driver edits reintroduced the same new-file hunk failure: the
+header still declared 1359 lines while `pong_goodix.c` contained 1375, so the
+last 16 patch additions, including `#endif /* PONG */`, were omitted. Commit
+`326d5ff` corrects the header and adds a host-test check that every new-file hunk
+declares its exact added-line count.
+
+The resulting GitHub Actions run `42790314382` completed successfully. The
+artifact kernel is 51,933,184 bytes with SHA-256
+`0e08505d980fe2ba74978a6af59f63aeed4a6efcd10dda7d8777f9bb2014e0c5`.
+It was replaced into the verified stage-3 payload while preserving the ADT and
+`unixnu.toml` (`pong_s3910=3`). The boot image for the next hardware check is:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img
+SHA-256 e1d25a7fa0b7ef4caff754127b34126549d4813f02a12bb6fedc65ca41013bca
+```
+
+This hardware retest is the only remaining evidence needed before moving from stage 3 to the HID-enabled stage 4.
 
 ## Diagnostic order
 

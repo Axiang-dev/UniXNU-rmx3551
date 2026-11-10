@@ -1,6 +1,6 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-10 (Asia/Shanghai)
+Updated: 2026-11-10 18:15 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
@@ -11,7 +11,7 @@ The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack 
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard with display and software UI usable |
 | Display | Verified | `1080x2412 BGRA` framebuffer surface and native home request accepted |
 | Keyboard / TextInput | Verified | Native TextInput modes and on-screen keyboard are available |
-| S3910 touch | Transport verified; app-info hardware test ready | Stage 3 returned the complete 28-byte identify payload. Commit `326d5ff` fixed a truncated new-file hunk, CI run `42790314382` succeeded, and a new stage-3 image now queries `GET_APPLICATION_INFO(0x20)` immediately after identify |
+| S3910 touch | `0x20` verified; post-app-info stage-3 retest ready | Stage 3 returned the complete 28-byte identify payload and `GET_APPLICATION_INFO(0x20)` returned 46 bytes with success. Commit `5820fa6` removes an invalid `0x24` dynamic-config transaction; CI run `42794829937` succeeded. The corrected stage-3 image has not yet been booted, and HID remains disabled |
 | Hardware keys | Same DT fix, hardware retest pending | Button node real path is `/soc/pong-buttons` |
 | USB | Blocked | LIUQIN USB reaches the controller gate, then reports `SMMU route refused; controller untouched` |
 
@@ -91,7 +91,78 @@ D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-326d5ff-42790314382.img
 SHA-256 e1d25a7fa0b7ef4caff754127b34126549d4813f02a12bb6fedc65ca41013bca
 ```
 
-This hardware retest is the only remaining evidence needed before moving from stage 3 to the HID-enabled stage 4.
+That image produced the application-info evidence below and exposed one invalid post-app-info transaction, which the later sections record.
+
+## 2026-11-10 17:50 S3910 application-info hardware retest
+
+The `326d5ff` stage-3 image reached the real S3910 and produced the following
+sequence:
+
+```text
+Pong touch: S3910 command 0x20 tx: 20 00 00
+Pong touch: S3910 command 0x20 reply[0] code=0x1 length=46
+
+Pong touch: S3910 command 0x6 tx: 06 01 00 11
+Pong touch: S3910 command 0x6 reply[0] code=0x1 length=0
+
+Pong touch: S3910 command 0x24 tx: 24 03 00 11 02 00
+Pong touch: S3910 command 0x24 reply[0] code=0xf length=0 detail=0xfa5
+Pong touch: S3910 identify failed rc=-5 stage=reply detail=15 version=1 command=0x24
+```
+
+This proves `CMD_GET_APPLICATION_INFO (0x20)` now succeeds. The previous
+`STATUS_BUSY` failure is gone. The remaining failure was local protocol misuse:
+the driver treated touch report ID `0x11` as a dynamic-config ID and sent
+`SET_DYNAMIC_CONFIG (0x24)`, so the controller correctly returned
+`STATUS_ERROR (0x0f)`. Command `0x23` is `GET_DYNAMIC_CONFIG`; it is not
+`DISABLE_REPORT`, which is command `0x06`.
+
+Commit `5820fa6` removes the two invalid dynamic-config transactions and keeps
+the official initialization order:
+
+```text
+IDENTIFY (0x02)
+GET_APPLICATION_INFO (0x20)
+DISABLE_REPORT (0x06, report 0x11)
+SET_TOUCH_REPORT_CONFIG (0x26)
+GET_TOUCH_REPORT_CONFIG (0x25)
+ENABLE_REPORT (0x05, report 0x11)
+```
+
+The host protocol test and `git diff --check` pass. GitHub Actions run
+`42794829937` completed successfully. Artifact `13754321750` is 23,334,193 bytes
+with ZIP SHA-256
+`809f1987bded56751a9229e03a8d1a6e73afaf1b2b24d960882531b83bbf1dad`.
+The extracted `kernel.macho` is 51,933,184 bytes with SHA-256
+`3b92f02ee7b4d36e4bb71d206d8a079fb8f1ca2c245e3702cbb8fe6417ca6a97`.
+
+That kernel was inserted into the verified stage-3 payload without changing the
+ADT or TOML. The new diagnostic images are:
+
+```text
+payload:
+D:\unixnu\UniXNU-rmx3551\out\payload-s3910-appinfo-clean-5820fa6-42794829937.img
+SHA-256 9e0d7c430cde3ac0ba719c6a86a6e8eae00db26ce1e2b6b01a09a2efdb8656db
+
+boot:
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-clean-5820fa6-42794829937.img
+SHA-256 fcb3d801fe02a87093114f5b2c4fe102c182528a633b22b24f648b82b9e04875
+```
+
+The boot image preserves `pong_s3910=3`, so HID is intentionally disabled even
+if the controller initialization finishes. This image has not yet been booted.
+The next run must stop only the target serial `9ea882b4` and pass this exact
+failure point before the TOML moves to `pong_s3910=4`. A stage-3 pass requires:
+
+```text
+Pong touch: S3910 app info ... axes=8640x19296 ...
+Pong touch: S3910 touch report disabled; applying format
+Pong touch: S3910 identified ... axes=8640x19296 ...
+Pong touch: S3910 stage 3 complete; HID publication disabled
+```
+
+At handoff time no ADB or fastboot device was detected, so the image is ready but
+the hardware result is still unknown.
 
 ## Diagnostic order
 

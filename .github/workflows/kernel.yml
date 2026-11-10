@@ -77,8 +77,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/layout"
-          gh release download "$TAG" --pattern ci-volume-layout.json \
-            --dir "$RUNNER_TEMP/layout" --clobber
+          # --repo is not optional here: the checkout lives in ./device, so the
+          # workspace root is not a git repository and gh cannot infer one.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern ci-volume-layout.json --dir "$RUNNER_TEMP/layout" --clobber
           python3 - "$RUNNER_TEMP/layout/ci-volume-layout.json" <<'PY'
           import json, sys
           from pathlib import Path

@@ -6,9 +6,66 @@
 #include <stdlib.h>
 #include "liuqin_log_ring.h"
 #include "liuqin_usb_protocol.h"
+#include "liuqin_usb_smmu.h"
 
 static int fails;
 #define CHECK(cond) do { if (!(cond)) { printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #cond); fails++; } } while (0)
+
+struct smmu_sim {
+	uint32_t words[LQUSB_SMMU_WINDOW / 4];
+	uint32_t poison_value;
+	uint32_t poison_write_offset;
+	uint32_t poison_read_offset;
+	int poison_read_once;
+	unsigned barriers;
+};
+static struct smmu_sim sim;
+
+static uint32_t sim_read(void *context, uint32_t offset)
+{
+	struct smmu_sim *m = context;
+	if (m->poison_read_once && offset == m->poison_read_offset) {
+		m->poison_read_once = 0;
+		return m->poison_value;
+	}
+	return m->words[offset / 4];
+}
+
+static void sim_write(void *context, uint32_t offset, uint32_t value)
+{
+	struct smmu_sim *m = context;
+	m->words[offset / 4] = value;
+	if (offset == m->poison_write_offset) {
+		m->poison_write_offset = UINT32_MAX;
+		m->poison_read_offset = offset;
+		m->poison_value = value ^ 0x5a5a5a5aU;
+		m->poison_read_once = 1;
+	}
+}
+
+static void sim_barrier(void *context)
+{
+	struct smmu_sim *m = context;
+	m->barriers++;
+}
+
+static const struct lqusb_smmu_ops sim_ops = {
+	.read = sim_read,
+	.write = sim_write,
+	.barrier = sim_barrier,
+};
+
+static void sim_reset(void)
+{
+	memset(&sim, 0, sizeof(sim));
+	sim.words[0x20 / 4] = 0x4c017e71U;
+	sim.words[0x24 / 4] = 0x6000004bU;
+	sim.words[0x28 / 4] = 0x00005111U;
+	/* UFS owns SMR slot 112 and context bank 74. */
+	sim.words[(0x800 + 4 * 112) / 4] = LQUSB_SMMU_SMR_VALID | 0xe0U;
+	sim.words[(0xc00 + 4 * 112) / 4] = 74;
+	sim.words[lqusb_smmu_context_offset(128, 74) / 4] = 1;
+}
 
 int main(void)
 {
@@ -90,6 +147,88 @@ int main(void)
 	CHECK(lqusb_route_identity(0u, (1u << 16), 0));             /* translation, CBAR type 1, SCTLR off */
 	CHECK(!lqusb_route_identity(0u, (1u << 16), 1));            /* translation enabled */
 	CHECK(!lqusb_route_identity(2u << 16, 0, 0));               /* fault */
+
+	/* --- SMMU geometry, safe bank choice and reuse --- */
+	{
+		unsigned groups, banks, pages;
+		struct lqusb_smmu_result plan;
+
+		sim_reset();
+		CHECK(lqusb_smmu_geometry(sim.words[0x20 / 4], sim.words[0x24 / 4],
+		    sim.words[0x28 / 4], &groups, &banks, &pages));
+		CHECK(groups == 113 && banks == 75 && pages == 128);
+		CHECK(lqusb_smmu_context_offset(pages, 73) == 0xc9000);
+
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_READY);
+		CHECK(plan.slot == 0 && plan.bank == 73);
+		CHECK(sim.words[(0x800 + 4 * 0) / 4] == LQUSB_SMMU_SMR_VALID);
+		CHECK(sim.words[(0xc00 + 4 * 0) / 4] == 73);
+		CHECK(sim.words[(0x1000 + 4 * 73) / 4] == LQUSB_SMMU_CBAR_BYPASS);
+		CHECK(sim.words[(0x1800 + 4 * 73) / 4] == LQUSB_SMMU_CBA2R_AARCH64);
+		CHECK(sim.words[lqusb_smmu_context_offset(128, 73) / 4] == 0);
+		/* The live UFS route and enabled context remain byte-for-byte intact. */
+		CHECK(sim.words[(0x800 + 4 * 112) / 4] == (LQUSB_SMMU_SMR_VALID | 0xe0U));
+		CHECK(sim.words[(0xc00 + 4 * 112) / 4] == 74);
+		CHECK(sim.words[lqusb_smmu_context_offset(128, 74) / 4] == 1);
+
+		/* A translation using bank 73 forces the next safe bank, never 74. */
+		sim_reset();
+		sim.words[(0x800 + 4 * 2) / 4] = LQUSB_SMMU_SMR_VALID | 0xf0U;
+		sim.words[(0xc00 + 4 * 2) / 4] = 73;
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_READY && plan.bank == 72);
+
+		/* A unique existing identity context is reused without any write. */
+		sim_reset();
+		sim.words[(0x800 + 4 * 3) / 4] = LQUSB_SMMU_SMR_VALID;
+		sim.words[(0xc00 + 4 * 3) / 4] = 50;
+		sim.words[(0x1000 + 4 * 50) / 4] = LQUSB_SMMU_CBAR_BYPASS;
+		sim.words[(0x1800 + 4 * 50) / 4] = LQUSB_SMMU_CBA2R_AARCH64;
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_REUSED);
+		CHECK(plan.slot == 3 && plan.bank == 50 && sim.barriers == 0);
+		CHECK(sim.words[(0x800 + 4 * 0) / 4] == 0);
+
+		/* An enabled existing context is a conflict, not something to disable. */
+		sim_reset();
+		sim.words[(0x800 + 4 * 3) / 4] = LQUSB_SMMU_SMR_VALID;
+		sim.words[(0xc00 + 4 * 3) / 4] = 50;
+		sim.words[(0x1000 + 4 * 50) / 4] = LQUSB_SMMU_CBAR_BYPASS;
+		sim.words[lqusb_smmu_context_offset(128, 50) / 4] = 1;
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_CONFLICT);
+
+		/* Dry run reports bank 73 but leaves the stream table untouched. */
+		sim_reset();
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 1);
+		CHECK(plan.status == LQUSB_SMMU_DRY_RUN && plan.bank == 73);
+		CHECK(sim.words[(0x800 + 4 * 0) / 4] == 0);
+		CHECK(sim.words[(0x1000 + 4 * 73) / 4] == 0);
+
+		/* All stream slots occupied means refusal before choosing a bank. */
+		sim_reset();
+		for (unsigned i = 0; i < 113; i++) {
+			if (i == 112) continue;
+			sim.words[(0x800 + 4 * i) / 4] = LQUSB_SMMU_SMR_VALID | (0x100U + i);
+		}
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_NO_SLOT);
+
+		/* A failed publish readback restores SMR, S2CR and context state. */
+		sim_reset();
+		sim.words[(0x1000 + 4 * 73) / 4] = 0;
+		sim.words[(0x1800 + 4 * 73) / 4] = 0;
+		sim.words[lqusb_smmu_context_offset(128, 73) / 4] = 0x100;
+		sim.poison_write_offset = 0x800;
+		plan = lqusb_smmu_apply(&sim_ops, &sim, 0, 74, 1, 0);
+		CHECK(plan.status == LQUSB_SMMU_READBACK);
+		CHECK(sim.words[(0x800 + 4 * 0) / 4] == 0);
+		CHECK(sim.words[(0xc00 + 4 * 0) / 4] == 0);
+		CHECK(sim.words[(0x1000 + 4 * 73) / 4] == 0);
+		CHECK(sim.words[(0x1800 + 4 * 73) / 4] == 0);
+		CHECK(sim.words[lqusb_smmu_context_offset(128, 73) / 4] == 0x100);
+	}
 
 	if (fails) {
 		printf("%d check(s) failed\n", fails);

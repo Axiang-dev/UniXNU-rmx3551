@@ -171,6 +171,7 @@ kernel_args = [
   "pong_poster_snapshot=1",
   "fb_threads=4",
   "liuqin_usb=1",
+  "liuqin_usb_smmu=2",
   "pong_usb=0",
   "pong_usb_mux=1",
   "pong_usb_iphone=1",

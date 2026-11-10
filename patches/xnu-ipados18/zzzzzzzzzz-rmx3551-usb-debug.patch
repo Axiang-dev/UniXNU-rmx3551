@@ -541,19 +541,18 @@ new file mode 100644
 +}
 +#endif
 diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
-new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_debug.c
-@@ -0,0 +1,968 @@
+@@ -0,0 +1,1007 @@
 +/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
 + *
 + * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console
 + * (github.com/xyyyds0106/ios-vermeer-lab, xnu/vermeer/vermeer_usb_debug.c).
 + *
-+ * The port reuses the PHY, clocks and SMMU state that ABL/UEFI already set up.
-+ * It never changes GCC, SMMU, PMIC, PHY or storage configuration: every guard
-+ * below can only decide to leave the controller untouched, and the normal boot
-+ * continues when it does.
++ * The port reuses the PHY and clocks that ABL/UEFI already set up. It may
++ * install one isolated translation-off SMMU context for the USB SID, but never
++ * changes GCC, PMIC, PHY or storage configuration. Every failed guard leaves the
++ * controller untouched and normal boot continues.
 + *
 + * SM8475 constants and their evidence:
 + *   DWC3           0x0a600000, wrapper window 0xfc100   linux sm8450.dtsi usb@a600000
@@ -583,6 +582,7 @@ new file mode 100644
 +#include <vm/vm_kern.h>
 +#include <pexpert/pexpert.h>
 +#include "liuqin_usb_protocol.h"
++#include "liuqin_usb_smmu.h"
 +
 +#define DWC3_PA        0x0a600000ULL
 +#define DWC3_SIZE      0x0e000
@@ -594,6 +594,7 @@ new file mode 100644
 +#define GCC_AGGRE_OFF  0x88
 +#define SMMU_PA        0x15000000ULL
 +#define SMMU_SIZE      0x0d0000
++#define SMMU_UFS_BANK  74U
 +#define USB_SID_DEF    0x00000000U
 +#define DMA_LO_DEF     0x80000000ULL
 +#define DMA_HI_DEF     0x100000000ULL
@@ -638,6 +639,8 @@ new file mode 100644
 +extern uint64_t liuqin_debug_dropped(void);
 +extern void liuqin_fb_bind(uint64_t, uint32_t, uint32_t, uint32_t);
 +extern void liuqin_fb_band(unsigned, uint32_t);
++extern bool pong_smmu_lease_lock(void);
++extern void pong_smmu_lease_unlock(void);
 +void liuqin_usb_debug_start(void);
 +
 +#define GCTL        0xc110
@@ -1197,46 +1200,74 @@ new file mode 100644
 +	wr(DCTL, rd(DCTL) & ~RUN);
 +	thread_terminate(current_thread());
 +}
-+/* Require the exact nonsecure SMMU layout and a unique identity route for the
-+ * USB stream ID. Never create a mapping or weaken isolation for debug USB. */
-+static bool
-+smmu_identity(void)
++static uint32_t
++lq_smmu_read(void *context, uint32_t offset)
 +{
-+	vm_offset_t s = u.smmu;
-+	uint32_t scr0 = read_reg(s, 0x0);
-+	uint32_t id0 = read_reg(s, 0x20);
-+	uint32_t id1 = read_reg(s, 0x24);
-+	uint32_t id2 = read_reg(s, 0x28);
-+	unsigned groups = id0 & 0xff;
-+	unsigned banks = id1 & 0xff;
-+	printf("LIUQIN USB: SMMU scr0=%08x id0=%08x id1=%08x id2=%08x groups=%u banks=%u\n",
-+	    scr0, id0, id1, id2, groups, banks);
-+	if (!groups || !banks) {
-+		return false;
++	return read_reg((vm_offset_t)(uintptr_t)context, offset);
++}
++
++static void
++lq_smmu_write(void *context, uint32_t offset, uint32_t value)
++{
++	*(volatile uint32_t *)((vm_offset_t)(uintptr_t)context + offset) = value;
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++
++static void
++lq_smmu_barrier(void *context __unused)
++{
++	__asm__ volatile("dsb sy" ::: "memory");
++}
++
++/* Modes: 0 skips SMMU, 1 accepts an existing identity route, 2 installs a
++ * translation-off context when SID0 has no route, and 3 plans without writing.
++ * All register changes and rollback run under the UFS/USB shared SMMU lock. */
++static int
++smmu_route(unsigned mode)
++{
++	static const struct lqusb_smmu_ops ops = {
++		.read = lq_smmu_read,
++		.write = lq_smmu_write,
++		.barrier = lq_smmu_barrier,
++	};
++	struct lqusb_smmu_result plan;
++
++	if (!pong_smmu_lease_lock()) {
++		printf("LIUQIN USB: SMMU lock unavailable; controller untouched\n");
++		return 0;
 +	}
-+	unsigned matches = 0;
-+	uint32_t route = 0;
-+	for (unsigned i = 0; i < groups; i++) {
-+		if (lqusb_stream_match(read_reg(s, 0x800 + 4 * i), u.sid)) {
-+			matches++;
-+			route = read_reg(s, 0xc00 + 4 * i);
-+		}
++	plan = lqusb_smmu_apply(&ops, (void *)(uintptr_t)u.smmu, u.sid,
++	    SMMU_UFS_BANK, mode >= 2, mode == 3);
++	pong_smmu_lease_unlock();
++
++	printf("LIUQIN USB: SMMU live slot=%u bank=%u smr=%08x s2cr=%08x "
++	    "sctlr=%08x cbar=%08x cba2r=%08x\n",
++	    plan.slot, plan.bank, plan.smr, plan.s2cr, plan.sctlr,
++	    plan.cbar, plan.cba2r);
++	printf("LIUQIN USB: SMMU plan mode=%u slot=%u bank=%u groups=%u banks=%u "
++	    "pages=%u reserved-bank=%u\n", mode, plan.slot, plan.bank,
++	    plan.groups, plan.banks, plan.pages, SMMU_UFS_BANK);
++
++	if (plan.status == LQUSB_SMMU_READY) {
++		printf("LIUQIN USB: SMMU identity context ready slot=%u bank=%u "
++		    "smr=%08x s2cr=%08x (%s)\n", plan.slot, plan.bank,
++		    plan.smr, plan.s2cr, plan.reason);
++		return 1;
 +	}
-+	if (matches != 1) {
-+		printf("LIUQIN USB: SID%x matches %u\n", u.sid, matches);
-+		return false;
++	if (plan.status == LQUSB_SMMU_REUSED) {
++		printf("LIUQIN USB: SMMU identity context reused slot=%u bank=%u "
++		    "smr=%08x s2cr=%08x (%s)\n", plan.slot, plan.bank,
++		    plan.smr, plan.s2cr, plan.reason);
++		return 1;
 +	}
-+	unsigned cb = route & 255;
-+	uint32_t cbar = 0, sctlr = 1;
-+	if (((route >> 16) & 3) == 0) {
-+		if (cb >= banks) {
-+			return false;
-+		}
-+		cbar = read_reg(s, 0x1000 + 4 * cb);
-+		sctlr = read_reg(s, 0x80000 + 0x1000 * cb);
++	if (plan.status == LQUSB_SMMU_DRY_RUN) {
++		printf("LIUQIN USB: SMMU bypass dry run selected slot=%u bank=%u; "
++		    "controller untouched\n", plan.slot, plan.bank);
++		return 2;
 +	}
-+	printf("LIUQIN USB: SID%x route=%08x cbar=%08x sctlr=%08x\n", u.sid, route, cbar, sctlr);
-+	return lqusb_route_identity(route, cbar, sctlr) != 0;
++	printf("LIUQIN USB: SMMU route refused: %s (status=%d)\n",
++	    plan.reason, plan.status);
++	return 0;
 +}
 +
 +static bool lq_number(const char **text, uint64_t *value);
@@ -1397,21 +1428,28 @@ new file mode 100644
 +	}
 +	liuqin_fb_band(2, 0xff0000ffu);
 +
-+	/* Guard 3: SMMU identity route for the USB stream ID. */
++	/* Guard 3: exact SID0 identity route, or one safe translation-off
++	 * context created under the shared SMMU lock. Mode 3 is read-only. */
 +	{
-+		int check = 1;
-+		PE_parse_boot_argn("liuqin_usb_smmu", &check, sizeof(check));
-+		if (check) {
-+			if (!smmu_identity()) {
++		unsigned smmu_mode = 1;
++		int route;
++		PE_parse_boot_argn("liuqin_usb_smmu", &smmu_mode, sizeof(smmu_mode));
++		if (smmu_mode > 3) {
++			printf("LIUQIN USB: invalid liuqin_usb_smmu=%u; controller untouched\n",
++			    smmu_mode);
++			return;
++		}
++		if (smmu_mode) {
++			route = smmu_route(smmu_mode);
++			if (route != 1) {
 +				liuqin_fb_band(15, 0xffff0000u);
-+				printf("LIUQIN USB: SMMU route refused; controller untouched\n");
 +				return;
 +			}
 +		} else {
 +			printf("LIUQIN USB: SMMU route check skipped by liuqin_usb_smmu=0\n");
 +		}
-+	liuqin_fb_band(3, 0xffffff00u);
 +	}
++	liuqin_fb_band(3, 0xffffff00u);
 +
 +	/* Guard 4: one permanent 16 KiB contiguous DMA block inside the window. */
 +	if (kmem_alloc_contig(kernel_map, &u.dma, DMA_SIZE, PAGE_MASK, 0, 0,
@@ -1513,6 +1551,347 @@ new file mode 100644
 +	liuqin_fb_band(5, 0xffff00ffu);
 +	printf("LIUQIN USB: running; DMA=%llx; Windows serial LIQDBG001; awaiting enumeration\n", u.pa);
 +}
+diff --git a/bsd/dev/liuqin_usb_smmu.h b/bsd/dev/liuqin_usb_smmu.h
+--- /dev/null
++++ b/bsd/dev/liuqin_usb_smmu.h
+@@ -0,0 +1,336 @@
++/* SPDX-License-Identifier: BSD-2-Clause-Patent */
++/* ARM SMMUv2 stream planning for the LIUQIN debug controller.
++ *
++ * The controller already performs cache maintenance, so a translation-off
++ * context is sufficient. The planner never replaces a live stream mapping and
++ * reserves the UFS bank. All stream and context state is verified after each
++ * publish, and a failed publish is rolled back under the shared SMMU lock.
++ */
++#ifndef LIUQIN_USB_SMMU_H
++#define LIUQIN_USB_SMMU_H
++
++#ifdef LIUQIN_HOST_TEST
++#include <stdint.h>
++#else
++#include <sys/types.h>
++#endif
++
++#define LQUSB_SMMU_WINDOW          0x000d0000U
++#define LQUSB_SMMU_CBAR_BYPASS     0x00010000U
++#define LQUSB_SMMU_CBA2R_AARCH64   0x00000001U
++#define LQUSB_SMMU_SMR_VALID       0x80000000U
++#define LQUSB_SMMU_NONE            0xffffffffU
++
++enum lqusb_smmu_status {
++	LQUSB_SMMU_READY = 0,
++	LQUSB_SMMU_REUSED,
++	LQUSB_SMMU_DRY_RUN,
++	LQUSB_SMMU_BAD_GEOMETRY = -1,
++	LQUSB_SMMU_NOT_FOUND = -2,
++	LQUSB_SMMU_CONFLICT = -3,
++	LQUSB_SMMU_NO_SLOT = -4,
++	LQUSB_SMMU_NO_BANK = -5,
++	LQUSB_SMMU_READBACK = -6,
++	LQUSB_SMMU_ROLLBACK = -7
++};
++
++struct lqusb_smmu_ops {
++	uint32_t (*read)(void *context, uint32_t offset);
++	void (*write)(void *context, uint32_t offset, uint32_t value);
++	void (*barrier)(void *context);
++};
++
++struct lqusb_smmu_result {
++	int status;
++	const char *reason;
++	unsigned groups;
++	unsigned banks;
++	unsigned pages;
++	unsigned slot;
++	unsigned bank;
++	unsigned reused;
++	uint32_t smr;
++	uint32_t s2cr;
++	uint32_t sctlr;
++	uint32_t cbar;
++	uint32_t cba2r;
++};
++
++static inline int
++lqusb_smmu_geometry(uint32_t idr0, uint32_t idr1, uint32_t idr2,
++    unsigned *groups, unsigned *banks, unsigned *pages)
++{
++	unsigned g = idr0 & 0xffU;
++	unsigned b = idr1 & 0xffU;
++	unsigned p;
++
++	if (!(idr0 & (1U << 30)) || !(idr2 & (1U << 12))) return 0;
++	if ((idr1 >> 31) || !g || g > 128 || b < 2 || b > 128) return 0;
++	p = 1U << (((idr1 >> 28) & 7U) + 1);
++	if (p > 128 || (p + b) * 4096U > LQUSB_SMMU_WINDOW) return 0;
++	*groups = g;
++	*banks = b;
++	*pages = p;
++	return 1;
++}
++
++static inline uint32_t
++lqusb_smmu_context_offset(unsigned pages, unsigned bank)
++{
++	return (pages + bank) * 4096U;
++}
++
++static inline int
++lqusb_smmu_stream_match(uint32_t smr, uint32_t sid)
++{
++	uint32_t mask = (smr >> 16) & 0x7fffU;
++	return (smr & LQUSB_SMMU_SMR_VALID) &&
++	    (((smr ^ sid) & 0xffffU & ~mask) == 0);
++}
++
++static inline int
++lqusb_smmu_exact_stream(uint32_t smr, uint32_t sid)
++{
++	return (smr & LQUSB_SMMU_SMR_VALID) && !((smr >> 16) & 0x7fffU) &&
++	    (smr & 0xffffU) == sid;
++}
++
++static inline int
++lqusb_smmu_route_identity(uint32_t s2cr, unsigned banks,
++    uint32_t cbar, uint32_t sctlr)
++{
++	unsigned type = (s2cr >> 16) & 3U;
++	unsigned bank = s2cr & 0xffU;
++
++	if (type == 1) return 1;
++	if (type != 0 || bank >= banks) return 0;
++	return ((cbar >> 16) & 3U) == 1 && !(sctlr & 1U);
++}
++
++static inline void
++lqusb_smmu_restore(const struct lqusb_smmu_ops *ops, void *context,
++    const struct lqusb_smmu_result *saved, uint32_t slot_smr,
++    uint32_t slot_s2cr)
++{
++	uint32_t cb = lqusb_smmu_context_offset(saved->pages, saved->bank);
++
++	/* Quiesce the stream before removing its context configuration. */
++	ops->write(context, 0x800U + 4U * saved->slot, slot_smr);
++	if (ops->barrier) ops->barrier(context);
++	ops->write(context, 0xc00U + 4U * saved->slot, slot_s2cr);
++	ops->write(context, 0x1800U + 4U * saved->bank, saved->cba2r);
++	ops->write(context, 0x1000U + 4U * saved->bank, saved->cbar);
++	ops->write(context, cb, saved->sctlr);
++	if (ops->barrier) ops->barrier(context);
++}
++
++static inline int
++lqusb_smmu_restored(const struct lqusb_smmu_ops *ops, void *context,
++    const struct lqusb_smmu_result *saved, uint32_t slot_smr,
++    uint32_t slot_s2cr)
++{
++	uint32_t cb = lqusb_smmu_context_offset(saved->pages, saved->bank);
++
++	return ops->read(context, 0x800U + 4U * saved->slot) == slot_smr &&
++	    ops->read(context, 0xc00U + 4U * saved->slot) == slot_s2cr &&
++	    ops->read(context, 0x1800U + 4U * saved->bank) == saved->cba2r &&
++	    ops->read(context, 0x1000U + 4U * saved->bank) == saved->cbar &&
++	    ops->read(context, cb) == saved->sctlr;
++}
++
++/* mode is interpreted by the caller. create permits installing one new exact
++ * stream. dry_run performs the complete planner scan and selects a bank without
++ * touching any SMMU register. The caller holds pong_smmu_lease_lock(). */
++static inline struct lqusb_smmu_result
++lqusb_smmu_apply(const struct lqusb_smmu_ops *ops, void *context, uint32_t sid,
++    unsigned reserved_bank, int create, int dry_run)
++{
++	struct lqusb_smmu_result p;
++	uint64_t used[2] = { 0, 0 };
++	uint32_t idr0, idr1, idr2;
++	unsigned matches = 0;
++	unsigned i;
++
++	p.status = LQUSB_SMMU_BAD_GEOMETRY;
++	p.reason = "unsupported SMMU geometry";
++	p.groups = p.banks = p.pages = 0;
++	p.slot = p.bank = LQUSB_SMMU_NONE;
++	p.reused = 0;
++	p.smr = p.s2cr = 0;
++	p.sctlr = 1;
++	p.cbar = p.cba2r = 0;
++	if (!ops || !ops->read || !ops->write || sid > 0xffffU) return p;
++
++	idr0 = ops->read(context, 0x20);
++	idr1 = ops->read(context, 0x24);
++	idr2 = ops->read(context, 0x28);
++	if (!lqusb_smmu_geometry(idr0, idr1, idr2, &p.groups, &p.banks, &p.pages))
++		return p;
++
++	for (i = 0; i < p.groups; i++) {
++		uint32_t smr = ops->read(context, 0x800U + 4U * i);
++		uint32_t s2cr;
++		unsigned type, mapped;
++
++		if (!(smr & LQUSB_SMMU_SMR_VALID)) {
++			if (p.slot == LQUSB_SMMU_NONE) p.slot = i;
++			continue;
++		}
++		s2cr = ops->read(context, 0xc00U + 4U * i);
++		if (lqusb_smmu_stream_match(smr, sid)) {
++			matches++;
++			p.slot = i;
++			p.smr = smr;
++			p.s2cr = s2cr;
++		}
++		type = (s2cr >> 16) & 3U;
++		mapped = s2cr & 0xffU;
++		if (type == 0 && mapped < p.banks)
++			used[mapped / 64] |= 1ULL << (mapped % 64);
++	}
++
++	if (matches > 1) {
++		p.status = LQUSB_SMMU_CONFLICT;
++		p.reason = "multiple streams match USB SID";
++		return p;
++	}
++	if (matches == 1) {
++		unsigned bank = p.s2cr & 0xffU;
++		uint32_t route_type = (p.s2cr >> 16) & 3U;
++
++		p.bank = bank;
++		if (!lqusb_smmu_exact_stream(p.smr, sid)) {
++			p.status = LQUSB_SMMU_CONFLICT;
++			p.reason = "masked USB stream already installed";
++			return p;
++		}
++		if (route_type == 1) {
++			p.status = LQUSB_SMMU_REUSED;
++			p.reason = "existing bypass route reused";
++			p.reused = 1;
++			return p;
++		}
++		if (route_type != 0 || bank >= p.banks) {
++			p.status = LQUSB_SMMU_CONFLICT;
++			p.reason = "existing USB route is not reversible identity";
++			return p;
++		}
++		p.cbar = ops->read(context, 0x1000U + 4U * bank);
++		p.cba2r = ops->read(context, 0x1800U + 4U * bank);
++		p.sctlr = ops->read(context, lqusb_smmu_context_offset(p.pages, bank));
++		if (!lqusb_smmu_route_identity(p.s2cr, p.banks, p.cbar, p.sctlr)) {
++			p.status = LQUSB_SMMU_CONFLICT;
++			p.reason = "existing USB context translation is enabled";
++			return p;
++		}
++		p.status = LQUSB_SMMU_REUSED;
++		p.reason = "existing identity context reused";
++		p.reused = 1;
++		return p;
++	}
++
++	if (!create) {
++		p.status = LQUSB_SMMU_NOT_FOUND;
++		p.reason = "no identity route for USB SID";
++		return p;
++	}
++	if (p.slot == LQUSB_SMMU_NONE) {
++		p.status = LQUSB_SMMU_NO_SLOT;
++		p.reason = "no free stream-match group";
++		return p;
++	}
++
++	/* Bank 0 is reserved by this platform. Bank 74 is the live UFS context.
++	 * Walk downward so a newly allotted bank stays close to the firmware range
++	 * while never replacing a translation used by another stream. */
++	for (i = p.banks - 1; i > 0; i--) {
++		uint32_t cbar, cba2r, sctlr;
++
++		if (i == reserved_bank) continue;
++		if ((used[i / 64] >> (i % 64)) & 1ULL) continue;
++		sctlr = ops->read(context, lqusb_smmu_context_offset(p.pages, i));
++		if (sctlr & 1U) continue;
++		cbar = ops->read(context, 0x1000U + 4U * i);
++		if (((cbar >> 16) & 3U) > 1U) continue;
++		cba2r = ops->read(context, 0x1800U + 4U * i);
++		p.bank = i;
++		p.sctlr = sctlr;
++		p.cbar = cbar;
++		p.cba2r = cba2r;
++		break;
++	}
++	if (p.bank == LQUSB_SMMU_NONE) {
++		p.status = LQUSB_SMMU_NO_BANK;
++		p.reason = "no unused bypass context bank";
++		return p;
++	}
++
++	if (dry_run) {
++		p.status = LQUSB_SMMU_DRY_RUN;
++		p.reason = "SMMU bypass plan complete";
++		return p;
++	}
++
++	{
++		uint32_t old_cbar = p.cbar, old_cba2r = p.cba2r;
++		uint32_t old_sctlr = p.sctlr;
++		uint32_t old_smr = ops->read(context, 0x800U + 4U * p.slot);
++		uint32_t old_s2cr = ops->read(context, 0xc00U + 4U * p.slot);
++		uint32_t cb = lqusb_smmu_context_offset(p.pages, p.bank);
++		int failed = 0;
++
++		ops->write(context, cb, 0);
++		ops->write(context, 0x1800U + 4U * p.bank, LQUSB_SMMU_CBA2R_AARCH64);
++		ops->write(context, 0x1000U + 4U * p.bank, LQUSB_SMMU_CBAR_BYPASS);
++		if (ops->barrier) ops->barrier(context);
++		if (ops->read(context, cb) != 0 ||
++		    ops->read(context, 0x1800U + 4U * p.bank) != LQUSB_SMMU_CBA2R_AARCH64 ||
++		    ops->read(context, 0x1000U + 4U * p.bank) != LQUSB_SMMU_CBAR_BYPASS) {
++			p.status = LQUSB_SMMU_READBACK;
++			p.reason = "SMMU context readback failed";
++			failed = 1;
++		}
++
++		if (!failed) {
++			ops->write(context, 0xc00U + 4U * p.slot, p.bank);
++			if (ops->barrier) ops->barrier(context);
++			if (ops->read(context, 0xc00U + 4U * p.slot) != p.bank) {
++				p.status = LQUSB_SMMU_READBACK;
++				p.reason = "SMMU S2CR readback failed";
++				failed = 1;
++			}
++		}
++		if (!failed) {
++			p.smr = LQUSB_SMMU_SMR_VALID | sid;
++			ops->write(context, 0x800U + 4U * p.slot, p.smr);
++			if (ops->barrier) ops->barrier(context);
++			if (ops->read(context, 0x800U + 4U * p.slot) != p.smr) {
++				p.status = LQUSB_SMMU_READBACK;
++				p.reason = "SMMU SMR readback failed";
++				failed = 1;
++			}
++		}
++
++		if (failed) {
++			p.cbar = old_cbar;
++			p.cba2r = old_cba2r;
++			p.sctlr = old_sctlr;
++			lqusb_smmu_restore(ops, context, &p, old_smr, old_s2cr);
++			if (!lqusb_smmu_restored(ops, context, &p, old_smr, old_s2cr)) {
++				p.status = LQUSB_SMMU_ROLLBACK;
++				p.reason = "SMMU publish readback and rollback failed";
++			}
++			return p;
++		}
++		p.smr = LQUSB_SMMU_SMR_VALID | sid;
++		p.s2cr = p.bank;
++		p.cbar = LQUSB_SMMU_CBAR_BYPASS;
++		p.cba2r = LQUSB_SMMU_CBA2R_AARCH64;
++		p.sctlr = 0;
++		p.status = LQUSB_SMMU_READY;
++		p.reason = "bypass context installed";
++	}
++	return p;
++}
++
++#endif
+
 diff --git a/bsd/dev/liuqin_usb_protocol.h b/bsd/dev/liuqin_usb_protocol.h
 new file mode 100644
 --- /dev/null

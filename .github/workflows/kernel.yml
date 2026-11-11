@@ -376,6 +376,60 @@ jobs:
             | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           find ../build -name 'payload.img' -exec ls -l {} \;
 
+      - name: Finalize the board ADT from the compiled hardware tree
+        # The shared "unixnu build payload" converter emits root, chosen and a
+        # generic arm-io tree.  It does not carry Pong's touch registers, GPIO
+        # pins or axis limits.  Replacing that ADT with the local finalizer's
+        # output is required before an image can be used for touch or USB tests.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          payloads=$(find ../build -path '*/payload/payload.img' -type f)
+          payload_count=$(printf '%s\n' "$payloads" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$payload_count" -ne 1 ]; then
+            echo "expected one payload.img, found ${payload_count}:"
+            printf '%s\n' "$payloads"
+            exit 1
+          fi
+          work=$(dirname "$(dirname "$payloads")")
+          hardware_dtb="$work/device-tree/hardware.dtb"
+          [ -f "$PONG_VOLUME_LAYOUT" ] || {
+            echo "volume layout is missing: $PONG_VOLUME_LAYOUT"
+            exit 1
+          }
+          [ -f "$hardware_dtb" ] || {
+            echo "compiled hardware DTB is missing: $hardware_dtb"
+            exit 1
+          }
+          shasum -a 256 "$hardware_dtb"
+          python3 scripts/finalize-pong-adt.py \
+            --work-dir "$work" \
+            --unique-chip-id 0x0123456789abcdef \
+            --chip-id 0x8010 \
+            --volume-layout "$PONG_VOLUME_LAYOUT" \
+            --hardware-dtb "$hardware_dtb" \
+            --dram-size 0x300000000 \
+            --window-size 0x100000000 \
+            --cpus 4 \
+            --ufs-probe 2>&1 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
+
+      - name: Verify the finalized ADT before it can be uploaded
+        # A payload that completes the build but ships a zero-resource touch
+        # node produces a convincing desktop boot with no input.  Parse the
+        # actual properties and fail here instead of discovering it on-device.
+        working-directory: device
+        run: |
+          set -euo pipefail
+          adt=$(find ../build -path '*/payload/kernel.macho.adt.pong' -type f)
+          adt_count=$(printf '%s\n' "$adt" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$adt_count" -ne 1 ]; then
+            echo "expected one finalized ADT, found ${adt_count}:"
+            printf '%s\n' "$adt"
+            exit 1
+          fi
+          shasum -a 256 "$adt"
+          python3 scripts/verify-pong-adt.py "$adt" --cpus 4 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
+
       - name: Show the build script around the failing line
         # The failing test is reported at line 953 of the script inside the build
         # tree, while the same test sits at line 771 of the device copy, so the

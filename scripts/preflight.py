@@ -193,6 +193,20 @@ def pass_decisions():
         fail(3, "kernel.yml", "no sheng source checkout for QcomRpmh.h")
     else:
         print("  sheng sources fetched for QcomRpmh.h")
+    build_step = wf.find("- name: Build the boot payload volume")
+    finalize_step = wf.find("- name: Finalize the board ADT from the compiled hardware tree")
+    verify_step = wf.find("- name: Verify the finalized ADT before it can be uploaded")
+    if min(build_step, finalize_step, verify_step) < 0 or not (build_step < finalize_step < verify_step):
+        fail(3, "kernel.yml", "payload -> finalize ADT -> verify ADT is not the step order")
+    else:
+        print("  payload is finalized from hardware.dtb and verified before upload")
+    if ("scripts/verify-pong-adt.py" not in wf or "--cpus 4" not in wf
+            or "--ufs-probe" not in wf):
+        fail(3, "kernel.yml", "the finalized ADT is not checked for the four-core Pong touch resources")
+    elif not (ROOT / "scripts/verify-pong-adt.py").is_file():
+        fail(3, "scripts", "verify-pong-adt.py is missing")
+    else:
+        print("  touch resources are checked at ADT property level")
     for bad_flag in ("XNU_SOURCE_CORECRYPTO14: '1'", "XNU_PONG_WIFI: '1'", "XNU_PONG_BACKLIGHT: '1'"):
         if bad_flag in wf:
             fail(3, "kernel.yml", f"switch that needs an archive this runner cannot build: {bad_flag}")

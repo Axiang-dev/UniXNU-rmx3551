@@ -130,9 +130,10 @@ kernel_args = [
   # value that satisfies both: 58 signature zones, 25 type zones.
   "kt_fixed_zones=83",
   "keepsyms=1",
-  # Four A510 cores are the highest topology verified to reach SpringBoard.
-  # The first cpus=5 boot failed before writing a new PongBootLog.
-  "cpus=4",
+  # Strict five-core experiment: the ADT and this boot argument must name the
+  # same count. The prior cpus=5 attempt still shipped a four-node ADT.
+  # This run therefore exercises the first A710/P core for the first time.
+  "cpus=5",
   "pong_allow_unauthenticated_root=1",
   "cs_enforcement_disable=1",
   "cs_library_val_enable=0",
@@ -175,7 +176,9 @@ kernel_args = [
   "pong_wifi=1",
   "pong_poster_snapshot=1",
   "fb_threads=4",
-  "liuqin_usb=1",
+  # Keep USB out of this CPU-only experiment: the worker currently stalls at
+  # the APFS owner-mount hook on this tree.
+  "liuqin_usb=0",
   "liuqin_usb_smmu=2",
   # The controller advertises 64-bit DMA and this device allocated its
   # event ring above 4 GiB. Keep a guarded window without assuming 32-bit.

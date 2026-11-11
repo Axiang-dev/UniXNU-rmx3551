@@ -420,7 +420,7 @@ jobs:
             --hardware-dtb "$hardware_dtb" \
             --dram-size 0x300000000 \
             --window-size 0x100000000 \
-            --cpus 4 \
+            --cpus 5 \
             --ufs-probe 2>&1 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
 
       - name: Verify the finalized ADT before it can be uploaded
@@ -438,7 +438,7 @@ jobs:
             exit 1
           fi
           shasum -a 256 "$adt"
-          python3 scripts/verify-pong-adt.py "$adt" --cpus 4 --trust-cache \
+          python3 scripts/verify-pong-adt.py "$adt" --cpus 5 --trust-cache \
             | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
 
       - name: Show the build script around the failing line

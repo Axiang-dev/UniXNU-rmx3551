@@ -428,7 +428,8 @@ jobs:
             exit 1
           fi
           shasum -a 256 "$adt"
-          python3 scripts/verify-pong-adt.py "$adt" --cpus 4 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
+          python3 scripts/verify-pong-adt.py "$adt" --cpus 4 --trust-cache \
+            | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
 
       - name: Show the build script around the failing line
         # The failing test is reported at line 953 of the script inside the build

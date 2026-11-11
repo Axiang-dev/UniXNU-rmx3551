@@ -134,6 +134,11 @@ def main():
     payload = work / 'payload/payload.img'
     if not payload.is_file():
         raise SystemExit(f'{payload} missing: run scripts/package.sh first')
+    trust_cache = read_member(payload, 'EFI/UniXNU/Payloads/kernel.macho.trustcache')
+    if trust_cache is None:
+        raise SystemExit(f'{payload}: kernel.macho.trustcache is missing; DarwinBoot consistency requires its ADT slot')
+    if not trust_cache:
+        raise SystemExit(f'{payload}: kernel.macho.trustcache is empty')
     dtb = (args.hardware_dtb or work / 'tree' / str(board.get('bootimg', {}).get('dtb', ''))).resolve()
     if not dtb.is_file():
         raise SystemExit(f'{dtb} missing: the firmware preflight step compiles the board DTS')
@@ -174,6 +179,7 @@ def main():
                '--unique-chip-id', args.unique_chip_id,
                '--chip-id', chip_id,
                '--boot-manifest', str(manifest_file),
+               '--trust-cache',
                # The local chain records no image audit for this development image.
                '--skip-image-verification']
     if args.development_debug:
@@ -217,6 +223,8 @@ def main():
                              'root_match_volume_uuid': root_uuid},
               'hardware_dtb': {'path': str(dtb), 'bytes': dtb.stat().st_size, 'sha256': sha256(dtb)},
               'adt_bytes': len(adt), 'adt_sha256': sha256(generated),
+              'trust_cache_bytes': len(trust_cache),
+              'trust_cache_sha256': hashlib.sha256(trust_cache).hexdigest(),
               'boot_manifest_bytes': len(manifest), 'boot_manifest_sha256': hashlib.sha256(manifest).hexdigest(),
               'boot_args': boot_args,
               'payload_bytes': payload.stat().st_size, 'payload_sha256': sha256(payload),

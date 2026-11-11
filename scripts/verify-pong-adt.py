@@ -4,8 +4,10 @@
 The UniXNU shared converter emits a generic tree.  It can therefore look valid
 and still leave /arm-io/pong-touch with only its name and compatible value,
 which makes the S3910 driver skip itself with every address reported as zero.
-Parse the actual binary property tree here so CI fails before uploading that
-payload.
+DarwinBoot has the same failure mode for trust caches: when the payload carries
+kernel.macho.trustcache, its /chosen/memory-map/TrustCache slot must exist and
+hold sixteen zero bytes.  Parse the actual binary property tree here so CI
+fails before uploading either kind of unusable payload.
 """
 import argparse
 import struct
@@ -122,7 +124,7 @@ def property_u64(node, name, expected=None):
     return value
 
 
-def verify(path, expected_cpus):
+def verify(path, expected_cpus, expect_trust_cache):
     data = path.read_bytes()
     tree, consumed = parse_node(data, 0)
     if consumed != len(data):
@@ -131,6 +133,7 @@ def verify(path, expected_cpus):
         raise TreeError(f"root is {tree['name']!r}, expected 'device-tree'")
 
     chosen = child(tree, "chosen")
+    memory_map = child(chosen, "memory-map")
     cpus = child(tree, "cpus")
     arm_io = child(tree, "arm-io")
     touch = child(arm_io, "pong-touch")
@@ -141,6 +144,14 @@ def verify(path, expected_cpus):
     property_u64(chosen, "dram-size", 0x300000000)
     property_u64(chosen, "darwinboot-memory-size", 0x100000000)
     property_u32(chosen, "debug-enabled", 1)
+
+    if expect_trust_cache:
+        if property_bytes(memory_map, "TrustCache") != bytes(16):
+            raise TreeError("/chosen/memory-map/TrustCache must be sixteen zero bytes")
+    elif "TrustCache" in memory_map["properties"]:
+        raise TreeError(
+            "/chosen/memory-map/TrustCache is present but the verifier was told there is no trust cache payload"
+        )
 
     compatible = property_bytes(touch, "compatible")
     if b"pong,synaptics-s3910\0" not in compatible:
@@ -169,6 +180,7 @@ def verify(path, expected_cpus):
 
     print(
         f"Pong ADT verified: {len(data)} bytes, cpus={expected_cpus}, "
+        f"trust-cache={int(expect_trust_cache)}, "
         f"touch axes={TOUCH_U32_PROPERTIES['max-x']}x"
         f"{TOUCH_U32_PROPERTIES['max-y']}"
     )
@@ -193,9 +205,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("adt", type=Path, help="kernel.macho.adt to inspect")
     parser.add_argument("--cpus", type=int, default=4, help="expected /cpus child count")
+    trust_cache = parser.add_mutually_exclusive_group(required=True)
+    trust_cache.add_argument(
+        "--trust-cache", dest="trust_cache", action="store_true",
+        help="require the sixteen-byte DarwinBoot trust-cache handoff slot",
+    )
+    trust_cache.add_argument(
+        "--no-trust-cache", dest="trust_cache", action="store_false",
+        help="require the payload and ADT to omit the trust-cache handoff slot",
+    )
     args = parser.parse_args()
     try:
-        verify(args.adt, args.cpus)
+        verify(args.adt, args.cpus, args.trust_cache)
     except (OSError, TreeError, UnicodeError, struct.error) as error:
         print(f"Pong ADT verification failed: {error}", file=sys.stderr)
         return 1

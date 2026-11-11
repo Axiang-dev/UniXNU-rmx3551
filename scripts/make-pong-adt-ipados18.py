@@ -135,6 +135,8 @@ def main():
                         help='validated iOS 22H374 SystemVolume root-hash payload for /chosen')
     parser.add_argument('--packed-data-ramdisk', action='store_true',
                         help='publish a DarwinBoot PackedRAMDisk range for an ephemeral APFS Data seed')
+    parser.add_argument('--trust-cache', action='store_true',
+                        help='publish the DarwinBoot TrustCache handoff slot for a staged trust bundle')
     parser.add_argument('--skip-image-verification', action='store_true',
                         help='emit the DT without an additional output audit')
     args = parser.parse_args()
@@ -265,6 +267,10 @@ def main():
         ('pins', struct.pack('<7I', 16, 17, 18, 19, 21, 20, 97)),
         ('max-x', struct.pack('<I', 8640)), ('max-y', struct.pack('<I', 19296)),
     ])
+    memory_map = node('memory-map', [
+        *([('PackedRAMDisk', bytes(16))] if args.packed_data_ramdisk else []),
+        *([('TrustCache', bytes(16))] if args.trust_cache else []),
+    ])
     tree = node('device-tree', [
         # Keys use the actual SM8475 PMIC-arbiter resources below.
         # MobileGestalt derives ProductType/DeviceClass from hw.product, which
@@ -279,8 +285,7 @@ def main():
         ('#address-cells', struct.pack('<I', 2)),
         ('#size-cells', struct.pack('<I', 2)),
     ], [
-        node('chosen', chosen, [node('memory-map',
-            [('PackedRAMDisk', bytes(16))] if args.packed_data_ramdisk else []),
+        node('chosen', chosen, [memory_map,
             node('manifest-properties', [('BNCH', boot_nonce_hash)])]),
         node('cpus', [('#address-cells', struct.pack('<I', 1))], cpus),
         node('arm-io', [
@@ -336,7 +341,8 @@ def main():
     args.output.write_bytes(tree)
     print(f'Pong ADT: {len(tree)} bytes; cpu_count={args.cpus}; dram={args.dram_size:#x}; '
           f'window={args.window_size if args.window_size is not None else "DarwinBoot default"}; '
-          f'packed-data-ramdisk={int(args.packed_data_ramdisk)}')
+          f'packed-data-ramdisk={int(args.packed_data_ramdisk)} '
+          f'trust-cache={int(args.trust_cache)}')
 
 
 if __name__ == '__main__':

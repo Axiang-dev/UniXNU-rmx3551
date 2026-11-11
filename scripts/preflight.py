@@ -200,13 +200,17 @@ def pass_decisions():
         fail(3, "kernel.yml", "payload -> finalize ADT -> verify ADT is not the step order")
     else:
         print("  payload is finalized from hardware.dtb and verified before upload")
-    if ("scripts/verify-pong-adt.py" not in wf or "--cpus 4" not in wf
-            or "--ufs-probe" not in wf):
-        fail(3, "kernel.yml", "the finalized ADT is not checked for the four-core Pong touch resources")
+    finalize_invocation = wf[finalize_step:verify_step] if min(finalize_step, verify_step) >= 0 else ""
+    verify_invocation = wf[verify_step:] if verify_step >= 0 else ""
+    if "--ufs-probe" not in finalize_invocation:
+        fail(3, "kernel.yml", "the finalized ADT does not publish the UFS probe nub")
+    elif ("scripts/verify-pong-adt.py" not in verify_invocation or "--cpus 4" not in verify_invocation
+            or "--trust-cache" not in verify_invocation):
+        fail(3, "kernel.yml", "the finalized ADT is not checked for four-core touch and trust-cache handoff")
     elif not (ROOT / "scripts/verify-pong-adt.py").is_file():
         fail(3, "scripts", "verify-pong-adt.py is missing")
     else:
-        print("  touch resources are checked at ADT property level")
+        print("  touch resources and trust-cache handoff are checked at ADT property level")
     for bad_flag in ("XNU_SOURCE_CORECRYPTO14: '1'", "XNU_PONG_WIFI: '1'", "XNU_PONG_BACKLIGHT: '1'"):
         if bad_flag in wf:
             fail(3, "kernel.yml", f"switch that needs an archive this runner cannot build: {bad_flag}")

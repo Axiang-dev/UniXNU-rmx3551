@@ -3,10 +3,10 @@
 > 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
 > 2026-11-11：`ff3d025` 的 TrustCache handoff 已通过实机验证，系统越过 DarwinBoot 并进入内核、SpringBoard，S3910 stage-4 也持续产生真实 HID 触点。当前需要区分“设备实际没有启动”和“系统已运行但画面/帧更新不可见”，不得继续按启动封装错误排查。
 > 17:03：USB 调试口在 `ff3d025` CI 镜像上又暴露了启动顺序 panic；`29d45d9` 已把 worker 创建移到 IOKit 初始化成功后，CI `42989774583` 全绿。
-> 2026-11-11 23:20：USB worker 的 A/B 已验证为启动卡死根因；触摸和真实 HID 已确认无错位。严格的五核实验提交 `4b4a85e` 已推送，等待 CI `43047204050` 和实机日志。
+> 2026-11-12 00:25：五核启动、APFS Data mount、SpringBoard 和触摸已通过。七核完成了 CPU 注册与 first boot，但未越过 APFS UUID 等待，启动验收失败。当前六核镜像正在做隔离验收，请以本文最新快照为准。
 
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 23:20 (Asia/Shanghai)。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-12 00:25 (Asia/Shanghai)。
 接手者先读本页新的「最新接手快照」。其后的历史段落只用于追溯，其中可能仍写着 stage 3 待测、HID 未验证或旧的五核失败结论。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
@@ -22,128 +22,150 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-11 23:20 (Asia/Shanghai)；本段优先）
+## 最新接手快照（2026-11-12 00:25 (Asia/Shanghai)；本段优先）
 
 ### 一句话状态
 
-系统桌面、S3910 stage 4 触摸和真实 HID 触点均已通过实机验证，用户确认点击位置没有错位。当前剩下的主要问题是软件 UI 下的卡顿。USB worker 已通过 A/B 对照确认为本轮启动卡死根因，后续性能实验统一使用 `liuqin_usb=0` 稳定基线。第一次五核失败已被重新解释为无效实验，因为启动参数写了 `cpus=5`，ADT 实际仍只有四个 CPU 节点。
+系统桌面、S3910 stage 4 触摸和真实 HID 触点均已通过实机验证，用户确认点击位置没有错位。当前瓶颈仍是 `pong_software_ui=1` 下的软件 UI 性能。五核是唯一完成“CPU 注册、APFS Data mount、SpringBoard、触摸”全链路验收的版本。七核只完成了 CPU 注册与 first boot，随后停在 APFS UUID 等待，不能算启动成功。六核镜像用于隔离 CPU6 与第二颗 A710，实机日志尚待 TWRP 取回。
 
-### 用户确认的触摸结论
+### 五核稳定基线
 
-用户已在桌面连续点击并确认：
-
-- 触摸能够触发。
-- 点击位置没有错位。
-- 卡顿时按键反馈可能延迟约十秒，但恢复后仍能正确触发，因此当前现象是性能问题，不是 HID、坐标转换或触点解析故障。
-
-禁止在性能诊断中顺手修改 `pong_s3910`、HID、原生坐标 `8640x19296` 或屏幕分辨率 `1080x2412`。
-
-### USB worker A/B 实机结果
-
-原 `de4d4e1` 镜像保持 `liuqin_usb=1` 时，实机停在：
+五核镜像已经通过完整启动验收：
 
 ```text
-PONG APFS: init owner mount hook entered
-```
-
-只关闭 USB worker、其余镜像内容不变的 A/B 镜像成功越过该点并进入桌面：
-
-```text
-PONG APFS: init owner mount hook returned error=0 stage=6
-PONG APFS: Data mount PASS ... rw=1
-USERMANAGERD SESSION SETUP DONE
-MiniIOMobileFramebuffer: first visible frame
-MiniIOSurface: SpringBoard[27] created surface 7: 1080x2412 'BGRA'
-S3910 identified ... axes=8640x19296
-s3901: finger 0 down ...
-Pong touch HID: type=1/2/3 ...
-```
-
-有效日志位于：
-
-```text
-D:\unixnu\ud\diagnostics-usboff-ab-de4d4e1-20261111-230948
-ponglog-region.bin  4198400 bytes  sha256 9fd2f1444469930d4cf7753f5d7b3ec76015e3efbc389a72e703d34f1368e465
-ponglog.txt          119989 bytes  sha256 50fa7cdaaa63eb0d3a202156358c5eabe1f84315e3c3dba35e4f100519689fa1
-owner-hook.jpg                    sha256 05e6438c585c1f5182bea6ac16f0ca522845da903dea6e42eee97645480f1fe9
-```
-
-原 CI 镜像和 A/B 镜像：
-
-```text
-source commit       de4d4e1
-CI run              43039154889
-artifact            13864679316
-
-original
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usb-launchd-stage4-de4d4e1-43039154889.img
-102699008 bytes  sha256 fdc5aa7db3afa4e979f47bad2570a141fa15f5c8d8afd1113a7d4b26980cdd9c
-
-USB off A/B
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usb-launchd-stage4-de4d4e1-43039154889-usboff-ab.img
-102699008 bytes  sha256 be391852b0ff9bedaa8681bea3a3c7494e2f0102f2d69cd445fdd49532332214
-```
-
-结论：`liuqin_usb=1` 的 worker 是当前启动卡死的高可信根因。在 USB 本身重新插桩前，性能与 CPU 实验固定使用 `liuqin_usb=0`，不要再次把 USB 变量混入触摸或 CPU 实验。
-
-### 严格的五核实验
-
-历史 `cpus=5` 失败不能证明 A710/P 核无法启动。当前有效日志明确只有：
-
-```text
-ArmDTPlatform: registered platform cpus=4
-ArmCpu: CPU 1/2/3 registered
-```
-
-也就是说，启动参数和 ADT 不一致。为了消除这个方法论错误，新建独立分支并提交：
-
-```text
-branch     exp/strict-cpus5-usboff
-commit     4b4a85e
-message    test(cpu): make five-core ADT and boot args agree
-```
-
-该提交只改变三个事实：
-
-- ADT finalizer 与 verifier 使用 `--cpus 5`。
-- 启动参数使用 `cpus=5`。
-- `liuqin_usb=0`，保持本次实验只测第五个 CPU。
-
-本地重新 finalize 并验证的 ADT：
-
-```text
-ADT bytes     15708
-ADT sha256    9b85cb8c59b7ab67ae774ca77e084c809e5dd96057c4429ca095242fdcb986a2
-payload       100663296 bytes
-payload sha    ec6957a25ef61d7b76c6cf5d01c38bbe828fd086b159eb09648c3e9bbd0e267e
-boot_args     ... cpus=5 ... liuqin_usb=0 ...
-verification  cpus=5, trust-cache=1, touch axes=8640x19296
-```
-
-待实机临时启动镜像：
-
-```text
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpus5-adtsync-usboff-de4d4e1-20261111.img
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-20261111-235152.img
 102699008 bytes
-sha256 a458b470978ea70f074a945b5f145e36e57665ad17470737a6fbb045c0fecf21
+sha256 d41715fc16763835066185b1b5fc04292d3790545579507e784f2e0219c69441
 ```
 
-GitHub Actions run `43047204050` 已由该分支提交触发，首次记录时为 queued。实验接受条件：
+实机日志确认 CPU0–3 的四个 A510 和 CPU4 的首个 A710 注册并完成 first boot，随后继续通过 `Data mount PASS` 并进入 SpringBoard。触摸可用且无坐标错位。
 
 ```text
-ArmDTPlatform: registered platform cpus=5
-ArmCpu: CPU 4 MPIDR=0x400 registered
-ArmCpu: CPU 4 first boot completed
+D:\unixnu\ud\diagnostics-cpumask-1f-20261111-235658
+ponglog-region.bin 4198400 bytes
+sha256 17a71915bf0f43db41711739d66fe6f22f049993e290f0142aa31283f6bca8ee
+
+ponglog.txt 191969 bytes
+sha256 f5eef262350cdf3dd9cb8195a2a1408967be9923f435926d05cc6e7e42bba1c1
 ```
 
-若第五核通过，再测实际帧率并决定是否继续 A510/A710-X2 双簇拓扑。若失败，必须保留新的 panic 或 PongBootLog；不得继续沿用旧的“参数 5、ADT 4”失败结论。
+这是后续性能实验必须回归的启动基线，不得覆盖或删除。
+
+### 七核隔离结果
+
+七核镜像来自提交 `932c4c9`，对应 CI run `43054006667`：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-7f-usboff-adt7-932c4c9-20261112-000205.img
+102699008 bytes
+sha256 c106d7b8508584a66d0f991348943891d94c7fee7b968953460c18b5b37b8b99
+```
+
+封装回读确认：
+
+```text
+ADT 16236 bytes
+ADT cpus=7
+ADT trust-cache=1
+touch axes=8640x19296
+boot args cpumask=0x7f, liuqin_usb=0, pong_s3910=4
+PONGFAT1 CRC 0xc58cc023
+```
+
+实机日志确认：
+
+```text
+ArmCpu: CPU 4 MPIDR=0x400 registered
+ArmCpu: CPU 5 MPIDR=0x500 registered
+ArmCpu: CPU 6 MPIDR=0x600 registered
+ArmCpu: CPU 4 first boot completed
+ArmCpu: CPU 5 first boot completed
+ArmCpu: CPU 6 first boot completed
+ArmDTPlatform: registered platform cpus=7
+```
+
+UFS 发布三张磁盘，APFS 找到稳定 checkpoint，但没有出现 `Data mount PASS` 或 SpringBoard。启动停在：
+
+```text
+IOPropertyMatch UUID B07DF049-7AD9-47B5-9F8F-9EE728056398
+```
+
+七核结论是“CPU 注册成功，系统启动验收失败”。不能把 CPU first boot 当成整体成功。
+
+```text
+D:\unixnu\ud\diagnostics-cpumask-7f-20261112-000850
+ponglog-region.bin 4198486 bytes
+sha256 52bc94e498902c8d2c5b8a89c2580c7c87a74b93ee47c895f3b45a5c2afc54e4
+
+ponglog.txt 12566 bytes
+sha256 0e6b0aab0e451a3bc7b44b1a2e3b6cbc59de2e018c862683029970e968c20ae1
+```
+
+### 六核隔离实验
+
+六核镜像只引入 CPU5，即第二颗 A710，同时排除 CPU6：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-3f-usboff-adt6-932c4c9-20261112-000940.img
+102699008 bytes
+sha256 99d449891f9ab7d37e23ab3f0f35d13f77706fed3488414272639b32d2fe56f3
+```
+
+回读确认 `ADT cpus=6`、`cpumask=0x3f`、`liuqin_usb=0` 和 `pong_s3910=4`，该镜像已经临时启动。验收必须同时出现：
+
+```text
+ArmCpu: CPU 4 MPIDR=0x400 registered
+ArmCpu: CPU 5 MPIDR=0x500 registered
+ArmCpu: CPU 4 first boot completed
+ArmCpu: CPU 5 first boot completed
+ArmDTPlatform: registered platform cpus=6
+PONG APFS: Data mount PASS
+MiniIOSurface: SpringBoard[...] created surface ... 1080x2412 'BGRA'
+```
+
+若六核仍停在 `B07DF049-7AD9-47B5-9F8F-9EE728056398`，则停止继续加核，转而检查第二颗 A710 对 APFS 等待链或调度时钟的影响。
+
+### 音量键 HID 修复
+
+实机日志已经证明物理按键扫描正常：
+
+```text
+Pong keys: arbiter v7 channels=768 PON=407 GPIO6=434
+power=1 up=1 down=1
+Pong keys HID: key=1 down=1 sent=1
+Pong keys HID: key=2 down=1 sent=1
+Pong keys HID: physical side consumer opened
+volume report device=unavailable
+```
+
+电源键走虚拟服务事件，因此可用。音量键依赖 `IOHIDUserDeviceCreate()`，而当时内核没有预链接 `IOHIDFamily` 和 `IOHIDEventDriver`，所以报告设备为空。
+
+提交 `94f0aaf007d4d33e6d4eb909431f7f740f5c8cdc` 已推送到 `exp/strict-cpus5-usboff`：
+
+- `kernel.yml` 增加 `IOHIDFamily` 与 `IOHIDEventDriver` 两个预链接根。
+- 合并 `configs/pong-hid-match.json`，让 PMIC Consumer 使用非延迟 `IOHIDEventDriver`。
+- `emit_prelink.py` 增加显式、可审计的 `--personality-json BUNDLE=PATH`。
+- 新增 `tests/test_rmx3551_hid_prelink.py`，阻止 workflow 再次漏掉 HID 栈。
+
+本地 `python -B scripts\preflight.py` 六项通过。Porting CI run `43055703760` 成功。Kernel CI run `43055703607` 在本文更新时仍处于 `Resolve configuration and build kernel`，尚不能视为构建通过。即使构建通过，音量键仍须实机看到 `volume report device=native` 并实际改变系统音量才算完成。
+
+该修复不修改 S3910 触点投递、坐标转换、`pong_s3910=4` 或屏幕分辨率。
+
+### 当前阻塞与方法优化
+
+- 当前 ADB 找不到唯一目标串号 `9ea882b4`，不得操作其他设备。等设备明确回到 TWRP 后再采六核日志。
+- 每次实验先记录四个结论：ADT 核数、boot 参数核数、CPU first boot、APFS/SpringBoard。缺一项就只记录部分结论。
+- 五核已经成为稳定基线。后续单变量实验都以它回归，不能把 CPU、USB、HID 和触摸混在一次镜像里。
+- CPU 核数成功不等于系统启动成功。七核已经证明两者必须分开验收。
+- CI 构建完成不等于功能验证完成。音量键必须看到原生 HID 设备和真实音量变化。
 
 ### 方法层面的破局点
 
-1. 一次只改变一个变量。USB 已由 A/B 隔离，CPU 实验固定 `liuqin_usb=0`。
-2. 先验证“拓扑声明一致”，再看启动结果。启动参数核数与 ADT 节点数必须同时为 5。
-3. CPU 与 GPU 分开处理。当前 `pong_software_ui=1`，软件渲染下先确认性能核是否可用；Adreno 730 另立实验。
-4. 任何性能实验都不得改动已通过的触摸代码。触摸只作为回归检查，不作为试验变量。
+1. 一次只改变一个变量。USB 固定 `liuqin_usb=0`，触摸固定 `pong_s3910=4`。
+2. 先验证“拓扑声明一致”，再看启动结果。启动参数核数与 ADT CPU 节点数必须一致。
+3. CPU 与 GPU 分开处理。当前 `pong_software_ui=1`，Adreno 730 另立实验。
+4. 每次实机验收同时记录 CPU 与系统终点，避免把 CPU 注册误报为可启动。
+5. 任何性能实验都不得改动已通过的触摸代码。触摸只作为回归检查，不作为试验变量。
 
 ### 安全硬约束
 

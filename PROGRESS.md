@@ -1,95 +1,101 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-11 23:20 (Asia/Shanghai)
+Updated: 2026-11-12 00:25 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
-## Latest handoff snapshot (2026-11-11 23:20 (Asia/Shanghai))
+## Latest handoff snapshot (2026-11-12 00:25 Asia/Shanghai)
 
-This snapshot is authoritative. It supersedes earlier text that treated the first cpus=5 attempt as proof that CPU4 could not boot and text that still marked USB hardware verification as pending.
+This snapshot is authoritative. It supersedes earlier text that marked CPU4 as unverified and text that treated CPU first boot as proof of a successful system boot.
 
 | Area | Current status | Evidence |
 |---|---|---|
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard |
-| Touch | Verified usable | The user confirmed clicks work and their positions are not offset. S3910 stage 4 opens HID at `8640x19296`; lag is a performance symptom, not a touch-parse failure |
-| USB debug worker | Startup blocker isolated | `liuqin_usb=1` stopped at `PONG APFS: init owner mount hook entered`; the otherwise identical USB-off A/B image completed owner mount, Data mount, launchd, SpringBoard and first frame |
-| CPU baseline | Four E cores | The prior `cpus=5` test was invalid because the ADT still contained four CPU nodes |
-| CPU experiment | Built, CI in progress | Branch commit `4b4a85e` produces a five-node ADT and matching `cpus=5`, with USB held at zero |
-| Software UI | Known bottleneck | `pong_software_ui=1`; CPU topology and Adreno 730 remain separate experiments |
+| Touch | Verified usable | The user confirmed clicks work and their positions are not offset. S3910 stage 4 opens HID at `8640x19296` |
+| CPU baseline | Five cores verified end to end | CPU0-3 and CPU4 registered, completed first boot, passed APFS Data mount and reached SpringBoard |
+| Seven-core experiment | CPU registration passed, boot failed | CPU4-6 registered and completed first boot, but boot stopped at APFS UUID `B07DF049-7AD9-47B5-9F8F-9EE728056398` before `Data mount PASS` |
+| Six-core experiment | Booted, log pending | ADT and boot args contain six CPUs, CPU5 is included and CPU6 excluded. TWRP extraction is pending |
+| Software UI | Known bottleneck | `pong_software_ui=1` remains active |
+| Volume keys | Repair built, CI in progress | Commit `94f0aaf` prelinks `IOHIDFamily` and `IOHIDEventDriver`. Kernel run `43055703607` is not complete |
 | Touch policy | Frozen during performance work | Do not modify HID, coordinate conversion or touch parsing without a new touch-specific regression |
 
-### USB A/B result
+### Five-core baseline
 
-The original `de4d4e1` CI image retained `liuqin_usb=1` and stopped at the APFS owner-mount hook. The A/B image changed only that worker and reached the desktop:
-
-```text
-PONG APFS: init owner mount hook returned error=0 stage=6
-PONG APFS: Data mount PASS ... rw=1
-MiniIOMobileFramebuffer: first visible frame
-MiniIOSurface: SpringBoard[27] created surface 7: 1080x2412 'BGRA'
-S3910 identified ... axes=8640x19296
-s3901: finger 0 down ...
-Pong touch HID: type=1/2/3 ...
-```
-
-Evidence:
+The five-core image passed the complete acceptance chain:
 
 ```text
-D:\unixnu\ud\diagnostics-usboff-ab-de4d4e1-20261111-230948
-ponglog-region.bin  4198400 bytes  sha256 9fd2f1444469930d4cf7753f5d7b3ec76015e3efbc389a72e703d34f1368e465
-ponglog.txt          119989 bytes  sha256 50fa7cdaaa63eb0d3a202156358c5eabe1f84315e3c3dba35e4f100519689fa1
-```
-
-The USB-off A/B image is:
-
-```text
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usb-launchd-stage4-de4d4e1-43039154889-usboff-ab.img
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-20261111-235152.img
 102699008 bytes
-sha256 be391852b0ff9bedaa8681bea3a3c7494e2f0102f2d69cd445fdd49532332214
+sha256 d41715fc16763835066185b1b5fc04292d3790545579507e784f2e0219c69441
 ```
 
-Use `liuqin_usb=0` as the stable base for every performance experiment until the worker gets dedicated instrumentation.
-
-### Strict five-core experiment
-
-The earlier `cpus=5` result did not test CPU4 because the log still reported four registered CPUs. Independent branch `exp/strict-cpus5-usboff` commit `4b4a85e` now changes the ADT count, the boot argument and the verification count to five while keeping `liuqin_usb=0`. It leaves the S3910 code untouched.
-
-Local verification produced:
+The matching log evidence is:
 
 ```text
-ADT     15708 bytes  sha256 9b85cb8c59b7ab67ae774ca77e084c809e5dd96057c4429ca095242fdcb986a2
-payload             sha256 ec6957a25ef61d7b76c6cf5d01c38bbe828fd086b159eb09648c3e9bbd0e267e
-boot args           cpus=5, liuqin_usb=0
-ADT checks          cpu_count=5, trust-cache=1, touch axes=8640x19296
+D:\unixnu\ud\diagnostics-cpumask-1f-20261111-235658
+ponglog-region.bin 4198400 bytes
+sha256 17a71915bf0f43db41711739d66fe6f22f049993e290f0142aa31283f6bca8ee
+
+ponglog.txt 191969 bytes
+sha256 f5eef262350cdf3dd9cb8195a2a1408967be9923f435926d05cc6e7e42bba1c1
 ```
 
-Candidate image:
+### Seven-core result
+
+Image and hash:
 
 ```text
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpus5-adtsync-usboff-de4d4e1-20261111.img
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-7f-usboff-adt7-932c4c9-20261112-000205.img
 102699008 bytes
-sha256 a458b470978ea70f074a945b5f145e36e57665ad17470737a6fbb045c0fecf21
+sha256 c106d7b8508584a66d0f991348943891d94c7fee7b968953460c18b5b37b8b99
 ```
 
-GitHub Actions run `43047204050` was triggered by this exact commit and was queued when this snapshot was written.
-
-Acceptance requires all of:
+The hardware log contains CPU4-6 registration and first boot plus `registered platform cpus=7`. It does not contain `Data mount PASS` or a SpringBoard frame. Boot stopped at the UUID wait shown above. The experiment therefore passes CPU registration and fails system boot.
 
 ```text
-ArmDTPlatform: registered platform cpus=5
-ArmCpu: CPU 4 MPIDR=0x400 registered
-ArmCpu: CPU 4 first boot completed
+D:\unixnu\ud\diagnostics-cpumask-7f-20261112-000850
+ponglog-region.bin 4198486 bytes
+sha256 52bc94e498902c8d2c5b8a89c2580c7c87a74b93ee47c895f3b45a5c2afc54e4
+
+ponglog.txt 12566 bytes
+sha256 0e6b0aab0e451a3bc7b44b1a2e3b6cbc59de2e018c862683029970e968c20ae1
 ```
 
-Only then should the project proceed to an A510/A710-X2 two-cluster topology test. A failure must be retained as new PongBootLog/panic evidence, not merged with the old four-node experiment.
+### Six-core isolation
+
+Image and hash:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-3f-usboff-adt6-932c4c9-20261112-000940.img
+102699008 bytes
+sha256 99d449891f9ab7d37e23ab3f0f35d13f77706fed3488414272639b32d2fe56f3
+```
+
+The ADT has six CPUs, boot uses `cpumask=0x3f`, USB remains disabled and touch remains at `pong_s3910=4`. This experiment isolates CPU5 from CPU6. It is accepted only if CPU4 and CPU5 both complete first boot, the platform reports six CPUs, APFS reaches `Data mount PASS`, and SpringBoard creates its surface. If it stops at the same UUID, stop adding CPUs.
+
+### Volume-key HID repair
+
+The hardware log proves that volume-key scanning and event delivery are working:
+
+```text
+Pong keys: arbiter v7 channels=768 PON=407 GPIO6=434
+power=1 up=1 down=1
+Pong keys HID: key=1 down=1 sent=1
+Pong keys HID: key=2 down=1 sent=1
+Pong keys HID: physical side consumer opened
+volume report device=unavailable
+```
+
+Commit `94f0aaf007d4d33e6d4eb909431f7f740f5c8cdc` prelinks `IOHIDFamily` and `IOHIDEventDriver`, merges the PMIC consumer personality and adds an auditable prelink test. Local preflight passes all six checks. Porting run `43055703760` succeeds. Kernel run `43055703607` is still in progress. Hardware acceptance requires `volume report device=native` and an actual system volume change.
 
 ### Method rules
 
 1. One experimental variable per boot.
-2. The boot argument CPU count and ADT CPU-node count must agree before the image is useful.
-3. USB remains off while measuring CPU/UI performance.
-4. GPU bring-up and CPU topology are separate projects.
-5. The verified touch path stays frozen during performance work.
+2. The boot argument CPU mask and ADT CPU-node count must agree.
+3. Keep `liuqin_usb=0` and `pong_s3910=4` fixed during CPU work.
+4. Record CPU registration and system-boot completion as separate results.
+5. Keep GPU bring-up separate from CPU topology work.
+6. The verified touch path stays frozen during performance work.
 
 ### Safety boundary
 

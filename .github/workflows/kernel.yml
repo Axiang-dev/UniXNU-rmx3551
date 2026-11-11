@@ -147,6 +147,16 @@ jobs:
           mformat --version 2>&1 | head -1
           python3 --version
 
+      - name: Host regression preflight
+        # Catch malformed patch hunks and startup-order regressions before the
+        # runner spends time fetching multi-gigabyte Apple components.
+        timeout-minutes: 5
+        working-directory: device
+        run: |
+          set -euo pipefail
+          python3 scripts/preflight.py
+          python3 -B tests/test_rmx3551_s3910_protocol.py
+
       - name: Fetch the pinned Apple and board sources
         # feeds.toml lists six Apple-OSS repositories; configs/pong-native-sources.toml
         # adds four board prerequisites.  The script fetches each pin with

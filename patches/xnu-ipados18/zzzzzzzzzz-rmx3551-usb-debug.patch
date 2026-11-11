@@ -1,5 +1,19 @@
+diff --git a/bsd/conf/files.arm64 b/bsd/conf/files.arm64
+index a77bd10..7f24c1e 100644
+--- a/bsd/conf/files.arm64
++++ b/bsd/conf/files.arm64
+@@ -5,6 +5,8 @@ bsd/dev/arm/kern_machdep.c	standard
+ bsd/dev/arm/stubs.c		standard
+ bsd/dev/arm/systemcalls.c       standard
+ bsd/dev/arm64/sysctl.c          standard
++bsd/dev/liuqin_debug.c		standard
++bsd/dev/liuqin_usb_debug.c	standard
+ bsd/dev/arm/unix_signal.c	standard
+ 
+ bsd/dev/arm64/cpu_in_cksum.s	standard
 diff --git a/bsd/dev/liuqin_debug.c b/bsd/dev/liuqin_debug.c
 new file mode 100644
+index 0000000..bc7eca4
 --- /dev/null
 +++ b/bsd/dev/liuqin_debug.c
 @@ -0,0 +1,487 @@
@@ -492,6 +506,7 @@ new file mode 100644
 +}
 diff --git a/bsd/dev/liuqin_log_ring.h b/bsd/dev/liuqin_log_ring.h
 new file mode 100644
+index 0000000..049e603
 --- /dev/null
 +++ b/bsd/dev/liuqin_log_ring.h
 @@ -0,0 +1,45 @@
@@ -541,9 +556,11 @@ new file mode 100644
 +}
 +#endif
 diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
+new file mode 100644
+index 0000000..59e6e87
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_debug.c
-@@ -0,0 +1,1007 @@
+@@ -0,0 +1,1027 @@
 +/* Liuqin (Xiaomi Pad 6 Pro, SM8475) CDC ACM debug console.
 + *
 + * Opt-in: boot argument liuqin_usb=1. Ported from the vermeer lab console
@@ -1348,20 +1365,9 @@ diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
 +	*value = v;
 +	return true;
 +}
-+void
-+liuqin_usb_debug_start(void)
++static void
++liuqin_usb_debug_init(void)
 +{
-+	static bool attempted;
-+	int enabled = 0;
-+	PE_parse_boot_argn("liuqin_usb", &enabled, sizeof(enabled));
-+	if (enabled != 1 || attempted) {
-+		if (enabled != 1) {
-+			liuqin_fb_band(6, 0xffff8000u);
-+		}
-+		return;
-+	}
-+	attempted = true;
-+
 +	u.mps = 512;
 +	u.coding[0] = 0;
 +	u.coding[1] = 0xc2;
@@ -1551,7 +1557,121 @@ diff --git a/bsd/dev/liuqin_usb_debug.c b/bsd/dev/liuqin_usb_debug.c
 +	liuqin_fb_band(5, 0xffff00ffu);
 +	printf("LIUQIN USB: running; DMA=%llx; Windows serial LIQDBG001; awaiting enumeration\n", u.pa);
 +}
++
++static void
++liuqin_usb_debug_worker(void *arg __unused, wait_result_t result __unused)
++{
++	liuqin_usb_debug_init();
++	thread_terminate(current_thread());
++}
++
++void
++liuqin_usb_debug_start(void)
++{
++	static bool attempted;
++	int enabled = 0;
++
++	PE_parse_boot_argn("liuqin_usb", &enabled, sizeof(enabled));
++	if (enabled != 1) {
++		liuqin_fb_band(6, 0xffff8000u);
++		return;
++	}
++	if (attempted) {
++		return;
++	}
++	attempted = true;
++
++	thread_t thread;
++	if (kernel_thread_start(liuqin_usb_debug_worker, NULL, &thread) != KERN_SUCCESS) {
++		printf("LIUQIN USB: start worker thread failed; controller untouched\n");
++		return;
++	}
++	thread_deallocate(thread);
++}
+diff --git a/bsd/dev/liuqin_usb_protocol.h b/bsd/dev/liuqin_usb_protocol.h
+new file mode 100644
+index 0000000..26cca0f
+--- /dev/null
++++ b/bsd/dev/liuqin_usb_protocol.h
+@@ -0,0 +1,75 @@
++/* CDC ACM descriptors and request whitelist for the liuqin USB debug port.
++ * Lab VID/PID 1209:0002, synthetic serial LIQDBG001. Ported from vermeer.
++ */
++#ifndef LIUQIN_USB_PROTOCOL_H
++#define LIUQIN_USB_PROTOCOL_H
++#ifdef LIUQIN_HOST_TEST
++#include <stdint.h>
++#else
++#include <sys/types.h>
++#endif
++static const uint8_t lqusb_device[18] = {
++	18, 1, 0x00, 0x02, 2, 2, 1, 64, 0x09, 0x12, 0x02, 0x00, 0, 4, 1, 2, 3, 1
++};
++static const uint8_t lqusb_config[67] = {
++	9, 2, 67, 0, 2, 1, 0, 0x80, 250,
++	9, 4, 0, 0, 1, 2, 2, 1, 0,
++	5, 0x24, 0, 0x10, 1,
++	5, 0x24, 1, 0, 1,
++	4, 0x24, 2, 2,
++	5, 0x24, 6, 0, 1,
++	7, 5, 0x82, 3, 16, 0, 9,
++	9, 4, 1, 0, 2, 0x0a, 0, 0, 0,
++	7, 5, 0x01, 2, 0, 2, 0,
++	7, 5, 0x81, 2, 0, 2, 0
++};
++static const uint8_t lqusb_qualifier[10] = { 10, 6, 0, 2, 2, 2, 1, 64, 1, 0 };
++
++/* The DMA block must be one aligned contiguous run inside the caller supplied
++ * window, and the controller must be able to address all of it. */
++static inline int lqusb_dma_allowed(uint64_t pa, unsigned size, unsigned bits,
++    uint64_t lo, uint64_t hi)
++{
++	if (size != 0x4000 || (pa & 0x3fff)) return 0;
++	if (!lo || hi <= lo || pa < lo || pa >= hi) return 0;
++	if (size > hi - pa) return 0;
++	if (bits < 32 || bits > 64) return 0;
++	return bits == 64 || pa + size - 1 < (1ULL << bits);
++}
++
++/* Exactly one nonsecure stream must match the USB stream ID and its route must
++ * be identity (or bypass): the port never creates or weakens a mapping. */
++static inline int lqusb_stream_match(uint32_t smr, uint32_t sid)
++{
++	return (smr >> 31) && !((smr ^ sid) & ~((smr >> 16) & 0x7fff) & 0xffff);
++}
++static inline int lqusb_route_identity(uint32_t s2cr, uint32_t cbar, uint32_t sctlr)
++{
++	unsigned type = (s2cr >> 16) & 3;
++	return type == 1 || (type == 0 && ((cbar >> 16) & 3) == 1 && !(sctlr & 1));
++}
++
++/* Recognised request kinds only; malformed class OUT lengths stall. */
++enum {
++	LQUSB_BAD, LQUSB_DESC, LQUSB_ADDRESS, LQUSB_CONFIG, LQUSB_GET_CONFIG,
++	LQUSB_STATUS, LQUSB_INTERFACE, LQUSB_GET_INTERFACE, LQUSB_SET_LINE,
++	LQUSB_GET_LINE, LQUSB_CONTROL, LQUSB_BREAK, LQUSB_CLEAR_HALT
++};
++static inline int lqusb_request(uint8_t type, uint8_t req, uint16_t value,
++    uint16_t index, uint16_t len)
++{
++	if (type == 0x80 && req == 6 && ((value >> 8) >= 1 && (value >> 8) <= 7)) return LQUSB_DESC;
++	if (type == 0 && req == 5 && !index && !len && value < 128) return LQUSB_ADDRESS;
++	if (type == 0 && req == 9 && !index && !len && value <= 1) return LQUSB_CONFIG;
++	if (type == 0x80 && req == 8 && !value && !index && len == 1) return LQUSB_GET_CONFIG;
++	if ((type == 0x80 || type == 0x81 || type == 0x82) && req == 0 && !value && len == 2) return LQUSB_STATUS;
++	if (type == 1 && req == 11 && index <= 1 && !value && !len) return LQUSB_INTERFACE;
++	if (type == 0x81 && req == 10 && index <= 1 && !value && len == 1) return LQUSB_GET_INTERFACE;
++	if (type == 0x21 && req == 0x20 && !index && !value && len == 7) return LQUSB_SET_LINE;
++	if (type == 0xa1 && req == 0x21 && !index && !value && len == 7) return LQUSB_GET_LINE;
++	if (type == 0x21 && req == 0x22 && !index && !len && !(value & ~3)) return LQUSB_CONTROL;
++	if (type == 0x21 && req == 0x23 && !index && !len) return LQUSB_BREAK;
++	if (type == 2 && req == 1 && !value && !len && (index == 1 || index == 0x81 || index == 0x82)) return LQUSB_CLEAR_HALT;
++	return LQUSB_BAD;
++}
++#endif
 diff --git a/bsd/dev/liuqin_usb_smmu.h b/bsd/dev/liuqin_usb_smmu.h
+new file mode 100644
+index 0000000..bef46db
 --- /dev/null
 +++ b/bsd/dev/liuqin_usb_smmu.h
 @@ -0,0 +1,336 @@
@@ -1891,119 +2011,32 @@ diff --git a/bsd/dev/liuqin_usb_smmu.h b/bsd/dev/liuqin_usb_smmu.h
 +}
 +
 +#endif
-
-diff --git a/bsd/dev/liuqin_usb_protocol.h b/bsd/dev/liuqin_usb_protocol.h
-new file mode 100644
---- /dev/null
-+++ b/bsd/dev/liuqin_usb_protocol.h
-@@ -0,0 +1,75 @@
-+/* CDC ACM descriptors and request whitelist for the liuqin USB debug port.
-+ * Lab VID/PID 1209:0002, synthetic serial LIQDBG001. Ported from vermeer.
-+ */
-+#ifndef LIUQIN_USB_PROTOCOL_H
-+#define LIUQIN_USB_PROTOCOL_H
-+#ifdef LIUQIN_HOST_TEST
-+#include <stdint.h>
-+#else
-+#include <sys/types.h>
-+#endif
-+static const uint8_t lqusb_device[18] = {
-+	18, 1, 0x00, 0x02, 2, 2, 1, 64, 0x09, 0x12, 0x02, 0x00, 0, 4, 1, 2, 3, 1
-+};
-+static const uint8_t lqusb_config[67] = {
-+	9, 2, 67, 0, 2, 1, 0, 0x80, 250,
-+	9, 4, 0, 0, 1, 2, 2, 1, 0,
-+	5, 0x24, 0, 0x10, 1,
-+	5, 0x24, 1, 0, 1,
-+	4, 0x24, 2, 2,
-+	5, 0x24, 6, 0, 1,
-+	7, 5, 0x82, 3, 16, 0, 9,
-+	9, 4, 1, 0, 2, 0x0a, 0, 0, 0,
-+	7, 5, 0x01, 2, 0, 2, 0,
-+	7, 5, 0x81, 2, 0, 2, 0
-+};
-+static const uint8_t lqusb_qualifier[10] = { 10, 6, 0, 2, 2, 2, 1, 64, 1, 0 };
-+
-+/* The DMA block must be one aligned contiguous run inside the caller supplied
-+ * window, and the controller must be able to address all of it. */
-+static inline int lqusb_dma_allowed(uint64_t pa, unsigned size, unsigned bits,
-+    uint64_t lo, uint64_t hi)
-+{
-+	if (size != 0x4000 || (pa & 0x3fff)) return 0;
-+	if (!lo || hi <= lo || pa < lo || pa >= hi) return 0;
-+	if (size > hi - pa) return 0;
-+	if (bits < 32 || bits > 64) return 0;
-+	return bits == 64 || pa + size - 1 < (1ULL << bits);
-+}
-+
-+/* Exactly one nonsecure stream must match the USB stream ID and its route must
-+ * be identity (or bypass): the port never creates or weakens a mapping. */
-+static inline int lqusb_stream_match(uint32_t smr, uint32_t sid)
-+{
-+	return (smr >> 31) && !((smr ^ sid) & ~((smr >> 16) & 0x7fff) & 0xffff);
-+}
-+static inline int lqusb_route_identity(uint32_t s2cr, uint32_t cbar, uint32_t sctlr)
-+{
-+	unsigned type = (s2cr >> 16) & 3;
-+	return type == 1 || (type == 0 && ((cbar >> 16) & 3) == 1 && !(sctlr & 1));
-+}
-+
-+/* Recognised request kinds only; malformed class OUT lengths stall. */
-+enum {
-+	LQUSB_BAD, LQUSB_DESC, LQUSB_ADDRESS, LQUSB_CONFIG, LQUSB_GET_CONFIG,
-+	LQUSB_STATUS, LQUSB_INTERFACE, LQUSB_GET_INTERFACE, LQUSB_SET_LINE,
-+	LQUSB_GET_LINE, LQUSB_CONTROL, LQUSB_BREAK, LQUSB_CLEAR_HALT
-+};
-+static inline int lqusb_request(uint8_t type, uint8_t req, uint16_t value,
-+    uint16_t index, uint16_t len)
-+{
-+	if (type == 0x80 && req == 6 && ((value >> 8) >= 1 && (value >> 8) <= 7)) return LQUSB_DESC;
-+	if (type == 0 && req == 5 && !index && !len && value < 128) return LQUSB_ADDRESS;
-+	if (type == 0 && req == 9 && !index && !len && value <= 1) return LQUSB_CONFIG;
-+	if (type == 0x80 && req == 8 && !value && !index && len == 1) return LQUSB_GET_CONFIG;
-+	if ((type == 0x80 || type == 0x81 || type == 0x82) && req == 0 && !value && len == 2) return LQUSB_STATUS;
-+	if (type == 1 && req == 11 && index <= 1 && !value && !len) return LQUSB_INTERFACE;
-+	if (type == 0x81 && req == 10 && index <= 1 && !value && len == 1) return LQUSB_GET_INTERFACE;
-+	if (type == 0x21 && req == 0x20 && !index && !value && len == 7) return LQUSB_SET_LINE;
-+	if (type == 0xa1 && req == 0x21 && !index && !value && len == 7) return LQUSB_GET_LINE;
-+	if (type == 0x21 && req == 0x22 && !index && !len && !(value & ~3)) return LQUSB_CONTROL;
-+	if (type == 0x21 && req == 0x23 && !index && !len) return LQUSB_BREAK;
-+	if (type == 2 && req == 1 && !value && !len && (index == 1 || index == 0x81 || index == 0x82)) return LQUSB_CLEAR_HALT;
-+	return LQUSB_BAD;
-+}
-+#endif
-diff --git a/bsd/conf/files.arm64 b/bsd/conf/files.arm64
---- a/bsd/conf/files.arm64
-+++ b/bsd/conf/files.arm64
-@@ -5,7 +5,9 @@
- bsd/dev/arm/stubs.c		standard
- bsd/dev/arm/systemcalls.c       standard
- bsd/dev/arm64/sysctl.c          standard
-+bsd/dev/liuqin_debug.c		standard
-+bsd/dev/liuqin_usb_debug.c	standard
- bsd/dev/arm/unix_signal.c	standard
- 
- bsd/dev/arm64/cpu_in_cksum.s	standard
- bsd/dev/arm64/cpu_copy_in_cksum.s optional skywalk
 diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+index 131a47d..912ebc4 100644
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1075,7 +1075,11 @@
- {
- 	proc_t p = current_proc();
- 
-+	extern void liuqin_usb_debug_start(void);
+@@ -1342,6 +1342,16 @@ bsd_autoconf(void)
+ 		native_pong_ui_services_start();
+ 	}
+ #endif
 +
-+	liuqin_usb_debug_start();
-+
- 	process_name("init", p);
++#if defined(ARM64_BOARD_CONFIG_PONG)
++	/* IOKit and VM page structures are initialized. Create the USB log worker
++	 * here, but keep every MMIO map and controller register access in that
++	 * thread so early boot never waits on kernel_map or a DMA allocation. */
++	if (result == KERN_SUCCESS) {
++		extern void liuqin_usb_debug_start(void);
++		liuqin_usb_debug_start();
++	}
++#endif
+ 	return result;
+ }
  
- 	/* Set up exception-to-signal reflection */
- 	ux_handler_setup();
 diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
+index 4ea8603..5c4dad5 100644
 --- a/osfmk/console/serial_console.c
 +++ b/osfmk/console/serial_console.c
-@@ -260,7 +260,8 @@
+@@ -260,6 +260,7 @@ _cnputc(char c, bool poll)
  		_cnputc('\r', poll);
  	}
  
@@ -2011,11 +2044,11 @@ diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
  	cons_ops[idx].putc(c, poll);
  }
  
- /**
 diff --git a/pexpert/arm/pe_kprintf.c b/pexpert/arm/pe_kprintf.c
+index 6825f31..ac33b69 100644
 --- a/pexpert/arm/pe_kprintf.c
 +++ b/pexpert/arm/pe_kprintf.c
-@@ -159,7 +159,8 @@
+@@ -159,6 +159,7 @@ serial_putc_crlf(char c)
  	if (c == '\n') {
  		uart_putc('\r');
  	}
@@ -2023,4 +2056,3 @@ diff --git a/pexpert/arm/pe_kprintf.c b/pexpert/arm/pe_kprintf.c
  	uart_putc(c);
  }
  
- void

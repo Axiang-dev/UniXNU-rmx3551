@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Three passes over everything a push can break, before the push.
+"""Fast passes over everything a push can break, before the push.
 
 The last two failed builds were both self-inflicted and both visible without a
 compiler: a substitution left "bool ok = return property(...)" in a C file, and the
@@ -12,9 +12,12 @@ Exit code 0 means every pass is clean.  Any failure prints the file and the line
 it can be fixed before the build, not after it.
 """
 import ast
+import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,6 +85,35 @@ def pass_patches():
                 fail(1, f"{patch.name}:{lineno}", "IOLog in the C touch driver, which uses printf")
 
 
+def run_shell_syntax(source):
+    """Check normalized shell text without relying on WSL stdin interop."""
+    with tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", newline="\n", suffix=".sh", delete=False
+    ) as tree:
+        tree.write(source)
+        temp_path = Path(tree.name)
+    try:
+        if os.name == "nt" and (wsl := shutil.which("wsl.exe")):
+            translated = subprocess.run(
+                [wsl, "--exec", "/usr/bin/wslpath", "-a", "-u", str(temp_path)],
+                capture_output=True,
+                text=True,
+            )
+            if translated.returncode or not translated.stdout.strip():
+                raise RuntimeError(
+                    (translated.stderr or "wslpath did not return a Linux path").strip()
+                )
+            command = [wsl, "--exec", "/bin/bash", "-n", translated.stdout.strip()]
+        else:
+            bash = shutil.which("bash")
+            if not bash:
+                raise FileNotFoundError("bash was not found for shell syntax checking")
+            command = [bash, "-n", str(temp_path)]
+        return subprocess.run(command, capture_output=True, text=True)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
 # ------------------------------------------------------- pass 2: scripts and yaml
 def pass_syntax():
     pass_header(2, "python, shell and workflow syntax")
@@ -92,7 +124,15 @@ def pass_syntax():
             fail(2, f"{py.name}:{e.lineno}", e.msg or "syntax error")
     print(f"  {len(list(ROOT.glob('scripts/*.py')))} python files parsed")
     for sh in sorted(ROOT.glob("scripts/*.sh")):
-        r = subprocess.run(["bash", "-n", str(sh)], capture_output=True, text=True)
+        source = sh.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        try:
+            r = run_shell_syntax(source)
+        except FileNotFoundError as exc:
+            fail(2, sh.name, str(exc))
+            continue
+        except RuntimeError as exc:
+            fail(2, sh.name, str(exc))
+            continue
         if r.returncode:
             fail(2, sh.name, (r.stderr or "bash -n failed").strip().splitlines()[0])
     print(f"  {len(list(ROOT.glob('scripts/*.sh')))} shell files checked")
@@ -246,47 +286,64 @@ def pass_symbols():
             fail(4, "PongUsbDevice.h", f"{name} is declared and has no owner in this archive")
 
 
-# ------------------------------------- pass 5: the source list actually resolves
+# --------------------------------------- pass 5: hardware-facing host regressions
+def pass_host_tests():
+    pass_header(5, "hardware-facing host regressions")
+    test = ROOT / "tests/test_rmx3551_usb_startup_order.py"
+    if not test.is_file():
+        fail(5, test.name, "USB startup-order regression test is missing")
+        return
+    r = subprocess.run([sys.executable, "-B", str(test)], capture_output=True, text=True)
+    if r.returncode:
+        detail = (r.stderr or r.stdout or "test failed").strip().splitlines()[-1]
+        fail(5, test.name, detail)
+    else:
+        print(f"  {(r.stdout or 'passed').strip()}")
+
+
+# ------------------------------------- pass 6: the source list actually resolves
 def pass_sources():
-    pass_header(5, "source list, late init and generated units")
+    pass_header(6, "source list, late init and generated units")
     script = (ROOT / "scripts/build-pong-power-native.py").read_text(encoding="utf-8")
     at = script.find("sources=('QcomRpmh.c'")
     if at < 0:
-        fail(5, "build-pong-power-native.py", "no-container source tuple not found")
+        fail(6, "build-pong-power-native.py", "no-container source tuple not found")
         return
     tail = script[at:at + 500]
     names = re.findall(r"'([\w.]+)'", tail)
     print(f"  {len(names)} sources: {', '.join(names[:6])}{' ...' if len(names) > 6 else ''}")
     for unit in ("str(mux)", "str(stub)"):
         if unit not in tail:
-            fail(5, "build-pong-power-native.py", f"{unit} is not in the source tuple")
+            fail(6, "build-pong-power-native.py", f"{unit} is not in the source tuple")
         else:
             print(f"  {unit} in the tuple")
     if "IOPlatformExpert.h" not in script:
-        fail(5, "build-pong-power-native.py", "mux unit does not include IOPlatformExpert.h; the attach/start upcast will not compile")
+        fail(6, "build-pong-power-native.py", "mux unit does not include IOPlatformExpert.h; the attach/start upcast will not compile")
     else:
         print("  mux unit includes IOPlatformExpert.h")
     if "mux.write_text" not in script:
-        fail(5, "build-pong-power-native.py", "the mux translation unit is never written")
+        fail(6, "build-pong-power-native.py", "the mux translation unit is never written")
     else:
         print("  mux translation unit generated")
     if "'-I'+str(ROOT/'drivers/PongUsb')" not in script:
-        fail(5, "build-pong-power-native.py", "PongUsb headers are not on the include path")
+        fail(6, "build-pong-power-native.py", "PongUsb headers are not on the include path")
     else:
         print("  PongUsb headers on the include path")
     for name, sym in (("PongBattery.cpp", "PongBatteryStaticInit"), ("PongBacklight.cpp", "PongBacklightStaticInit")):
         if f"name=='{name}'" not in script or sym not in script:
-            fail(5, "build-pong-power-native.py", f"{name} needs the {sym} late-init rename")
+            fail(6, "build-pong-power-native.py", f"{name} needs the {sym} late-init rename")
         else:
             print(f"  {name}: late init via {sym}")
     for banned in ("PongAudio.cpp", "PongAudioService.cpp"):
         if f"'{banned}'" in tail:
-            fail(5, "build-pong-power-native.py", f"{banned} needs the amplifier profile")
+            fail(6, "build-pong-power-native.py", f"{banned} needs the amplifier profile")
+
 def main():
     pass_patches()
     pass_syntax()
     pass_decisions()
     pass_symbols()
+    pass_host_tests()
     pass_sources()
     print()
     if failures:
@@ -294,7 +351,7 @@ def main():
         for p, where, why in failures:
             print(f"  [pass {p}] {where}: {why}")
         return 1
-    print("all five passes clean")
+    print("all six passes clean")
     return 0
 
 

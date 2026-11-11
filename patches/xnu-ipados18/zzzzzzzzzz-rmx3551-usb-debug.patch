@@ -2015,17 +2015,19 @@ diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
 index 131a47d..381fd21 100644
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1234,1 +1234,10 @@ bsd_init(void)
+@@ -1301,5 +1301,12 @@ bsdinit_task(void)
+ #if defined(PONG) && CONFIG_PERSONAS && (DEVELOPMENT || DEBUG) && !SECURE_KERNEL
+ 	extern void pong_persona_bootstrap(void);
+ 	pong_persona_bootstrap();
+ #endif
 +#if defined(ARM64_BOARD_CONFIG_PONG)
-+	/* Root is mounted. Starting USB any earlier races IOFindBSDRoot and the
-+	 * root-media UUID match with the controller and SMMU worker. */
-+	{
-+		extern void liuqin_usb_debug_start(void);
-+		liuqin_usb_debug_start();
-+	}
++	/* Launchd is ready to exec. Never start USB from bsd_init or bsd_autoconf:
++	 * both run before Pong root preparation has fully completed. */
++	extern void liuqin_usb_debug_start(void);
++	liuqin_usb_debug_start();
 +#endif
 +
- #if 0 /* not yet */
+ 	load_init_program(p);
 diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
 index 4ea8603..5c4dad5 100644
 --- a/osfmk/console/serial_console.c

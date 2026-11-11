@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guard the RMX3551 USB debug port against pre-root startup."""
+"""Guard the RMX3551 USB debug port at the launchd handoff."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "patches/xnu-ipados18/zzzzzzzzzz-rmx3551-usb-debug.patch"
+BASE_PATCH = ROOT / "patches/xnu-ipados18/0001-pong-darwin24.patch"
 BSD_INIT = "bsd/kern/bsd_init.c"
 USB_SOURCE = "bsd/dev/liuqin_usb_debug.c"
 
@@ -16,9 +17,11 @@ def fail(message: str) -> None:
     raise SystemExit(message)
 
 
-def patch_hunks(target: str) -> list[tuple[str, str]]:
+def patch_hunks(
+    target: str, patch_path: Path = PATCH
+) -> list[tuple[str, str]]:
     """Return (header, post-image text) for every hunk touching target."""
-    lines = PATCH.read_text(encoding="utf-8").splitlines()
+    lines = patch_path.read_text(encoding="utf-8").splitlines()
     marker = f"diff --git a/{target} b/{target}"
     try:
         start = lines.index(marker)
@@ -78,16 +81,26 @@ def main() -> None:
     if len(call_hunks) != 1:
         fail(f"expected one USB start hook in {BSD_INIT}, found {len(call_hunks)}")
     header, body = call_hunks[0]
-    if "bsd_init(void)" not in header:
-        fail("USB start hook is not anchored to the post-root bsd_init path")
-    if "bsd_autoconf(void)" in header:
-        fail("USB start hook remains in bsd_autoconf before the root mount")
-    if "bsdinit_task" in header or "vm_init_before_launchd" in body:
-        fail("USB start hook regressed into bsdinit_task")
+    expected_header = "@@ -1301,5 +1301,12 @@ bsdinit_task(void)"
+    if header != expected_header:
+        fail("USB start hook does not rewrite the complete Pong handoff sequence")
     if "#if defined(ARM64_BOARD_CONFIG_PONG)" not in body:
         fail("USB start hook is not board guarded")
-    if "Root is mounted" not in body or "liuqin_usb_debug_start();" not in body:
-        fail("USB start hook is not documented and invoked at the mounted-root point")
+    persona_at = body.find("pong_persona_bootstrap();")
+    start_at = body.find("liuqin_usb_debug_start();")
+    launchd_at = body.find("load_init_program(p);")
+    if not 0 <= persona_at < start_at < launchd_at:
+        fail("USB start hook is not after Pong personas and before load_init_program")
+
+    base_hunks = patch_hunks(BSD_INIT, BASE_PATCH)
+    base_handoff = [
+        h for h in base_hunks
+        if "pong_persona_bootstrap();" in h[1] and "load_init_program(p);" in h[1]
+    ]
+    if len(base_handoff) != 1:
+        fail("base Pong patch no longer exposes the bsdinit_task handoff")
+    if "liuqin_usb_debug_start" in base_handoff[0][1]:
+        fail("base Pong patch unexpectedly owns the USB start hook")
 
     source = source_for_new_file(USB_SOURCE)
     init = function_body(source, "liuqin_usb_debug_init")

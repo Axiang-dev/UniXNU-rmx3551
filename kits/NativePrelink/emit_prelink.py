@@ -114,8 +114,42 @@ def instruction_inventory(original_data, parent, modules):
             'register_dataflow_qualified': False}
 
 
+def apply_personality_overrides(metadata, overrides):
+    """Add board-owned personalities to selected stock kext metadata.
+
+    The prelinked cache carries the original personalities. A board-specific
+    provider can still need one exact non-deferred match, as the Pong PMIC
+    Consumer report device does for its IOHIDEventDriver. Keep this mutation
+    explicit and report it so a candidate can be audited after the build.
+    """
+    if overrides is None:
+        return {}
+    if not isinstance(overrides, dict):
+        raise ValueError('personality overrides must be a bundle-to-personalities object')
+    entries = {entry['CFBundleIdentifier']: entry
+               for entry in metadata.get('_PrelinkInfoDictionary', [])}
+    applied = {}
+    for identifier, personalities in overrides.items():
+        entry = entries.get(identifier)
+        if entry is None:
+            raise ValueError(f'personality override targets an unselected kext: {identifier}')
+        if not isinstance(personalities, dict) or not personalities:
+            raise ValueError(f'personality override for {identifier} must be a non-empty object')
+        existing = entry.setdefault('IOKitPersonalities', {})
+        if not isinstance(existing, dict):
+            raise ValueError(f'{identifier} has malformed IOKitPersonalities metadata')
+        for name, personality in personalities.items():
+            if not isinstance(name, str) or not name or not isinstance(personality, dict):
+                raise ValueError(f'malformed personality override for {identifier}')
+            if not isinstance(personality.get('IOClass'), str) or not personality['IOClass']:
+                raise ValueError(f'personality {name!r} needs a string IOClass')
+        existing.update(copy.deepcopy(personalities))
+        applied[identifier] = sorted(personalities)
+    return applied
+
+
 def emit(native_data, original_data, roots, slide, early_security_init=None, verify_images=True,
-         library_only_components=()):
+         library_only_components=(), personality_overrides=None):
     report = plan(native_data, original_data, roots, slide, verify_images=verify_images)
     native, original = macho(native_data), macho(original_data)
     marker = [address for address, names in exports(native_data, native).items()
@@ -130,6 +164,7 @@ def emit(native_data, original_data, roots, slide, early_security_init=None, ver
     at = backed_offset(parent, old_info['va'], old_info['filesize'], len(original_data))
     metadata = unserialize_xml(original_data[at:at + old_info['filesize']])
     entries = {e['CFBundleIdentifier']: e for e in metadata['_PrelinkInfoDictionary']}
+    report['personality_overrides'] = apply_personality_overrides(metadata, personality_overrides)
     modules = {}
     for identifier in report['components']:
         va = entries[identifier]['_PrelinkExecutableLoadAddr']
@@ -351,6 +386,8 @@ def main():
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--early-security-init', action='append', default=[], metavar='BUNDLE=ORIGINAL_VA',
                         help='Explicit original void(void) policy initializer, called before lockdown; requires source ABI')
+    parser.add_argument('--personality-json', action='append', default=[], metavar='BUNDLE=PATH',
+                        help='merge one board-owned IOKitPersonalities JSON object into a selected kext bundle')
     args = parser.parse_args()
     initializers = {}
     for request in args.early_security_init:
@@ -358,7 +395,14 @@ def main():
         if not separator or not identifier or identifier in initializers:
             parser.error('Use one BUNDLE=ORIGINAL_VA initializer per module')
         initializers[identifier] = int(address, 0)
-    image, report = emit(args.kernel.read_bytes(), args.prelinked.read_bytes(), args.root, args.slide, initializers)
+    personality_overrides = {}
+    for request in args.personality_json:
+        identifier, separator, path = request.partition('=')
+        if not separator or not identifier or not path or identifier in personality_overrides:
+            parser.error('Use one unique BUNDLE=PATH personality override per selected kext')
+        personality_overrides[identifier] = json.loads(Path(path).read_text())
+    image, report = emit(args.kernel.read_bytes(), args.prelinked.read_bytes(), args.root, args.slide, initializers,
+                         personality_overrides=personality_overrides or None)
     if args.output.exists():
         raise SystemExit('Refuse to overwrite an existing candidate')
     args.output.parent.mkdir(parents=True, exist_ok=True)

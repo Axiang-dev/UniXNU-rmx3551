@@ -341,6 +341,9 @@ jobs:
             --root com.apple.filesystems.apfs \
             --root com.apple.kec.Compression \
             --root com.apple.AppleFSCompression.AppleFSCompressionTypeZlib \
+            --root com.apple.iokit.IOHIDFamily \
+            --root com.apple.iokit.IOHIDEventDriver \
+            --personality-json com.apple.iokit.IOHIDFamily=configs/pong-hid-match.json \
             2>&1 | tee -a "${GITHUB_WORKSPACE}/build-driver.log"
           ls -l "$out"
 

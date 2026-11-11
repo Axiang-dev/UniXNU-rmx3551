@@ -334,6 +334,7 @@ def pass_host_tests():
     tests = (
         ROOT / "tests/test_rmx3551_usb_startup_order.py",
         ROOT / "tests/test_rmx3551_effective_boot_args.py",
+        ROOT / "tests/test_rmx3551_hid_prelink.py",
     )
     for test in tests:
         if not test.is_file():

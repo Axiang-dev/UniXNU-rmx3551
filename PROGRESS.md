@@ -1,16 +1,18 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-12 00:37 (Asia/Shanghai)
+Updated: 2026-11-12 01:03 (Asia/Shanghai)
 
-The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
+iPadOS 18 reaches SpringBoard and S3910 touch is verified. USB is now the active repair target. This file records behavior confirmed by source, generated device trees, build artifacts or hardware logs, and it separates source analysis from implementation and hardware acceptance.
 
-## Latest handoff snapshot (2026-11-12 00:37 Asia/Shanghai)
+## Latest handoff snapshot (2026-11-12 01:03 Asia/Shanghai)
 
-This snapshot is authoritative. It supersedes earlier text that marked CPU4 as unverified and text that treated CPU first boot as proof of a successful system boot.
+This snapshot is authoritative. It supersedes earlier GPU work, the pending CPU experiments and all text that treats controller initialization, enumeration or CI success as the completed USB chain.
 
 | Area | Current status | Evidence |
 |---|---|---|
 | iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard |
+| USB active route | Official architecture selected, implementation pending | UniXNU Sheng `14bf88a` uses `QcomDwc3` on top of Apple `AppleUSBXDCI` and the native mux stack. The official device record reached `05ac:12ab`, lockdownd QueryType and a Trusted session |
+| Local USB worker | Blocked and no longer the main route | `liuqin_usb=1` at `de4d4e1` stops at `PONG APFS: init owner mount hook entered`. The same source with `liuqin_usb=0` passes Data mount and reaches SpringBoard |
 | Touch | Verified usable | The user confirmed clicks work and their positions are not offset. S3910 stage 4 opens HID at `8640x19296` |
 | CPU baseline | Five cores verified end to end | CPU0-3 and CPU4 registered, completed first boot, passed APFS Data mount and reached SpringBoard |
 | Seven-core experiment | CPU registration passed, boot failed | CPU4-6 registered and completed first boot, but boot stopped at APFS UUID `B07DF049-7AD9-47B5-9F8F-9EE728056398` before `Data mount PASS` |
@@ -18,6 +20,46 @@ This snapshot is authoritative. It supersedes earlier text that marked CPU4 as u
 | Software UI | Diagnostic-overhead A/B booted | A five-core image with only `pong_bootlog=0` is under hardware comparison |
 | Volume keys | Kernel CI and static artifact pass | Commit `94f0aaf` prelinks `IOHIDFamily` and `IOHIDEventDriver`. The PMIC consumer personality is present. Hardware key test remains |
 | Touch policy | Frozen during performance work | Do not modify HID, coordinate conversion or touch parsing without a new touch-specific regression |
+
+### 2026-11-12 official Sheng USB route
+
+The active route is now the official UniXNU Sheng design rather than more startup-position changes inside `liuqin_usb`.
+
+Official source revisions audited in this round:
+
+```text
+UniXNU-sheng
+https://github.com/UniXNU/UniXNU-sheng
+commit 14bf88adfadd1f86f33b8bac7f7176e222c6befe
+local D:\unixnu\reference\UniXNU-sheng-official-20261112
+
+QcomDwc3
+https://github.com/UniXNU/QcomDwc3
+commit 0dd83827279ee070dca7ddb486c90365567cc99d
+local D:\unixnu\reference\QcomDwc3-official-20261112
+```
+
+The official source inherits Apple `AppleUSBXDCI`, retains `IOUSBDeviceFamily`, `AppleUSBDeviceMux` and lockdownd, publishes `configuration-string=standardMuxOnly`, and records controller stages in `native_usb_stats[54]`. Its device record is materially stronger than the local worker because it reached Apple USB identity `05ac:12ab`, a lockdownd QueryType response and a Trusted session.
+
+The historical custom `PongUsb` path also reached real hardware progress. services138 enumerated `05ac:12a8` at 480 Mbps. services139 completed host configuration and exposed CDC logging. services140 delivered native mux requests to port 62078. The missing result was the lockdownd response. Do not repeat the incorrect claim that USB never enumerated.
+
+Porting constraints remain substantial.
+
+- Sheng is verified mainly on iPadOS 27 `24A446`. RMX3551 runs iPadOS 18 `22H374`, so the XDCI and XHCI ABI must be generated from the local kernelcache.
+- The fixture value `AppleUSBXDCI` vtable `0xfffffe00083f24c0` and instance size `0x2650` belongs to `24A446` and cannot be copied into `22H374`.
+- QcomDwc3 targets SM8550 while RMX3551 is SM8475. SID, IRQ, PHY, QMP, eUSB2 repeater, GCC, RPMh, UCSI, role and power resources must come from the real RMX3551 DTS and `configs\pong-usb-sm8475.json`.
+- The verified S3910 stage-4 path, CPU topology, HID, coordinate conversion and screen resolution stay frozen while USB is probed.
+- A USB build must first prove the ABI and prelink graph, then prove controller startup, then Mac enumeration, lockdownd QueryType and finally the complete session.
+
+Current round provenance:
+
+```text
+audit baseline=6434095
+implementation commit=none
+CI run=none
+new image=none
+hardware log=none
+```
 
 ### Five-core baseline
 
@@ -564,16 +606,18 @@ Touch must progress one stage at a time:
 
 The current next hardware test is stage 3. A pass should identify the S3910 and print its axes as `8640x19296`; that is the native touch coordinate space. The display remains `1080x2412`, so both axes normalize by a factor of eight.
 
-## USB
+## USB historical worker result
 
-The current USB path is independent of the touch SPI work. The last desktop run reached:
+This section records the superseded `liuqin_usb` worker. The authoritative route is the official Sheng `QcomDwc3` audit in the latest snapshot.
+
+The last relevant worker run reached:
 
 ```text
 LIUQIN USB: SID0 matches 0
 LIUQIN USB: SMMU route refused; controller untouched
 ```
 
-Do not change touch resources while diagnosing this USB SMMU route. Finish the S3910 stage-3 check first, then trace the USB IOMMU stream ID and SMMU geometry against the SM8475 and upstream device implementations.
+A later single-variable run at `de4d4e1` stopped at `PONG APFS: init owner mount hook entered` when `liuqin_usb=1`. The matching `liuqin_usb=0` image passed Data mount and reached SpringBoard. Do not continue moving the worker startup call or change touch resources while integrating the official USB controller.
 
 ## Safety boundary
 

@@ -4,9 +4,10 @@
 > 2026-11-11：`ff3d025` 的 TrustCache handoff 已通过实机验证，系统越过 DarwinBoot 并进入内核、SpringBoard，S3910 stage-4 也持续产生真实 HID 触点。当前需要区分“设备实际没有启动”和“系统已运行但画面/帧更新不可见”，不得继续按启动封装错误排查。
 > 17:03：USB 调试口在 `ff3d025` CI 镜像上又暴露了启动顺序 panic；`29d45d9` 已把 worker 创建移到 IOKit 初始化成功后，CI `42989774583` 全绿。
 > 2026-11-12 00:37：五核启动、APFS、SpringBoard 和触摸通过。六核和七核都完成 CPU first boot，但都停在同一个 APFS UUID 等待，因此继续加核的路线关闭。当前转向五核稳定基线排除诊断日志回写和连续 applog 对 UI/UFS 的干扰。
+> 2026-11-12 01:03：GPU 性能实验暂停，USB 主线切换为 UniXNU 官方 Sheng/QcomDwc3 原生 Apple USB 栈方案。本轮已完成官方源码审计和本地风险界定，尚未移植代码、构建镜像或执行实机测试。
 
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-12 00:37 (Asia/Shanghai)。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-12 01:03 (Asia/Shanghai)。
 接手者先读本页新的「最新接手快照」。其后的历史段落只用于追溯，其中可能仍写着 stage 3 待测、HID 未验证或旧的五核失败结论。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
@@ -22,7 +23,132 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-12 00:37 (Asia/Shanghai)；本段优先）
+## 最新接手快照（2026-11-12 01:03 (Asia/Shanghai)；本段优先）
+
+### 一句话状态
+
+iPadOS 18.7.10（22H374）桌面、五核 CPU 基线和 S3910 真实触摸均已通过实机验收，用户确认点击位置没有错位。GPU 性能实验暂时停止，当前唯一主线是把 USB 切换为 UniXNU 官方 Sheng 使用的 `QcomDwc3 + AppleUSBXDCI + AppleUSBDeviceMux` 原生 Apple USB 架构。官方源码与本机真实硬件参数仍在适配阶段，不能说 USB 已经修复。
+
+### USB 主线决定
+
+官方 Sheng 路线已经完成源码审计，结论是它的架构和本项目当前 `liuqin_usb` worker 明显不同。继续只挪 worker 的启动位置，无法解决底层控制器、SMMU 和原生 USB 服务集成问题。
+
+| 路线 | 当前实现 | 已证明的边界 | 当前决定 |
+|---|---|---|---|
+| 本地 `liuqin_usb` worker | 自己实现控制器和轮询工作线程 | `liuqin_usb=1` 时停在 APFS init owner mount hook。同一源码在 `liuqin_usb=0` 时可以完成 Data mount 并进入 SpringBoard | 停止围绕调用位置继续消耗试验次数 |
+| 历史自定义 `PongUsb` | 自定义 CDC、Mux 和内核 socket 桥接 | Mac 曾识别 Apple/iPhone `05ac:12a8`，完成 480 Mbps 枚举和自动配置，CDC 可读日志，原生 Mux 请求到达 62078，但 QueryType 没有回复 | 保留作为协议和日志证据，不再作为主线 |
+| 官方 Sheng `QcomDwc3` | 继承 Apple `AppleUSBXDCI`，保留 Apple `IOUSBDeviceFamily`、`AppleUSBDeviceMux` 和 lockdownd 原生链路 | 官方设备记录显示 Mac 识别 `05ac:12ab`，lockdownd 回答 QueryType，Trust 后可进入完整 lockdown session | 作为 RMX3551 USB 修复主线 |
+
+### 官方源码版本
+
+```text
+UniXNU-sheng
+https://github.com/UniXNU/UniXNU-sheng
+commit 14bf88adfadd1f86f33b8bac7f7176e222c6befe
+local D:\unixnu\reference\UniXNU-sheng-official-20261112
+
+QcomDwc3
+https://github.com/UniXNU/QcomDwc3
+commit 0dd83827279ee070dca7ddb486c90365567cc99d
+local D:\unixnu\reference\QcomDwc3-official-20261112
+```
+
+官方实现的主要特征如下。
+
+- provider 使用 `configuration-string=standardMuxOnly`，保留原生 Mux 行为。
+- 控制器继承 `AppleUSBXDCI`，不伪造 USB 设备或 lockdownd。
+- 控制器阶段和寄存器采样写入 `native_usb_stats[54]`，可通过独立启动参数采集正常链路、寄存器状态和重新插拔流程。
+- 官方 ABI 工具位于 `scripts\usb-xdci-24A446.json`、`scripts\usb-xhci-24A446.json`、`scripts\gen-usb27-abi.py` 和 `scripts\gen-usb27-host-abi.py`。
+
+### 当前阻塞证据
+
+当前源码分支为 `exp/strict-cpus5-usboff`。本轮审计前 HEAD 为 `6434095`，`origin/main` 为 `de4d4e1`。
+
+`de4d4e1` 的单变量结果如下。
+
+```text
+liuqin_usb=1
+PONG APFS: init owner mount hook entered
+系统没有继续完成 Data mount
+
+liuqin_usb=0
+PONG APFS: Data mount PASS
+MiniIOMobileFramebuffer: first visible frame
+MiniIOSurface: SpringBoard created 1080x2412 BGRA
+```
+
+旧硬件日志还记录过：
+
+```text
+LIUQIN USB: SID0 matches 0
+LIUQIN USB: SMMU route refused; controller untouched
+```
+
+因此下一步不修改 S3910、HID、坐标转换或 CPU 拓扑，也不继续盲移 `liuqin_usb_debug_start()` 的调用点。
+
+### 历史结论纠偏
+
+旧文档里“USB 从来没有成功枚举”的说法不准确。历史 `PongUsb` 已经达到以下边界。
+
+- services138 记录 Mac 识别 Apple/iPhone `05ac:12a8`，链路为 480 Mbps。
+- services139 记录主机自动完成配置，CDC 日志可读。
+- services140 记录原生 Mux 请求已经进入 62078。
+- 当时没有拿到 lockdownd 的 QueryType 回复，完整 lockdown 未成功。
+
+正确表述是“当前调试 worker 没有端到端成功”和“历史自定义路线完成过硬件枚举与 Mux 接入”，不是“USB 从未枚举”。
+
+### 不能直接原样复制的部分
+
+- 官方 Sheng 当前主要验证 iPadOS 27 的 `24A446`。本项目是 iPadOS 18 的 `22H374`，USB ABI 不能直接复用。
+- 官方 fixture 的 `AppleUSBXDCI` 示例为 vtable `0xfffffe00083f24c0`、instance size `0x2650`。这些值只对应 `24A446`，不能写进 `22H374`。
+- 必须从本地 22H374 kernelcache 生成 `usb-xdci-22H374.json` 和 `usb-xhci-22H374.json`，核对 vtable、instance size、构造、析构、metaclass 和 vtable 符号。
+- 官方 `QcomDwc3` 基于 SM8550。RMX3551 是 SM8475，不能直接接受 Sheng 的 SoC 常量。
+- 必须先确认真实 DTS 和 `configs\pong-usb-sm8475.json` 中的 SID、IRQ、PHY、QMP、eUSB2 repeater、GCC、RPMh、UCSI、方向和电源锁。
+- 不能把 Sheng 的 `kSid=0x40`、`kIrq=165` 或其他 SM8550 地址直接当作 RMX3551 参数。
+
+### 下一阶段执行顺序
+
+1. 从 RMX3551 真实 DTS 和现有 USB 配置中提取 SM8475 参数，与官方 `QcomDwc3` 逐项对照。
+2. 找到本地 22H374 kernelcache 和 fixup 读取工具，先验证能否可靠生成 XDCI/XHCI ABI。
+3. 把官方 `QcomDwc3` 移植成独立 USB 组件。先设备模式，host 模式沿用同一源码但单独验收。
+4. 只增加 USB 必需的预链接根，重点核对 `IOUSBDeviceFamily`、`AppleUSBXDCI`、`AppleUSBDeviceMux`、`IOUSBHostFamily` 和 `AppleUSBXHCI` 确实存在于 22H374。
+5. 保持 S3910 stage 4、坐标转换、HID 和五核基线冻结。制作只有 USB 一个变量的 probe 镜像。
+6. 先跑本地协议/构建测试和 CI，再从 artifact 回读新 USB ABI、预链接清单和 `QcomDwc3` 诊断符号。
+7. 临时启动后分别验收控制器、Mac 枚举、lockdownd 和 Trust，不得把某一步通过写成 USB 全链路完成。
+
+### USB 验收门槛
+
+- 系统不再停在 `PONG APFS: init owner mount hook entered`。
+- PongBootLog 出现真实 `native_usb_stats` 或新的 `[usb]` 诊断。
+- Mac 能看到 Apple USB 身份，优先判断是否为 `05ac:12ab`。
+- lockdownd 能回答 QueryType。
+- 最后才测试 Trust 和完整 lockdown session。
+
+### 本轮产物登记
+
+```text
+本轮性质=官方源码审计与文档更新
+实现提交=none
+CI run=none
+新镜像=none
+实机日志=none
+```
+
+后续每次源码、CI 或实机验收完成后，必须在这里追加实际日志路径、提交短哈希、CI run ID、镜像路径和 SHA-256。
+
+### 安全硬约束
+
+- 唯一允许操作的串号是 `9ea882b4`。
+- 绝对禁止操作 `42d72758 / OPD2515`。
+- ADB 和 fastboot 必须显式带 `-s 9ea882b4`。
+- 只允许 `fastboot -s 9ea882b4 boot <镜像>`，禁止刷 `boot`、`userdata` 和 `fastboot -w`。
+- 禁止 `git reset`、`git clean`、`git add .`。
+- 不覆盖桌面基线镜像，不覆盖 `rmx3551-uefi-baseline.img`。
+- 触摸控制器原生坐标是 `8640x19296`，屏幕是 `1080x2412 BGRA`，两者不能混用。
+
+---
+
+## 历史快照（2026-11-12 00:37 (Asia/Shanghai)）
 
 ### 一句话状态
 

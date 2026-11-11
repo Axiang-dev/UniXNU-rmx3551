@@ -1,10 +1,133 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-10 18:15 (Asia/Shanghai)
+Updated: 2026-11-11 15:52 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
-## Current milestone
+## Latest handoff snapshot (2026-11-11 15:52 Asia/Shanghai)
+
+This new snapshot is authoritative. The historical sections below are retained, but statements that stage 3 was pending or HID was unverified are superseded.
+
+| Area | Current status | Evidence |
+|---|---|---|
+| iPadOS userland | Verified | iPadOS 18.7.10 (22H374) reaches SpringBoard |
+| Touch | Basic end-to-end pass | stage 3 app-info/report-format/identify checks passed; stage 4 opens HID at `8640x19296` and `60 Hz`; CPU3 and CPU4 logs each contain four real touch events with no coordinate offset |
+| CPU | cpus4 verified, cpus5 failed without a new log | CPU0–3 complete first boot on cpus4. The first cpus5 attempt failed on hardware, and the post-failure userdata log region is byte-identical to the cpus4 evidence, so it contains no CPU4 first-boot proof |
+| Current best measured UI | cpus4 | retained cadence windows total about 9.409 FPS, with the last two around 10.2 FPS |
+| Boot packaging | Source fix complete, hardware retest pending | The `311b89e` ADT omitted `/chosen/memory-map/TrustCache` while its payload carried `kernel.macho.trustcache`, so DarwinBoot returned `EFI_COMPROMISED_DATA`. Commit `ff3d025` emits, preserves and verifies the 16-byte slot |
+| Next engineering step | Confirm the repaired boot on the target | Boot the `ff3d025` repair image, recover a new PongBootLog and confirm stage-4 touch. Do not return to cpus5 or USB work until this regression is closed |
+| RAM | 4 GiB managed | `Pong RAM: 1 owned banks, 4096 MiB managed`; the roughly 7 GB APFS Data volume is not physical RAM |
+| GPU | Deferred | `pong_software_ui=1` remains in use; Adreno 730 needs a separate platform bring-up |
+
+### 2026-11-11 TrustCache handoff repair
+
+The `311b89e` stage-4 image stopped at the UniXNU menu with:
+
+```text
+DARWINBOOT: boot refused: Compromised Data; firmware retained
+```
+
+The payload contained a real 70,116-byte `kernel.macho.trustcache` with SHA-256
+`cc4f5079fafbb81cf32f54718666461630381972867428e13c6e8a906b58d7cd`, but the finalized ADT had no
+`/chosen/memory-map/TrustCache` property. DarwinBoot reads the file first and rejects the ADT when the matching
+16-byte zero slot is absent. The old bootable ADT had that slot, so this is a packaging contract bug rather than a
+touch, CPU, CRC or memory-map hardware failure.
+
+Commit `ff3d025` (`fix: restore TrustCache ADT handoff`) adds the slot generator, makes the finalizer require and
+record the payload's trust cache, makes the ADT verifier require the slot explicitly, and places that verification in
+CI and preflight. The PongBootLog reader now requires `--serial` and always invokes `adb -s <device>` so recovery
+commands cannot silently target the other attached phone.
+
+A finalizer run against a copied `311b89e` payload and hardware DTB produced:
+
+```text
+ADT bytes          15444
+ADT sha256         99fdf666600b7a4723eb00f7b0db45c40ebbec6559294bba7f7f5f77193d4e63
+TrustCache bytes   70116
+TrustCache sha256  cc4f5079fafbb81cf32f54718666461630381972867428e13c6e8a906b58d7cd
+embedded TOML      cpus=4 + pong_s3910=4
+verifier           PASS (trust-cache=1, touch axes=8640x19296)
+```
+
+The local temporary boot image, built by replacing only the payload slot in the known stage-4 UEFI container, is:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-trustcache-ff3d025-local.img
+bytes   102699008
+sha256  f0079848126af0f2550f14ce7ca6e5f4c40b6cacc956ca43346317a7731baa07
+```
+
+Target identity was verified as `9ea882b4 / ovaltine / twrp_ovaltine` in recovery and `serialno=9ea882b4`,
+`product=taro` in fastboot. The temporary `fastboot -s 9ea882b4 boot` completed with Sending and Booting `OKAY`.
+No new PongBootLog or stage-4 touch observation is claimed yet. CI run `42981426332` was triggered from `ff3d025`
+and must finish before its artifact can replace this local boot check.
+
+### CPU progression
+
+| CPUs | Result | Visible cadence | Image SHA-256 |
+|---:|---|---|---:|
+| 1 | CPU0 boots, SpringBoard reached | about 2.736 FPS | `96b93111553aafb8dd514f106583c5f8357c62b282223cfd2b5e68c7952bb819` |
+| 2 | CPU0–1 boot, SpringBoard reached | about 6.124 FPS | `5d8000662ac4b9b54c833a2a59c27ae24c1c2796d4f59622e0661f37900b04e9` |
+| 3 | CPU0–2 boot, no kernel panic | about 4.887 FPS across an 82.254 s short window | `0d3f86889c5c1c4b42282aa43337f661efc90f0729a5f62e4581fa5c0f89578f` |
+| 4 | CPU0–3 boot, no kernel panic | about 9.409 FPS across retained windows | `190ced0decb0bb78e0939ae442483432c642af2a25c50fd6987f256a4dae6efe` |
+| 5 | boot failed; no new PongBootLog, so CPU4 first boot is not proven | no valid new log | `57f2118bf3fc44160aa3a9d0d4ce505096221e233d3f128d33f1b0bd463c996b` |
+
+The CPU4 log contains:
+
+```text
+ArmCpu: CPU 1 MPIDR=0x100 registered
+ArmCpu: CPU 2 MPIDR=0x200 registered
+ArmCpu: CPU 3 MPIDR=0x300 registered
+ArmCpu: CPU 0 first boot completed
+ArmCpu: CPU 1 first boot completed
+ArmCpu: CPU 2 first boot completed
+ArmCpu: CPU 3 first boot completed
+ArmCpu: all registered CPUs available; idle preference X2, A710, A510 (no affinity binding)
+```
+
+The DTS labels CPU0–3 as the A510 E cluster and CPU4–7 as the A710/X2 P cluster. cpus4 therefore improves throughput by enabling four E cores, but it does not yet activate any P core. cpus5 is the first configuration that introduces an A710 into the running set, and that configuration failed on hardware before writing a new PongBootLog.
+
+Existing userland errors remain in the logs, including Biomed and thread-count watermarks, AccessibilityUIS `EXC_RESOURCE`, and `BlastDoor cannot run unsandboxed`. They are not evidence that CPU first-boot or touch initialization failed.
+
+The cpus4 and cpus5 images are both 102,699,008 bytes and differ in exactly five bytes: the ASCII `cpus=4` to `cpus=5` byte at `0x34504e6` and four PONGFAT1 CRC bytes at `0x1f0018` through `0x1f001b`. Both stored PONGFAT CRCs match the calculated FAT CRC, so image packaging corruption is unsupported by the artifact evidence. The visible menu does not prove that the kernel was never entered: the boot screen already contains `DARWINBOOT: hand-off to the kernel`, and the loader does not clear that menu overlay. Use an earlier runtime observation point instead of treating the missing PongBootLog as proof of a menu-stage failure.
+
+### Evidence
+
+```text
+cpus3 directory D:\unixnu\ud\diagnostics-s3910-stage4-cpus3-20261110-232912
+region SHA-256 d608f5735a8766f7f3c3a8fa2803ee7a051fce9eb95e7f166b9a7386c9002913
+log SHA-256    e1155db66374e57b41789c1745f44789fd4bbb91fe63d23066708c8778607785
+
+cpus4 directory D:\unixnu\ud\diagnostics-s3910-stage4-cpus4-20261110-233348
+region SHA-256 5320ebb913955f694267ae72cbce2376fa6c7926ba05d2749c1b8a154e25cb7c
+log SHA-256    5a86620c7b327c74a8dbe3d62bc34a358a2b628947cbe81e9b82c95ca6884dfe
+
+cpus5 failed-attempt readback D:\unixnu\ud\diagnostics-cpus5-failed-20261110-235025
+region SHA-256 5320ebb913955f694267ae72cbce2376fa6c7926ba05d2749c1b8a154e25cb7c
+log SHA-256    5a86620c7b327c74a8dbe3d62bc34a358a2b628947cbe81e9b82c95ca6884dfe
+both files are identical to the cpus4 evidence and are not cpus5 runtime evidence
+```
+
+Repository HEAD is `81e7063` and the successful CI run is `42827300826`. CPU-count variants were derived locally from the same CI image by changing only the `cpus=N` byte and the PONGFAT1 CRC32, so there is no separate CI run for each variant.
+
+### Next actions
+
+1. Locate the cpus5 failure stage before testing another CPU topology or changing scheduler code.
+2. Treat LIUQIN USB CDC as the preferred early-boot observability project because it streams the kernel console and exposes `status/replay`. Its documented blocker is the SMMU route, so controller and DMA operation remain unverified. Do not start cpus6 or cpus8 until cpus5 runs far enough to produce evidence.
+3. Adapt the official `zzyf-sheng-amp.patch` to Darwin 24 after at least one P core is stable. Set `MAX_CPU_CLUSTERS=2`, define `__ARM_AMP__`, preserve the DTS E/P annotations, and prefer X2/A710 for UI and user-initiated work.
+4. Audit background CPU consumers such as `coreduetd` only after the cluster scheduler baseline is understood.
+5. Defer Adreno 730 and multi-bank 12 GB RAM work until CPU/Edge scheduling is stable.
+
+### Safety boundary
+
+- The only valid target is `9ea882b4` with TWRP identity `ovaltine / PGP110 / twrp_ovaltine`.
+- Never operate on `42d72758 / OPD2515`.
+- Every ADB or fastboot command must include `-s 9ea882b4`.
+- Use temporary `fastboot boot` only.
+- Do not flash `boot` or `userdata`, do not run `fastboot -w`, `git reset`, or `git clean`.
+- Do not overwrite the verified desktop baseline `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-usbdebug-22e7b2c-42510630419.img` with SHA-256 `9574063d753bda2b190693aa720cd6d08c5dcfa7bc79ae03f17fff40a9c7cb63`.
+
+## Historical milestone (before 2026-11-10 23:40)
 
 | Area | Status | Evidence |
 |---|---|---|
@@ -197,7 +320,7 @@ Do not change touch resources while diagnosing this USB SMMU route. Finish the S
 - Do not run `git reset` or `git clean`; this worktree contains historical untracked build inputs and logs.
 - New diagnostic images must use a new filename and carry the exact source commit in that filename.
 
-## Next actions
+## Historical next actions (superseded by the latest snapshot)
 
 1. Compile and verify the QUP0 clock fix, explicit SPI transport assignment and GPIO fallback.
 2. Download `rmx3551-kernel` only after the kernel job succeeds.

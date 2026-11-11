@@ -8,8 +8,8 @@ that region out of a recovery with root adb and prints the text.
 
 Two steps, because adb wants small numbers:
 
-    python read-pong-log.py plan                    # prints the dd command
-    adb shell <that command> > ponglog-region.bin
+    python read-pong-log.py plan --serial <device>  # prints the dd command
+    adb -s <device> shell <that command> > ponglog-region.bin
     python read-pong-log.py decode ponglog-region.bin [--out log.txt]
 
 `plan` reads the live SHNGROOT header through adb, so the offset always matches
@@ -30,12 +30,12 @@ CONSOLE_HEADER = 12
 RING_MAGIC = 0x43474244  # "DBGC"
 
 
-def adb(*args):
-    return subprocess.run(['adb'] + list(args), capture_output=True)
+def adb(serial, *args):
+    return subprocess.run(['adb', '-s', serial] + list(args), capture_output=True)
 
 
-def shngroot_header():
-    out = adb('shell', 'dd if=/dev/block/by-name/userdata bs=4096 count=1 2>/dev/null').stdout
+def shngroot_header(serial):
+    out = adb(serial, 'shell', 'dd if=/dev/block/by-name/userdata bs=4096 count=1 2>/dev/null').stdout
     if len(out) < 4096 or out[:8] != b'SHNGROOT':
         raise SystemExit('userdata does not start with a SHNGROOT directory; '
                          'is the device booted into recovery with adb?')
@@ -51,8 +51,8 @@ def shngroot_header():
     return version, image_bytes, windows, digest_ok
 
 
-def plan():
-    version, image_bytes, windows, digest_ok = shngroot_header()
+def plan(serial):
+    version, image_bytes, windows, digest_ok = shngroot_header(serial)
     region = (image_bytes + MIB - 1) // MIB * MIB
     blocks = (HEADER_BYTES + MIRROR_BYTES) // 4096
     print(f'SHNGROOT v{version}, image {image_bytes} bytes, digest {"ok" if digest_ok else "BAD"}')
@@ -60,7 +60,7 @@ def plan():
         print(f'  {name:9} offset {offset:>13} size {size:>13}')
     print(f'log region at {region} bytes = block {region // 4096}, {blocks} blocks')
     print('\nrun this, then decode the file it writes:')
-    print(f'  adb shell "dd if=/dev/block/by-name/userdata bs=4096 skip={region // 4096} '
+    print(f'  adb -s {serial} shell "dd if=/dev/block/by-name/userdata bs=4096 skip={region // 4096} '
           f'count={blocks} 2>/dev/null" > ponglog-region.bin')
     print(f'  python {sys.argv[0]} decode ponglog-region.bin')
 
@@ -128,13 +128,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command', required=True)
-    sub.add_parser('plan', help='print the dd command for the region the kernel uses')
+    plan_parser = sub.add_parser('plan', help='print the dd command for the region the kernel uses')
+    plan_parser.add_argument('--serial', required=True,
+                             help='adb serial; every device operation must target it explicitly')
     dec = sub.add_parser('decode', help='decode a pulled region')
     dec.add_argument('region')
     dec.add_argument('--out')
     args = parser.parse_args()
     if args.command == 'plan':
-        plan()
+        plan(args.serial)
     else:
         from pathlib import Path
         decode(Path(args.region), Path(args.out) if args.out else None)

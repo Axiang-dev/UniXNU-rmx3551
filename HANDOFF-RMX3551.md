@@ -1,10 +1,10 @@
 # RMX3551 · UniXNU / iPadOS 18 移植交接文档
 
 > 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
-> 2026-11-10 已确认 iPadOS 18.7.10（22H374）进入 SpringBoard 桌面；当前主任务是修复 S3910 触摸。
+> 2026-11-11 正在修复真实 stage-4 ADT 的 TrustCache handoff，使开发构建重新越过 DarwinBoot；S3910 stage-4 触摸此前已通过实机点击和坐标验证。CPU 多核与 USB 工作在当前回归关闭前暂停。
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-10 18:15（GMT+8）。
-接手者先读本页顶部的「最新接手快照」。后面的“黑屏、0 次 swap、尚未进桌面”等段落是历史排查记录，已被 2026-11-10 的桌面实测结果取代。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 15:52（Asia/Shanghai）。
+接手者先读本页新的「最新接手快照」。其后的 “历史快照（2026-11-10 18:15）” 及更早段落均只用于追溯，其中可能仍写着 stage 3 待测或 HID 未验证。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
 `D:\unixnu\ud\diagnostics-20261108-154736`。旧运行未启用快照，但设备上的
@@ -19,7 +19,194 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-10 18:15，GMT+8；本段优先）
+## 最新接手快照（2026-11-11 15:52，Asia/Shanghai；本段优先）
+
+### 一句话状态
+
+iPadOS 18.7.10（22H374）已进入 SpringBoard，S3910 的 stage-4 触摸此前已通过实机点击与坐标验证。`311b89e` 的真实 ADT 因缺少 DarwinBoot 的 TrustCache handoff 槽而在菜单被拒；提交 `ff3d025` 已在生成器、finalizer、verifier 和 CI 中修复该契约，并生成可临时启动的本地 `ff3d025` 镜像。现在唯一待证事项是这张修复镜像能越过 DarwinBoot、重新进入桌面并用触屏操作；在取得新 PongBootLog 和现场触摸结果前，不宣称硬件修复完成。
+
+### 2026-11-11 TrustCache 启动拒绝与修复
+
+`311b89e` 的 stage-4 镜像进入 UniXNU 菜单后显示：
+
+```text
+DARWINBOOT: boot refused: Compromised Data; firmware retained
+```
+
+没有进入内核，因此这次失败与触摸 HID、坐标转换、触点解析、CPU 调度或 PONGFAT1 CRC 无关。payload 中真实存在
+`EFI/UniXNU/Payloads/kernel.macho.trustcache`（70,116 bytes，SHA-256
+`cc4f5079fafbb81cf32f54718666461630381972867428e13c6e8a906b58d7cd`），但当时生成的真实 ADT
+`/chosen/memory-map` 只有 `name`。DarwinBoot 读到 trustcache 文件后要求同一 ADT 中存在 16 字节全零的
+`TrustCache` 属性；缺失时按设计返回 `EFI_COMPROMISED_DATA`。已知可启动的旧 ADT 正好有这个槽位。
+
+提交 `ff3d025`（`fix: restore TrustCache ADT handoff`）完成以下修复：
+
+- `make-pong-adt-ipados18.py --trust-cache` 生成 `/chosen/memory-map/TrustCache = bytes(16)`。
+- `finalize-pong-adt.py` 在 payload 内查找真实 `kernel.macho.trustcache`，缺失或为空时直接失败，并只在文件存在时传入槽位标记。
+- `verify-pong-adt.py` 现在必须显式选择 `--trust-cache` 或 `--no-trust-cache`，并验证 16 字节槽位与该选择一致。
+- `kernel.yml` 用 `--trust-cache` 验证最终 artifact；`preflight.py` 阻止遗漏四核、UFS 或 TrustCache 检查的流水线。
+- `tools/read-pong-log.py plan` 改为强制 `--serial`，内部每次同步都执行 `adb -s <device>`，满足唯一目标设备的操作边界。
+
+隔离工作目录中的真实验证从 `311b89e` 的 100 MiB payload 和同一份 `hardware.dtb` 重新运行 finalizer：
+
+```text
+ADT bytes               15444
+ADT sha256              99fdf666600b7a4723eb00f7b0db45c40ebbec6559294bba7f7f5f77193d4e63
+TrustCache bytes        70116
+TrustCache sha256       cc4f5079fafbb81cf32f54718666461630381972867428e13c6e8a906b58d7cd
+embedded TOML           cpus=4 + pong_s3910=4
+verifier                PASS; trust-cache=1; touch axes=8640x19296
+```
+
+为尽快取得硬件证据，已把该新 payload 放入已知 stage-4 启动容器的同一 UEFI kernel slot，生成一张不覆盖任何基线的本地临时镜像：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-trustcache-ff3d025-local.img
+size    102699008 bytes
+sha256  f0079848126af0f2550f14ce7ca6e5f4c40b6cacc956ca43346317a7731baa07
+```
+
+启动前已在 TWRP 核验 `ro.serialno=9ea882b4`、`ro.product.device=ovaltine`、
+`ro.product.name=twrp_ovaltine`；进入 bootloader 后又核验 `fastboot -s 9ea882b4 getvar serialno`
+返回 `9ea882b4`、`getvar product` 返回 `taro`。`fastboot -s 9ea882b4 boot` 的 Sending/Booting
+均为 `OKAY`。截至本节更新时间，尚无新的 PongBootLog；下一步是运行 4–5 分钟后回 TWRP，只读提取并解码日志。
+
+不要把 stage-3 的 HID-off 行为套到这张镜像上。它仍使用 `pong_s3910=4`；stage-4 成功时必须看到
+`S3910 ready`、真实触点事件，并且现场触屏可操作。
+
+### 触摸结论
+
+- stage 3 的四项关键条件已经全部通过：应用信息返回 `axes=8640x19296`，report format 成功应用，控制器重新识别为 `8640x19296`，HID 保持关闭。
+- stage 4 已实机运行。日志显示 `S3910 ready`、`8640x19296`、`60 Hz`，并打开 display-integrated digitizer。
+- 三核和四核测试日志都各记录了 4 个真实 `Pong touch HID: type=1/2` 触点事件。用户现场确认点击正常且没有坐标错位。
+- 触控原生坐标 `8640x19296` 不是屏幕分辨率。显示仍是 `1080x2412 BGRA`，两个轴按 8 倍归一化。
+- 已验收的是基本点击和移动。多指、压力、休眠唤醒、长按及复杂手势尚未系统验收。
+- 在新的实机证据表明必须修改前，不要改 touch HID、坐标转换或触点解析代码。
+
+### CPU 增量验证
+
+| 配置 | 实机结果 | PongBootLog 中的可见帧率 | 镜像 SHA-256 |
+|---|---|---:|---|
+| `cpus=1` | 进入 SpringBoard，CPU0 first boot | 约 2.736 FPS | `96b93111553aafb8dd514f106583c5f8357c62b282223cfd2b5e68c7952bb819` |
+| `cpus=2` | 进入 SpringBoard，CPU0–1 first boot | 约 6.124 FPS | `5d8000662ac4b9b54c833a2a59c27ae24c1c2796d4f59622e0661f37900b04e9` |
+| `cpus=3` | 进入 SpringBoard，CPU0–2 first boot，无内核 panic | 约 4.887 FPS，短窗口 | `0d3f86889c5c1c4b42282aa43337f661efc90f0729a5f62e4581fa5c0f89578f` |
+| `cpus=4` | 进入 SpringBoard，CPU0–3 first boot，无内核 panic | 可见窗口约 9.409 FPS，末尾连续窗口约 10.2 FPS | `190ced0decb0bb78e0939ae442483432c642af2a25c50fd6987f256a4dae6efe` |
+| `cpus=5` | 实机启动失败；回 TWRP 后 userdata 日志区仍与 cpus4 完全同哈希，未写出 CPU4 first boot | 无有效新日志 | `57f2118bf3fc44160aa3a9d0d4ce505096221e233d3f128d33f1b0bd463c996b` |
+
+`cpus=1` 至 `cpus=4` 的日志都保留 `ArmCpu: all registered CPUs available; idle preference X2, A710, A510 (no affinity binding)`。四核日志仍有既有用户态错误，包括 Biomed/线程数 watermark、AccessibilityUIS `EXC_RESOURCE` 和 `BlastDoor cannot run unsandboxed`，这些不是 CPU first-boot 或触摸初始化失败。
+
+### 五核失败的边界
+
+- `cpus=4` 与 `cpus=5` 镜像同为 102,699,008 字节，逐字节只差 5 个字节：`0x34504e6` 的 ASCII `4`→`5`，以及 PONGFAT1 头 `0x1f0018`–`0x1f001b` 的 CRC32。两份 FAT 的实算 CRC 都与头内 CRC 相同，因此目前没有镜像封装损坏证据。
+- `cpus=5` 是普通内核命令行参数，DarwinBoot24 源码没有针对该值的特殊分支。实机停在带选单残留的画面不能证明尚未进入内核。
+- 启动画面已打印 `DARWINBOOT: hand-off to the kernel` 与 `inputs validated; exiting boot services`，而 DarwinBoot 不会清除这层选单画面，因此它可能一直残留到内核早期。没有新的 PongBootLog 只能证明本次没有成功落盘，不能单独证明失败发生在 UniXNU 菜单。
+- 下一次判断必须使用更早的可观测点，例如 LIUQIN USB CDC 的早期 console、启动画面阶段标记，或其他可证明 `Enter()` 是否被执行的证据。
+
+`cpus=3` 的可见帧窗口合计约 82.254 秒、402 帧。`cpus=4` 的日志因控制台环形缓冲区截断，只保留了 5 个 cadence 记录，合计 26.889 秒、253 帧，不能把它解释成整次运行只有 27 秒。两者仍应作为趋势数据，而不是精确基准测试。
+
+### 当前镜像与来源
+
+- 仓库 HEAD 为 `81e7063`（`fix: normalize S3910 touch axes`）。
+- 对应成功 CI run 为 `42827300826`。
+- `cpus=3` 镜像路径为 `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-cpus3-81e7063-42827300826.img`。
+- `cpus=4` 镜像路径为 `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-cpus4-81e7063-42827300826.img`。
+- `cpus=5` 镜像路径为 `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-cpus5-81e7063-42827300826.img`。
+- 三个 CPU 数变体都从同一 CI 产物派生。相对前一档只改变 `cpus=N` 的 1 个 ASCII 字节和 PONGFAT1 CRC32 的 4 个字节，没有重新编译内核，也没有新的 CI run ID。
+- 历次都只执行 `fastboot -s 9ea882b4 boot`，没有刷 `boot`、没有刷 `userdata`、没有执行 `fastboot -w`。
+
+### 本轮日志证据
+
+`cpus=3`：
+
+```text
+D:\unixnu\ud\diagnostics-s3910-stage4-cpus3-20261110-232912
+region SHA-256 d608f5735a8766f7f3c3a8fa2803ee7a051fce9eb95e7f166b9a7386c9002913
+log SHA-256    e1155db66374e57b41789c1745f44789fd4bbb91fe63d23066708c8778607785
+```
+
+`cpus=4`：
+
+```text
+D:\unixnu\ud\diagnostics-s3910-stage4-cpus4-20261110-233348
+region SHA-256 5320ebb913955f694267ae72cbce2376fa6c7926ba05d2749c1b8a154e25cb7c
+log SHA-256    5a86620c7b327c74a8dbe3d62bc34a358a2b628947cbe81e9b82c95ca6884dfe
+```
+
+`cpus=5` 失败尝试（2026-11-10 23:50 左右回收）：
+
+```text
+D:\unixnu\ud\diagnostics-cpus5-failed-20261110-235025
+region SHA-256 5320ebb913955f694267ae72cbce2376fa6c7926ba05d2749c1b8a154e25cb7c
+log SHA-256    5a86620c7b327c74a8dbe3d62bc34a358a2b628947cbe81e9b82c95ca6884dfe
+```
+
+这次读回的 region 和 log 与 cpus4 证据逐字节同哈希，只能证明失败尝试没有覆盖上一份 PongBootLog，不能把其中的 CPU0–3 first boot 或 SpringBoard 记录当作五核运行证据。
+
+四核 PongBootLog 的 CPU 证据：
+
+```text
+ArmCpu: CPU 1 MPIDR=0x100 registered
+ArmCpu: CPU 2 MPIDR=0x200 registered
+ArmCpu: CPU 3 MPIDR=0x300 registered
+ArmCpu: CPU 0 first boot completed
+ArmCpu: CPU 1 first boot completed
+ArmCpu: CPU 2 first boot completed
+ArmCpu: CPU 3 first boot completed
+ArmCpu: all registered CPUs available; idle preference X2, A710, A510 (no affinity binding)
+```
+
+### 为什么四核仍然不是最终调度方案
+
+本地 SM8475 DTS 的顺序是：
+
+```text
+CPU0–3 = A510 E 簇
+CPU4–6 = A710 P 簇
+CPU7    = X2 P 簇
+```
+
+所以四核只启用了 A510，尚未启用任何 A710/X2。五核才会首次把 CPU4 加入调度。四核的明显提速证明增加可用核心有效，但不证明 UI 已被放到高性能 P 核。
+
+源码瓶颈也已确认。日志仍打印“no affinity binding”，本地补丁仍是：
+
+```c
+#define MAX_CPU_CLUSTERS 1
+```
+
+因此当前只是多个核都能运行，还没有完整的双簇 E/P 调度和 UI 亲和策略。
+
+### 下一阶段
+
+1. 暂停测试 `cpus=6` 和 AMP/Edge 调度。五核失败尚未形成新的 PongBootLog，需先定位它停在 DarwinBoot、内核早期、CPU4 first boot 还是更晚阶段。
+2. 优先启用现有 LIUQIN USB CDC 调试口作为早期启动实时日志通道：它镜像内核 console 到 1 MiB 环形缓冲，并提供 `help/status/ping/replay`。当前已知 blocker 是 `LIUQIN USB: SMMU route refused; controller untouched`，尚未验证控制器和 DMA。
+3. P 簇至少稳定后，把官方 `zzyf-sheng-amp.patch` 适配到当前 Darwin 24 内核，设置 `MAX_CPU_CLUSTERS=2`，定义 `__ARM_AMP__`，保留 DTS 的 E/P `cluster-type`，让固定优先级、UI 和 user-initiated 工作优先留在 P 簇。
+4. 同时审计长期占用 CPU 的服务，例如 `coreduetd`。不要把服务错误和 CPU 调度故障混在同一次实验。
+5. Adreno 730 GPU 在 CPU/Edge 调度稳定后再做。当前仍启用 `pong_software_ui=1`，官方完整参考是 A740/SM8550，不能照搬其固件、寄存器或 stream ID。
+6. 多 bank 12 GB RAM 最后单独立项。当前日志仍是 1 owned bank、4096 MiB。设置中约 7 GB 是 APFS Data 分区，不是物理内存。
+
+### 文档与工具状态
+
+2026-11-10 23:40 因 WorkBuddy headless CLI 缺少 `cli/dist/codebuddy` 和 `cli/dist/codebuddy-headless`，自动委派无法执行。用户明确授权后，本次由 Codex 直接更新本文档。WorkBuddy GUI 是否可用不影响上述硬件结论。
+
+### 安全硬约束
+
+- 唯一目标串号是 `9ea882b4`。最近一次 TWRP 属性为 `ovaltine / PGP110 / twrp_ovaltine`。
+- 绝不要操作历史出现的 `42d72758 / OPD2515`。
+- 所有 ADB 和 fastboot 命令都显式带 `-s 9ea882b4`。
+- 只允许 `fastboot -s 9ea882b4 boot <新诊断镜像>`。
+- 禁止刷 `boot`、禁止刷 `userdata`、禁止 `fastboot -w`、禁止 `git reset`、禁止 `git clean`。
+- 不得覆盖桌面基线 `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-usbdebug-22e7b2c-42510630419.img`，其 SHA-256 为 `9574063d753bda2b190693aa720cd6d08c5dcfa7bc79ae03f17fff40a9c7cb63`。
+
+---
+
+## 历史快照（2026-11-10 18:15，GMT+8；保留原记录）
+
+### 18:57 实机试验进行中（本条覆盖下文启动前的状态）
+
+- 已确认 `9ea882b4` 位于 TWRP（`ovaltine / PGP110 / twrp_ovaltine`），进 bootloader 后再次查询到 `serialno: 9ea882b4`。`fastboot boot` 回报 `Sending ... OKAY`、`Booting ... OKAY`，现场确认 iPadOS 正在运行。等待返回 TWRP 收取本轮日志，stage 3 结果仍待判定。
+- 实机镜像使用 `5820fa6`、CI `42794829937`，路径为 `D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-appinfo-clean-5820fa6-42794829937.img`，启动前复算 SHA-256 为 `fcb3d801fe02a87093114f5b2c4fe102c182528a633b22b24f648b82b9e04875`。
+- 证据目录 `D:\unixnu\ud\diagnostics-s3910-stage3-5820fa6-20261110-185714`。启动前的 `before-region-clean.bin` 为 4,198,400 字节，SHA-256 `6b3a779953fbdd7044f9364898dbf8b69f1bd6cc7bef12e1a46cc74d4b9c2079`。其解码日志 `before-ponglog.txt` 显示旧内核构建时间 `09:40:14 UTC`，仍在 `0x24` 失败。新内核的构建时间为 `10:13:33 UTC`，用于核对回收日志归属。每次启动的 `sequence` 从头计数，需比较镜像内容和内核构建标识。
+- 首次基线读取因 `dd` 的统计信息混入字节流，多出 86 字节。后续把 `dd` 的 `2>/dev/null` 放进设备端命令，通过二进制方式保存，并核对文件恰为 4,198,400 字节后解码。只运行 `read-pong-log.py decode`，其 `plan` 子命令会自行发起未指定串号的 ADB 请求。
 
 ### 目标与当前结论
 

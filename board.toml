@@ -130,10 +130,11 @@ kernel_args = [
   # value that satisfies both: 58 signature zones, 25 type zones.
   "kt_fixed_zones=83",
   "keepsyms=1",
-  # Strict five-core experiment: the ADT and this boot argument must name the
-  # same count. The prior cpus=5 attempt still shipped a four-node ADT.
-  # This run therefore exercises the first A710/P core for the first time.
-  "cpus=5",
+  # Five-core profile: four A510 cores plus CPU4, the first A710/P core.
+  # Darwin 24 with cpus=5 silently stopped after registering CPU0-3 and then
+  # root-mount timed out. cpumask=0x1f reaches and first-boots CPU4 on the same
+  # five-node ADT, so keep this selector synchronized with the ADT CPU count.
+  "cpumask=0x1f",
   "pong_allow_unauthenticated_root=1",
   "cs_enforcement_disable=1",
   "cs_library_val_enable=0",

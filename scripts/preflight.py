@@ -230,13 +230,32 @@ def pass_decisions():
             fail(3, "board.toml", f"{needed} is not in kernel_args; the driver will not start")
         else:
             print(f"  board.toml carries {needed}")
-    cpu_text = arg_values.get("cpus", "")
-    if not cpu_text.isdigit() or not 1 <= int(cpu_text) <= 8:
-        fail(3, "board.toml", f"cpus={cpu_text!r} is not an integer from 1 through 8")
-        cpu_count = 4
+    cpu_selectors = {name: value for name, value in arg_values.items()
+                     if name in ("cpus", "cpumask")}
+    if len(cpu_selectors) != 1:
+        fail(3, "board.toml", "payload.kernel_args must carry exactly one of cpus= or cpumask=")
+        cpu_count = 5
+    elif "cpus" in cpu_selectors:
+        cpu_text = cpu_selectors["cpus"]
+        if not cpu_text.isdigit() or not 1 <= int(cpu_text) <= 8:
+            fail(3, "board.toml", f"cpus={cpu_text!r} is not an integer from 1 through 8")
+            cpu_count = 5
+        else:
+            cpu_count = int(cpu_text)
+            print(f"  board.toml carries cpus={cpu_count}")
     else:
-        cpu_count = int(cpu_text)
-        print(f"  board.toml carries cpus={cpu_count}")
+        cpu_mask_text = cpu_selectors["cpumask"]
+        try:
+            cpu_mask = int(cpu_mask_text, 0)
+        except ValueError:
+            fail(3, "board.toml", f"cpumask={cpu_mask_text!r} is not an integer")
+            cpu_mask = 0
+        if cpu_mask <= 0 or cpu_mask > 0xff or cpu_mask & (cpu_mask + 1):
+            fail(3, "board.toml", f"cpumask={cpu_mask_text!r} must select a contiguous set of 1 through 8 CPUs")
+            cpu_count = 5
+        else:
+            cpu_count = cpu_mask.bit_count()
+            print(f"  board.toml carries cpumask={cpu_mask_text} ({cpu_count} CPUs)")
     usb_state = arg_values.get("liuqin_usb")
     if usb_state not in ("0", "1"):
         fail(3, "board.toml", f"liuqin_usb={usb_state!r}; expected 0 or 1")
@@ -312,16 +331,20 @@ def pass_symbols():
 # --------------------------------------- pass 5: hardware-facing host regressions
 def pass_host_tests():
     pass_header(5, "hardware-facing host regressions")
-    test = ROOT / "tests/test_rmx3551_usb_startup_order.py"
-    if not test.is_file():
-        fail(5, test.name, "USB startup-order regression test is missing")
-        return
-    r = subprocess.run([sys.executable, "-B", str(test)], capture_output=True, text=True)
-    if r.returncode:
-        detail = (r.stderr or r.stdout or "test failed").strip().splitlines()[-1]
-        fail(5, test.name, detail)
-    else:
-        print(f"  {(r.stdout or 'passed').strip()}")
+    tests = (
+        ROOT / "tests/test_rmx3551_usb_startup_order.py",
+        ROOT / "tests/test_rmx3551_effective_boot_args.py",
+    )
+    for test in tests:
+        if not test.is_file():
+            fail(5, test.name, "hardware-facing regression test is missing")
+            continue
+        r = subprocess.run([sys.executable, "-B", str(test)], capture_output=True, text=True)
+        if r.returncode:
+            detail = (r.stderr or r.stdout or "test failed").strip().splitlines()[-1]
+            fail(5, test.name, detail)
+        else:
+            print(f"  {(r.stdout or 'passed').strip()}")
 
 
 # ------------------------------------- pass 6: the source list actually resolves

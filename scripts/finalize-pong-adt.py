@@ -32,6 +32,7 @@ import sys
 import tempfile
 import tomllib
 import zlib
+from collections import Counter
 from pathlib import Path
 
 HEADER_BYTES = 4096          # PONGFAT1 header, and the boot image's first page
@@ -91,6 +92,81 @@ def read_member(volume, member):
     return probe.stdout if probe.returncode == 0 else None
 
 
+def validate_xnu_args(volume, expected):
+    """Reject a payload whose actual boot menu disagrees with board.toml.
+
+    kernel_args is also copied into pong-adt.json, but DarwinBoot reads the
+    xnu entry from EFI/UniXNU/unixnu.toml. Updating metadata alone used to make
+    an image say cpus=5/usboff while the firmware still booted cpus=4 with USB
+    enabled. Compare the effective menu entry before wrapping the FAT volume.
+    """
+    member = 'EFI/UniXNU/unixnu.toml'
+    content = read_member(volume, member)
+    if content is None:
+        raise SystemExit(f'{volume}: {member} is missing; DarwinBoot has no xnu entry')
+    try:
+        document = tomllib.loads(content.decode('utf-8'))
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise SystemExit(f'{volume}: {member} does not parse: {error}') from error
+    entries = [entry for entry in document.get('entry', [])
+               if entry.get('type') == 'xnu' and entry.get('path') == 'Payloads/kernel.macho']
+    if len(entries) != 1:
+        raise SystemExit(f'{volume}: expected one kernel.macho xnu entry, found {len(entries)}')
+    actual = entries[0].get('args')
+    if not isinstance(actual, str):
+        raise SystemExit(f'{volume}: the xnu entry has no string args value')
+    expected_args = Counter(expected.split())
+    actual_args = Counter(actual.split())
+    if actual_args == expected_args:
+        return
+    missing = sorted((expected_args - actual_args).elements())
+    unexpected = sorted((actual_args - expected_args).elements())
+    raise SystemExit(f'{volume}: effective xnu args disagree with board.toml; '
+                     f'missing={missing} unexpected={unexpected}')
+
+
+def derive_xnu_args(spec, cpu_count):
+    """Build the exact kernel command line from board.toml.
+
+    Darwin 24 cannot use cpus= and cpumask= together.  XNU's cpus= path also
+    failed to admit the fifth node on RMX3551 even though the ADT carried it,
+    while the equivalent cpumask reached CPU4.  Keep one explicit selector in
+    board.toml and reject a count or mask that disagrees with the ADT builder.
+    """
+    values = spec.get("kernel_args", [])
+    if not isinstance(values, list) or not all(isinstance(item, str) for item in values):
+        raise SystemExit("board.toml payload.kernel_args must be a string list")
+    by_name = {}
+    for item in values:
+        name, separator, value = item.partition("=")
+        if separator:
+            by_name[name] = value
+    selectors = [item for item in values
+                 if item.split("=", 1)[0] in ("cpus", "cpumask")]
+    if len(selectors) != 1:
+        raise SystemExit("board.toml must carry exactly one of cpus= or cpumask=")
+    selector = selectors[0]
+    if selector.startswith("cpus="):
+        try:
+            selected = int(by_name["cpus"], 10)
+        except ValueError as error:
+            raise SystemExit(f"invalid CPU selector {selector!r}") from error
+        if selected != cpu_count:
+            raise SystemExit(f"{selector} disagrees with ADT cpu_count={cpu_count}")
+    else:
+        try:
+            mask = int(by_name["cpumask"], 0)
+        except ValueError as error:
+            raise SystemExit(f"invalid CPU selector {selector!r}") from error
+        expected = (1 << cpu_count) - 1
+        if mask != expected:
+            raise SystemExit(f"{selector} disagrees with ADT cpu_count={cpu_count}; "
+                             f"expected {hex(expected)}")
+    extra = [item for item in values
+             if item.split("=", 1)[0] not in ("keepsyms", "cpus", "cpumask")]
+    return " ".join(["keepsyms=1", selector, *extra])
+
+
 def write_member(volume, member, content):
     """Overwrite or add one file inside the FAT image with mtools, without mounting it."""
     env = dict(os.environ, MTOOLS_SKIP_CHECK='1', TZ='UTC')
@@ -148,9 +224,8 @@ def main():
     chip_id = args.chip_id or str(board.get('payload', {}).get('adt', {}).get('chip_id', '0x8010'))
 
     spec = board.get('payload', {})
-    boot_args = 'keepsyms=1 cpus=%d' % args.cpus
-    extra = [item for item in spec.get('kernel_args', []) if item.split('=', 1)[0] not in ('keepsyms', 'cpus')]
-    boot_args += ''.join(' ' + item for item in extra)
+    boot_args = derive_xnu_args(spec, args.cpus)
+    validate_xnu_args(payload, boot_args)
     # The manifest a local run stages: scripts/build-ipados18-bootimg-local.py
     # writes exactly these keys, and with --skip-image-verification the digests
     # of the kernel and the loader stay null.

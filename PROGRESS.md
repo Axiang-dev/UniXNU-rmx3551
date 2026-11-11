@@ -86,7 +86,7 @@ D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-2
 sha256 786e9a84091ffc15c491f0b6b0593a8f58a8344b25822f4ccaccde1bb27ac931
 ```
 
-It retains five CPUs, `cpumask=0x1f`, `liuqin_usb=0`, `pong_s3910=4` and `pong_software_ui=1`. It was temporarily booted with `fastboot -s 9ea882b4` after fastboot returned `serialno: 9ea882b4`. User comparison is pending. No PongBootLog is available from this image.
+It retains five CPUs, `cpumask=0x1f`, `liuqin_usb=0`, `pong_s3910=4` and `pong_software_ui=1`. It was temporarily booted with `fastboot -s 9ea882b4` after fastboot returned `serialno: 9ea882b4`. The device reached the system and returned to TWRP, proving that disabling PongBootLog does not break this boot chain. The direct user comparison of UI latency is still absent. No PongBootLog is available from this image.
 
 ### Volume-key HID repair
 

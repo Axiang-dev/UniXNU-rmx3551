@@ -150,7 +150,7 @@ D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-2
 sha256 786e9a84091ffc15c491f0b6b0593a8f58a8344b25822f4ccaccde1bb27ac931
 ```
 
-回读保留 `cpumask=0x1f`、`liuqin_usb=0`、`pong_s3910=4` 和 `pong_software_ui=1`。fastboot 已明确返回 `serialno: 9ea882b4`，并且只执行临时启动。实机卡顿对比尚待用户反馈。由于该镜像关闭 PongBootLog，失败时不能从 userdata 取本轮日志。
+回读保留 `cpumask=0x1f`、`liuqin_usb=0`、`pong_s3910=4` 和 `pong_software_ui=1`。fastboot 已明确返回 `serialno: 9ea882b4`，并且只执行临时启动。实机随后成功进入系统并返回 TWRP，证明关闭 PongBootLog 不会破坏启动链。用户对卡顿是否改善的直接反馈仍待记录。由于该镜像关闭 PongBootLog，不能从 userdata 取本轮运行日志。
 
 ### 音量键 HID 修复
 

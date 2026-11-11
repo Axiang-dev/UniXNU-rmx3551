@@ -1,10 +1,10 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-12 00:25 (Asia/Shanghai)
+Updated: 2026-11-12 00:37 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
-## Latest handoff snapshot (2026-11-12 00:25 Asia/Shanghai)
+## Latest handoff snapshot (2026-11-12 00:37 Asia/Shanghai)
 
 This snapshot is authoritative. It supersedes earlier text that marked CPU4 as unverified and text that treated CPU first boot as proof of a successful system boot.
 
@@ -14,9 +14,9 @@ This snapshot is authoritative. It supersedes earlier text that marked CPU4 as u
 | Touch | Verified usable | The user confirmed clicks work and their positions are not offset. S3910 stage 4 opens HID at `8640x19296` |
 | CPU baseline | Five cores verified end to end | CPU0-3 and CPU4 registered, completed first boot, passed APFS Data mount and reached SpringBoard |
 | Seven-core experiment | CPU registration passed, boot failed | CPU4-6 registered and completed first boot, but boot stopped at APFS UUID `B07DF049-7AD9-47B5-9F8F-9EE728056398` before `Data mount PASS` |
-| Six-core experiment | Booted, log pending | ADT and boot args contain six CPUs, CPU5 is included and CPU6 excluded. TWRP extraction is pending |
-| Software UI | Known bottleneck | `pong_software_ui=1` remains active |
-| Volume keys | Repair built, CI in progress | Commit `94f0aaf` prelinks `IOHIDFamily` and `IOHIDEventDriver`. Kernel run `43055703607` is not complete |
+| Six-core experiment | CPU registration passed, boot failed | CPU4 and CPU5 completed first boot, but boot stopped at the same APFS UUID as the seven-core image. Adding CPU5 is the common failure boundary |
+| Software UI | Diagnostic-overhead A/B booted | A five-core image with only `pong_bootlog=0` is under hardware comparison |
+| Volume keys | Kernel CI and static artifact pass | Commit `94f0aaf` prelinks `IOHIDFamily` and `IOHIDEventDriver`. The PMIC consumer personality is present. Hardware key test remains |
 | Touch policy | Frozen during performance work | Do not modify HID, coordinate conversion or touch parsing without a new touch-specific regression |
 
 ### Five-core baseline
@@ -61,17 +61,32 @@ ponglog.txt 12566 bytes
 sha256 0e6b0aab0e451a3bc7b44b1a2e3b6cbc59de2e018c862683029970e968c20ae1
 ```
 
-### Six-core isolation
+### Six-core result
 
-Image and hash:
+The six-core image registered CPU5, completed first boot for CPU4 and CPU5, and reported six processors. It then stopped at `B07DF049-7AD9-47B5-9F8F-9EE728056398` without `Data mount PASS` or a SpringBoard surface. The seven-core image fails at the same boundary. CPU5 is the common change and CPU6 is not required. Adding A710 cores at boot is no longer an active route.
 
 ```text
-D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-3f-usboff-adt6-932c4c9-20261112-000940.img
-102699008 bytes
-sha256 99d449891f9ab7d37e23ab3f0f35d13f77706fed3488414272639b32d2fe56f3
+D:\unixnu\ud\diagnostics-cpumask-3f-20261112-003100
+ponglog-region.bin 4198486 bytes
+sha256 b535648c567c71c5fd55ad0445645d84e05f59d74be8d51e7c99a1f7c5fa0578
+
+ponglog.txt 12376 bytes
+sha256 26b35939fc0a67b62b353498fb4244a5ec38212976ad7ce5f420bc16246612ca
 ```
 
-The ADT has six CPUs, boot uses `cpumask=0x3f`, USB remains disabled and touch remains at `pong_s3910=4`. This experiment isolates CPU5 from CPU6. It is accepted only if CPU4 and CPU5 both complete first boot, the platform reports six CPUs, APFS reaches `Data mount PASS`, and SpringBoard creates its surface. If it stops at the same UUID, stop adding CPUs.
+### Performance diagnostic A/B
+
+The five-core log records about 8.46 FPS overall, frame-driver work near 2 ms and no meaningful GPU wait, but it also contains a 23.2-second interval with only 11 frames. The diagnostic image mirrors up to 4 MiB of kernel log to userdata whenever the log changes, with a nominal two-second loop.
+
+A single-variable image now changes only `pong_bootlog=1` to `pong_bootlog=0` in the TOML and manifest:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-20261111-235152-bootlogoff.img
+102699008 bytes
+sha256 786e9a84091ffc15c491f0b6b0593a8f58a8344b25822f4ccaccde1bb27ac931
+```
+
+It retains five CPUs, `cpumask=0x1f`, `liuqin_usb=0`, `pong_s3910=4` and `pong_software_ui=1`. It was temporarily booted with `fastboot -s 9ea882b4` after fastboot returned `serialno: 9ea882b4`. User comparison is pending. No PongBootLog is available from this image.
 
 ### Volume-key HID repair
 
@@ -86,7 +101,18 @@ Pong keys HID: physical side consumer opened
 volume report device=unavailable
 ```
 
-Commit `94f0aaf007d4d33e6d4eb909431f7f740f5c8cdc` prelinks `IOHIDFamily` and `IOHIDEventDriver`, merges the PMIC consumer personality and adds an auditable prelink test. Local preflight passes all six checks. Porting run `43055703760` succeeds. Kernel run `43055703607` is still in progress. Hardware acceptance requires `volume report device=native` and an actual system volume change.
+Commit `94f0aaf007d4d33e6d4eb909431f7f740f5c8cdc` prelinks `IOHIDFamily` and `IOHIDEventDriver`, merges the PMIC consumer personality and adds an auditable prelink test. Local preflight passes all six checks. Porting run `43055703760` and kernel run `43055703607` both succeed. Artifact `13871639513` has `IOHIDFamily` in loaded components, `IOHIDEventDriver` in codeless components and `Pong PMIC volume keys` in `personality_overrides`.
+
+The verified payload is wrapped into this five-core boot image, which has not yet been tested on hardware:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-hidprelink-94f0aaf-43055703607.img
+102699008 bytes
+sha256 aac9c1e0d2d89a8d0d06f5825b77f66e40b2690944380b9b855dd1e21f1aea61
+PONGFAT1 CRC 0x4ec4c25d
+```
+
+Hardware acceptance requires `volume report device=native` and an actual system volume change.
 
 ### Method rules
 
@@ -94,8 +120,9 @@ Commit `94f0aaf007d4d33e6d4eb909431f7f740f5c8cdc` prelinks `IOHIDFamily` and `IO
 2. The boot argument CPU mask and ADT CPU-node count must agree.
 3. Keep `liuqin_usb=0` and `pong_s3910=4` fixed during CPU work.
 4. Record CPU registration and system-boot completion as separate results.
-5. Keep GPU bring-up separate from CPU topology work.
-6. The verified touch path stays frozen during performance work.
+5. Measure diagnostic logging overhead before adding hardware complexity.
+6. Keep GPU bring-up separate from CPU topology work.
+7. The verified touch path stays frozen during performance work.
 
 ### Safety boundary
 

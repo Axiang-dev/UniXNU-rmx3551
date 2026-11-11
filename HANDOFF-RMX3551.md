@@ -3,10 +3,10 @@
 > 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
 > 2026-11-11：`ff3d025` 的 TrustCache handoff 已通过实机验证，系统越过 DarwinBoot 并进入内核、SpringBoard，S3910 stage-4 也持续产生真实 HID 触点。当前需要区分“设备实际没有启动”和“系统已运行但画面/帧更新不可见”，不得继续按启动封装错误排查。
 > 17:03：USB 调试口在 `ff3d025` CI 镜像上又暴露了启动顺序 panic；`29d45d9` 已把 worker 创建移到 IOKit 初始化成功后，CI `42989774583` 全绿。
-> 2026-11-12 00:25：五核启动、APFS Data mount、SpringBoard 和触摸已通过。七核完成了 CPU 注册与 first boot，但未越过 APFS UUID 等待，启动验收失败。当前六核镜像正在做隔离验收，请以本文最新快照为准。
+> 2026-11-12 00:37：五核启动、APFS、SpringBoard 和触摸通过。六核和七核都完成 CPU first boot，但都停在同一个 APFS UUID 等待，因此继续加核的路线关闭。当前转向五核稳定基线排除诊断日志回写和连续 applog 对 UI/UFS 的干扰。
 
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-12 00:25 (Asia/Shanghai)。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-12 00:37 (Asia/Shanghai)。
 接手者先读本页新的「最新接手快照」。其后的历史段落只用于追溯，其中可能仍写着 stage 3 待测、HID 未验证或旧的五核失败结论。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
@@ -22,11 +22,11 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-12 00:25 (Asia/Shanghai)；本段优先）
+## 最新接手快照（2026-11-12 00:37 (Asia/Shanghai)；本段优先）
 
 ### 一句话状态
 
-系统桌面、S3910 stage 4 触摸和真实 HID 触点均已通过实机验证，用户确认点击位置没有错位。当前瓶颈仍是 `pong_software_ui=1` 下的软件 UI 性能。五核是唯一完成“CPU 注册、APFS Data mount、SpringBoard、触摸”全链路验收的版本。七核只完成了 CPU 注册与 first boot，随后停在 APFS UUID 等待，不能算启动成功。六核镜像用于隔离 CPU6 与第二颗 A710，实机日志尚待 TWRP 取回。
+系统桌面、S3910 stage 4 触摸和真实 HID 触点均已通过实机验证，用户确认点击位置没有错位。当前瓶颈仍是 `pong_software_ui=1` 下的软件 UI 性能。五核是唯一完成“CPU 注册、APFS Data mount、SpringBoard、触摸”全链路验收的版本。六核和七核都完成了 CPU 注册与 first boot，随后停在同一个 APFS UUID 等待，不能算启动成功。继续增加 A710 的路线因此关闭。
 
 ### 五核稳定基线
 
@@ -101,7 +101,7 @@ ponglog.txt 12566 bytes
 sha256 0e6b0aab0e451a3bc7b44b1a2e3b6cbc59de2e018c862683029970e968c20ae1
 ```
 
-### 六核隔离实验
+### 六核隔离结果
 
 六核镜像只引入 CPU5，即第二颗 A710，同时排除 CPU6：
 
@@ -111,19 +111,46 @@ D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-3f-usboff-adt6-932c4c9-2
 sha256 99d449891f9ab7d37e23ab3f0f35d13f77706fed3488414272639b32d2fe56f3
 ```
 
-回读确认 `ADT cpus=6`、`cpumask=0x3f`、`liuqin_usb=0` 和 `pong_s3910=4`，该镜像已经临时启动。验收必须同时出现：
+实机串号确认为 `9ea882b4`，ADB 状态为 `recovery`，设备为 `ovaltine`，TWRP 为 `3.7.0_12-Alpha`。日志确认：
 
 ```text
 ArmCpu: CPU 4 MPIDR=0x400 registered
 ArmCpu: CPU 5 MPIDR=0x500 registered
 ArmCpu: CPU 4 first boot completed
 ArmCpu: CPU 5 first boot completed
-ArmDTPlatform: registered platform cpus=6
-PONG APFS: Data mount PASS
-MiniIOSurface: SpringBoard[...] created surface ... 1080x2412 'BGRA'
+ArmDTPlatform: registered platform cpus=6 arm-io=1 devices=4 nvram-proxy=1
 ```
 
-若六核仍停在 `B07DF049-7AD9-47B5-9F8F-9EE728056398`，则停止继续加核，转而检查第二颗 A710 对 APFS 等待链或调度时钟的影响。
+系统随后再次停在：
+
+```text
+IOPropertyMatch UUID B07DF049-7AD9-47B5-9F8F-9EE728056398
+```
+
+日志没有 `PONG APFS: Data mount PASS`，没有 SpringBoard surface，也没有 `first visible frame`。五六核的共同分界因此是 CPU5 是否加入。六核和七核都在 CPU5 加入后失败，CPU6 不是必要条件。继续增加 A710 核数的实验终止。
+
+```text
+D:\unixnu\ud\diagnostics-cpumask-3f-20261112-003100
+ponglog-region.bin 4198486 bytes
+sha256 b535648c567c71c5fd55ad0445645d84e05f59d74be8d51e7c99a1f7c5fa0578
+
+ponglog.txt 12376 bytes
+sha256 26b35939fc0a67b62b353498fb4244a5ec38212976ad7ce5f420bc16246612ca
+```
+
+### 性能诊断开销 A/B
+
+五核日志显示帧驱动本身每帧约 2 ms，但窗口总吞吐只有约 8.46 FPS，且出现 23.2 秒仅有 11 帧的停顿。GPU 等待记录约 1 us，当前证据更支持 CPU/软件合成、UFS 争用和诊断路径，而不是 GPU fence 阻塞。
+
+现有诊断镜像同时开启 `pong_bootlog=1`、`applog=1`、`fbtrace=8`、`surftrace=24` 和 `pong_boot_snapshot=1`。`PongBootLog` 会在内容变化时把最多 4 MiB 内核镜像同步写回 userdata，循环周期为 2 秒。为隔离这一项，已从五核成功镜像制作严格单变量性能候选，只把 TOML 与 manifest 中的 `pong_bootlog` 从 `1` 改为 `0`：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-usboff-adt5-de4d4e1-20261111-235152-bootlogoff.img
+102699008 bytes
+sha256 786e9a84091ffc15c491f0b6b0593a8f58a8344b25822f4ccaccde1bb27ac931
+```
+
+回读保留 `cpumask=0x1f`、`liuqin_usb=0`、`pong_s3910=4` 和 `pong_software_ui=1`。fastboot 已明确返回 `serialno: 9ea882b4`，并且只执行临时启动。实机卡顿对比尚待用户反馈。由于该镜像关闭 PongBootLog，失败时不能从 userdata 取本轮日志。
 
 ### 音量键 HID 修复
 
@@ -147,16 +174,34 @@ volume report device=unavailable
 - `emit_prelink.py` 增加显式、可审计的 `--personality-json BUNDLE=PATH`。
 - 新增 `tests/test_rmx3551_hid_prelink.py`，阻止 workflow 再次漏掉 HID 栈。
 
-本地 `python -B scripts\preflight.py` 六项通过。Porting CI run `43055703760` 成功。Kernel CI run `43055703607` 在本文更新时仍处于 `Resolve configuration and build kernel`，尚不能视为构建通过。即使构建通过，音量键仍须实机看到 `volume report device=native` 并实际改变系统音量才算完成。
+本地 `python -B scripts\preflight.py` 六项通过。Porting CI run `43055703760` 成功。Kernel CI run `43055703607` 也已成功，artifact `13871639513` 已下载核验：
+
+```text
+artifact zip sha256 ed0c3a761c03a2fd6a779816d8701dfd9ddd3233fb005826bb14cb3d64f7594a
+kernel.json       sha256 13e8cd42fce9429a46e23ee420d433590bedd6c021e2804f82a59d3500877e06
+kernel.macho      sha256 8de80c7d69499468074623c9d31301f680bca821b67684f4dba8607d0edc2a8b
+payload.img       sha256 8e3cb79eeb036e6bcf9f173a7c23da3a993cbdfd2d3fd3bbf8c27dfd887af9ce
+```
+
+`kernel.json` 同时列出 `com.apple.iokit.IOHIDFamily` 与 `com.apple.iokit.IOHIDEventDriver`，`personality_overrides` 含 `Pong PMIC volume keys`。已把该 payload 封装进五核稳定基线，生成音量键测试镜像：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-cpumask-1f-hidprelink-94f0aaf-43055703607.img
+102699008 bytes
+sha256 aac9c1e0d2d89a8d0d06f5825b77f66e40b2690944380b9b855dd1e21f1aea61
+PONGFAT1 CRC 0x4ec4c25d
+```
+
+ADT 回读为 `cpus=5`、`trust-cache=1`、触摸轴 `8640x19296`。该镜像尚未实机启动。音量键仍必须看到 `volume report device=native` 并实际改变系统音量才算完成。
 
 该修复不修改 S3910 触点投递、坐标转换、`pong_s3910=4` 或屏幕分辨率。
 
 ### 当前阻塞与方法优化
 
-- 当前 ADB 找不到唯一目标串号 `9ea882b4`，不得操作其他设备。等设备明确回到 TWRP 后再采六核日志。
+- 六核与七核都停在同一个 APFS UUID，继续加核不再有诊断价值。当前先排除性能镜像中的日志/UFS 争用。
 - 每次实验先记录四个结论：ADT 核数、boot 参数核数、CPU first boot、APFS/SpringBoard。缺一项就只记录部分结论。
 - 五核已经成为稳定基线。后续单变量实验都以它回归，不能把 CPU、USB、HID 和触摸混在一次镜像里。
-- CPU 核数成功不等于系统启动成功。七核已经证明两者必须分开验收。
+- CPU 核数成功不等于系统启动成功。六核和七核已经证明两者必须分开验收。
 - CI 构建完成不等于功能验证完成。音量键必须看到原生 HID 设备和真实音量变化。
 
 ### 方法层面的破局点
@@ -165,7 +210,8 @@ volume report device=unavailable
 2. 先验证“拓扑声明一致”，再看启动结果。启动参数核数与 ADT CPU 节点数必须一致。
 3. CPU 与 GPU 分开处理。当前 `pong_software_ui=1`，Adreno 730 另立实验。
 4. 每次实机验收同时记录 CPU 与系统终点，避免把 CPU 注册误报为可启动。
-5. 任何性能实验都不得改动已通过的触摸代码。触摸只作为回归检查，不作为试验变量。
+5. 每次性能实验先测诊断开销，再考虑增加硬件复杂度。
+6. 任何性能实验都不得改动已通过的触摸代码。触摸只作为回归检查，不作为试验变量。
 
 ### 安全硬约束
 

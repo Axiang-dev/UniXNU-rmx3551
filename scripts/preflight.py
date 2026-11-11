@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -200,14 +201,28 @@ def pass_decisions():
             fail(3, "kernel.yml", f"{key}={m.group(1)}, expected {want}")
         else:
             print(f"  {key}={want}")
-    # board.toml is where the boot arguments live: finalize-pong-adt.py writes them
-    # into the ADT, and the packaging script's own list is legacy duplication.
+    # board.toml is the source of truth for stable runtime arguments. Read the
+    # structured values instead of blessing one historical CPU count or USB
+    # state: the previous five-core attempt shipped cpus=5 with a four-node ADT
+    # because these checks were hard-coded.
     board = (ROOT / "board.toml").read_text(encoding="utf-8")
+    try:
+        board_data = tomllib.loads(board)
+    except tomllib.TOMLDecodeError as error:
+        fail(3, "board.toml", f"TOML does not parse: {error}")
+        board_data = {}
+    kernel_args = board_data.get("payload", {}).get("kernel_args", [])
+    if not isinstance(kernel_args, list) or not all(isinstance(arg, str) for arg in kernel_args):
+        fail(3, "board.toml", "payload.kernel_args must be a string list")
+        kernel_args = []
+    arg_values = {}
+    for arg in kernel_args:
+        if "=" in arg:
+            key, value = arg.split("=", 1)
+            arg_values[key] = value
     for needed in (
-        "cpus=4",
         "pong_touch=1",
         "pong_s3910=4",
-        "liuqin_usb=1",
         "liuqin_usb_smmu=2",
         "liuqin_usb_dma=0x80000000,0x10000000000",
     ):
@@ -215,20 +230,23 @@ def pass_decisions():
             fail(3, "board.toml", f"{needed} is not in kernel_args; the driver will not start")
         else:
             print(f"  board.toml carries {needed}")
+    cpu_text = arg_values.get("cpus", "")
+    if not cpu_text.isdigit() or not 1 <= int(cpu_text) <= 8:
+        fail(3, "board.toml", f"cpus={cpu_text!r} is not an integer from 1 through 8")
+        cpu_count = 4
+    else:
+        cpu_count = int(cpu_text)
+        print(f"  board.toml carries cpus={cpu_count}")
+    usb_state = arg_values.get("liuqin_usb")
+    if usb_state not in ("0", "1"):
+        fail(3, "board.toml", f"liuqin_usb={usb_state!r}; expected 0 or 1")
+    else:
+        print(f"  board.toml carries liuqin_usb={usb_state}")
     patch = ROOT / "patches/xnu-ipados18/zzzzzzzzzz-rmx3551-usb-debug.patch"
     if not patch.is_file():
         fail(3, "patches", "the USB debug port patch is missing")
     else:
         print(f"  USB debug port patch present ({patch.stat().st_size} bytes)")
-    board_toml = (ROOT / "board.toml").read_text(encoding="utf-8")
-    if '"liuqin_usb=1"' not in board_toml:
-        fail(3, "board.toml", "liuqin_usb=1 is not in kernel_args; the debug port stays off")
-    elif '"liuqin_usb_smmu=2"' not in board_toml:
-        fail(3, "board.toml", "liuqin_usb_smmu=2 is missing; SID0 bypass remains refused")
-    elif '"pong_s3910=4"' not in board_toml:
-        fail(3, "board.toml", "pong_s3910=4 is missing; the image regresses to no touch")
-    else:
-        print("  board.toml keeps S3910 stage 4 with the USB debug port")
     if "PONG_SHENG_ROOT" not in wf:
         fail(3, "kernel.yml", "no sheng source checkout for QcomRpmh.h")
     else:
@@ -242,14 +260,19 @@ def pass_decisions():
         print("  payload is finalized from hardware.dtb and verified before upload")
     finalize_invocation = wf[finalize_step:verify_step] if min(finalize_step, verify_step) >= 0 else ""
     verify_invocation = wf[verify_step:] if verify_step >= 0 else ""
+    expected_cpus_flag = f"--cpus {cpu_count}"
     if "--ufs-probe" not in finalize_invocation:
         fail(3, "kernel.yml", "the finalized ADT does not publish the UFS probe nub")
-    elif ("scripts/verify-pong-adt.py" not in verify_invocation or "--cpus 4" not in verify_invocation
+    elif expected_cpus_flag not in finalize_invocation:
+        fail(3, "kernel.yml", f"the finalized ADT does not use board.toml's {expected_cpus_flag}")
+    elif ("scripts/verify-pong-adt.py" not in verify_invocation
+            or expected_cpus_flag not in verify_invocation
             or "--trust-cache" not in verify_invocation):
-        fail(3, "kernel.yml", "the finalized ADT is not checked for four-core touch and trust-cache handoff")
+        fail(3, "kernel.yml", f"the finalized ADT is not verified as {expected_cpus_flag} with trust-cache")
     elif not (ROOT / "scripts/verify-pong-adt.py").is_file():
         fail(3, "scripts", "verify-pong-adt.py is missing")
     else:
+        print(f"  ADT finalize and verify both use board.toml's {expected_cpus_flag}")
         print("  touch resources and trust-cache handoff are checked at ADT property level")
     for bad_flag in ("XNU_SOURCE_CORECRYPTO14: '1'", "XNU_PONG_WIFI: '1'", "XNU_PONG_BACKLIGHT: '1'"):
         if bad_flag in wf:

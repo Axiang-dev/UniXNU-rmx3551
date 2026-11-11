@@ -2,8 +2,9 @@
 
 > 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
 > 2026-11-11：`ff3d025` 的 TrustCache handoff 已通过实机验证，系统越过 DarwinBoot 并进入内核、SpringBoard，S3910 stage-4 也持续产生真实 HID 触点。当前需要区分“设备实际没有启动”和“系统已运行但画面/帧更新不可见”，不得继续按启动封装错误排查。
+> 17:03：USB 调试口在 `ff3d025` CI 镜像上又暴露了启动顺序 panic；`29d45d9` 已把 worker 创建移到 IOKit 初始化成功后，CI `42989774583` 全绿，并已对 `9ea882b4` 临时启动新镜像。硬件结果待回 TWRP 取日志。
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 15:56（Asia/Shanghai）。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 17:03（Asia/Shanghai）。
 接手者先读本页新的「最新接手快照」。其后的 “历史快照（2026-11-10 18:15）” 及更早段落均只用于追溯，其中可能仍写着 stage 3 待测或 HID 未验证。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
@@ -19,11 +20,67 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-11 15:56，Asia/Shanghai；本段优先）
+## 最新接手快照（2026-11-11 17:03，Asia/Shanghai；本段优先）
 
 ### 一句话状态
 
 iPadOS 18.7.10（22H374）的系统启动链路已经验证。`ff3d025` 的本地修复镜像在实机越过 DarwinBoot，日志包含内核启动、launchd、SpringBoard、1080x2412 BGRA surface、`first visible frame`，S3910 HID 还记录了真实触点。用户本次观察到的现象仍是“没开机成功”，但日志排除了 DarwinBoot 拒绝和内核未启动。当前主问题收窄为用户可见画面或稳定 scanout 不一致，不能继续沿 TrustCache、ADT 或缺槽位方向排查。
+
+### 2026-11-11 17:03 USB worker 启动顺序修复（CI 已过，实机验证中）
+
+`ff3d025` 的 CI 镜像在实机上进入内核后 panic，照片与符号化材料保存在：
+
+```text
+D:\unixnu\ud\panic-ff3d025-ci-42981426332-20261111
+```
+
+可见调用链为：
+
+```text
+kmem_alloc_guard_internal
+io_map
+liuqin_usb_debug_start
+bsdinit_task
+```
+
+不是镜像拼接、PONGFAT1 CRC 或触摸回归。旧代码在 `bsdinit_task()` 中同步启动 USB 调试口，此时 VM 页结构和 IOKit 初始化尚未完成，`ml_io_map()` 返回 `KERN_NO_SPACE` 并触发 panic。
+
+提交 `29d45d9`（`fix(usb): start debug worker after IOKit initialization`）采用上游 K60 的启动顺序：
+
+- 删除 `bsdinit_task()` 中的同步 USB 启动。
+- 在 `bsd_autoconf()` 中确认 `IOKitBSDInit()` 返回 `KERN_SUCCESS` 后才调用 `liuqin_usb_debug_start()`。
+- `start` 只创建 worker 并立即返回；所有 `liuqin_io_map()`、DMA 分配和控制器寄存器访问都在 worker 内执行。
+- worker 完成初始化后调用 `thread_terminate(current_thread())`。
+- 新增 `tests/test_rmx3551_usb_startup_order.py`，阻止 USB 调用重新挂回 `bsdinit_task`，也阻止 MMIO/DMA 从 worker 漏回 boot thread。
+- `kernel.yml` 在下载大型 Apple 组件前运行 preflight；Windows 本地 preflight 改为把规范化脚本写入临时文件后用 `wsl.exe --exec /bin/bash -n` 检查，消除了 stdin/WSL 的五条假语法错误。
+
+GitHub Actions run `42989774583` 完整成功，artifact id `13842295410`：
+
+```text
+artifact zip    23348678 bytes  sha256 031bf7ecf32841b350d54ebd796f550451137b81beffdc1a73fe86fe325e388c
+extracted root  D:\unixnu\UniXNU-rmx3551\out\ci-29d45d9-42989774583
+ADT             15444 bytes      sha256 1de68c1b46b922c43c302d526215a0ef403c4b529942bbe78890e2efe126b7bb
+payload.img     100663296 bytes  sha256 22fdd119555c35324c1d898393cf82e49482c28eb2dadda3e5eac4ea0e052f4c
+kernel.macho    51949568 bytes   sha256 a4236c2e57c27e0939ec6258729338c40dd7b6bdd8d6e7fc6dfc6dccba2f83fb
+```
+
+独立 ADT 验证通过：`cpus=4`、`trust-cache=1`、触摸 axes `8640x19296`、UFS SMMU stream `0xe0`。payload 的 `kernel_args` 同时保留 `pong_s3910=4`、`liuqin_usb=1` 和 `liuqin_usb_smmu=2`。用未覆盖的 baseline `rmx3551-uefi-baseline.img` 组装的新临时启动镜像是：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usbworker-stage4-29d45d9-42989774583.img
+bytes   102699008
+sha256  ea041eb3e104829adf5ae4eb689b82f6a9bddda842c8483d7ab609be5fcb1ba4
+```
+
+独立 boot 解包核验确认 baseline 的 UEFI/kernel 字节除 header 的 ramdisk-size 字段外不变，PONGFAT1 version、FAT 长度和 CRC32 `0xcf27f9e9` 均匹配，嵌入 payload 与 artifact 逐字节一致。
+
+启动前在 recovery 核验 `9ea882b4 / ovaltine / twrp_ovaltine`，进入 fastboot 后核验 `serialno=9ea882b4 / product=taro`，随后只执行：
+
+```text
+fastboot -s 9ea882b4 boot D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usbworker-stage4-29d45d9-42989774583.img
+```
+
+`Sending` 与 `Booting` 都为 `OKAY`。截至本段更新，实机日志尚未回收，因此只能确认 CI、artifact、封装与临时启动命令成功，不能把硬件修复判为最终通过。下一份日志必须确认 `io_map`/`KERN_NO_SPACE` panic 消失，并继续看到 S3910 stage 4 打开 HID，不要修改触摸解析、坐标转换或 `pong_s3910=4`。
 
 ### 2026-11-11 TrustCache 启动拒绝与修复
 

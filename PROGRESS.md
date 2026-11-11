@@ -1,10 +1,10 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-11 15:56 (Asia/Shanghai)
+Updated: 2026-11-11 17:03 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
-## Latest handoff snapshot (2026-11-11 15:56 Asia/Shanghai)
+## Latest handoff snapshot (2026-11-11 17:03 Asia/Shanghai)
 
 This new snapshot is authoritative. The historical sections below are retained, but statements that stage 3 was pending or HID was unverified are superseded.
 
@@ -18,6 +18,73 @@ This new snapshot is authoritative. The historical sections below are retained, 
 | Next engineering step | Correlate the reported blank or stalled display with framebuffer/scanout state | The device ran for many minutes, created a 1080x2412 SpringBoard surface and emitted real S3910 HID events. Frame cadence later collapsed for long periods. Do not reopen TrustCache or touch parsing from this evidence |
 | RAM | 4 GiB managed | `Pong RAM: 1 owned banks, 4096 MiB managed`; the roughly 7 GB APFS Data volume is not physical RAM |
 | GPU | Deferred | `pong_software_ui=1` remains in use; Adreno 730 needs a separate platform bring-up |
+| USB debug startup | CI pass, hardware verification pending | The `ff3d025` CI image panicked at `io_map` inside `liuqin_usb_debug_start`. Commit `29d45d9` moved the real MMIO/DMA work to a worker created only after successful `IOKitBSDInit()`. CI `42989774583` passed |
+
+### 2026-11-11 USB debug startup-order repair
+
+The `ff3d025` CI image reached the kernel but panicked with this visible call chain:
+
+```text
+kmem_alloc_guard_internal
+io_map
+liuqin_usb_debug_start
+bsdinit_task
+```
+
+The screenshot and symbol/source evidence are in
+`D:\unixnu\ud\panic-ff3d025-ci-42981426332-20261111`. The packaging was not at fault:
+the old driver performed `ml_io_map()` synchronously from `bsdinit_task()` before the VM page
+structures and IOKit initialization were ready, so the mapping returned `KERN_NO_SPACE`.
+
+Commit `29d45d9` removes that call from `bsdinit_task()`. It calls
+`liuqin_usb_debug_start()` from `bsd_autoconf()` only after `IOKitBSDInit()` returns
+`KERN_SUCCESS`. The start routine now creates one kernel worker and leaves immediately. The
+worker owns every `liuqin_io_map()`, DMA allocation and controller register access, then
+terminates itself. A host regression test checks this split, and the CI workflow now runs
+preflight before downloading the multi-gigabyte Apple components.
+
+The Windows-local preflight false failures were also fixed. It now writes normalized shell text
+to a temporary file and invokes `wsl.exe --exec /bin/bash -n <path>` instead of feeding a Bash
+program through WSL stdin. All six preflight passes, the USB startup-order test and the S3910
+protocol host test pass locally.
+
+GitHub Actions run `42989774583` completed successfully. Artifact id `13842295410`:
+
+```text
+zip          23348678 bytes  sha256 031bf7ecf32841b350d54ebd796f550451137b81beffdc1a73fe86fe325e388c
+ADT             15444 bytes  sha256 1de68c1b46b922c43c302d526215a0ef403c4b529942bbe78890e2efe126b7bb
+payload.img 100663296 bytes  sha256 22fdd119555c35324c1d898393cf82e49482c28eb2dadda3e5eac4ea0e052f4c
+kernel.macho 51949568 bytes  sha256 a4236c2e57c27e0939ec6258729338c40dd7b6bdd8d6e7fc6dfc6dccba2f83fb
+```
+
+Independent verification passed with `--cpus 4 --trust-cache`: touch axes remain
+`8640x19296`, `TrustCache` is present, and the UFS SMMU stream remains `0xe0`. The payload
+kernel arguments still contain `pong_s3910=4`, `liuqin_usb=1` and
+`liuqin_usb_smmu=2`.
+
+The new temporary boot image was assembled on top of the unchanged
+`rmx3551-uefi-baseline.img`:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usbworker-stage4-29d45d9-42989774583.img
+bytes   102699008
+sha256  ea041eb3e104829adf5ae4eb689b82f6a9bddda842c8483d7ab609be5fcb1ba4
+```
+
+Independent parsing confirmed that only the boot header ramdisk-size field and payload region
+changed. The embedded FAT matches the artifact byte-for-byte, and its PONGFAT1 CRC32 is
+`0xcf27f9e9`.
+
+Target identity was checked as `9ea882b4 / ovaltine / twrp_ovaltine` in recovery and
+`serialno=9ea882b4 / product=taro` in fastboot. Only the following temporary boot command was
+used:
+
+```text
+fastboot -s 9ea882b4 boot D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-usbworker-stage4-29d45d9-42989774583.img
+```
+
+Both `Sending` and `Booting` returned `OKAY`. Hardware logs are still pending, so this section
+records a successful build and boot handoff, not a completed USB or touch hardware verdict.
 
 ### 2026-11-11 TrustCache handoff repair
 

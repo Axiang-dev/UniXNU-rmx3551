@@ -2012,26 +2012,20 @@ index 0000000..bef46db
 +
 +#endif
 diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
-index 131a47d..912ebc4 100644
+index 131a47d..381fd21 100644
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1342,6 +1342,16 @@ bsd_autoconf(void)
- 		native_pong_ui_services_start();
- 	}
- #endif
-+
+@@ -1234,1 +1234,10 @@ bsd_init(void)
 +#if defined(ARM64_BOARD_CONFIG_PONG)
-+	/* IOKit and VM page structures are initialized. Create the USB log worker
-+	 * here, but keep every MMIO map and controller register access in that
-+	 * thread so early boot never waits on kernel_map or a DMA allocation. */
-+	if (result == KERN_SUCCESS) {
++	/* Root is mounted. Starting USB any earlier races IOFindBSDRoot and the
++	 * root-media UUID match with the controller and SMMU worker. */
++	{
 +		extern void liuqin_usb_debug_start(void);
 +		liuqin_usb_debug_start();
 +	}
 +#endif
- 	return result;
- }
- 
++
+ #if 0 /* not yet */
 diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
 index 4ea8603..5c4dad5 100644
 --- a/osfmk/console/serial_console.c

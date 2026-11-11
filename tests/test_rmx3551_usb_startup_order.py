@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guard the RMX3551 USB debug port against an early-boot regression."""
+"""Guard the RMX3551 USB debug port against pre-root startup."""
 
 from __future__ import annotations
 
@@ -78,14 +78,16 @@ def main() -> None:
     if len(call_hunks) != 1:
         fail(f"expected one USB start hook in {BSD_INIT}, found {len(call_hunks)}")
     header, body = call_hunks[0]
-    if "bsd_autoconf(void)" not in header:
-        fail("USB start hook is not anchored to bsd_autoconf")
+    if "bsd_init(void)" not in header:
+        fail("USB start hook is not anchored to the post-root bsd_init path")
+    if "bsd_autoconf(void)" in header:
+        fail("USB start hook remains in bsd_autoconf before the root mount")
     if "bsdinit_task" in header or "vm_init_before_launchd" in body:
         fail("USB start hook regressed into bsdinit_task")
     if "#if defined(ARM64_BOARD_CONFIG_PONG)" not in body:
         fail("USB start hook is not board guarded")
-    if "if (result == KERN_SUCCESS)" not in body:
-        fail("USB start hook does not require successful IOKit initialization")
+    if "Root is mounted" not in body or "liuqin_usb_debug_start();" not in body:
+        fail("USB start hook is not documented and invoked at the mounted-root point")
 
     source = source_for_new_file(USB_SOURCE)
     init = function_body(source, "liuqin_usb_debug_init")

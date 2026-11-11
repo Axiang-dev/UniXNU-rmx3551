@@ -108,6 +108,39 @@ ponglog-clean.txt        184804 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb67
 
 `ff3d025` 只修改 TrustCache 的 ADT handoff、生成器、验证器、CI 和 preflight；没有修改 framebuffer、HID、触摸坐标、触点解析、CPU 数量或内核代码。该提交完成的启动修复应视为通过，当前失败继续查显示路径。
 
+本次日志也可归因于新一轮启动，不是上一轮残留：快照头为 `sequence 255`、`tick 2181`，而上一份 cpus4 快照为 `sequence 27`、`tick 45`；本次 `pmap_startup` 为 749,405 微秒，旧快照为 770,232 微秒。
+
+### `ff3d025` CI 产物
+
+GitHub Actions run `42981426332`（<https://github.com/Axiang-dev/UniXNU-rmx3551/actions/runs/42981426332>）已于 2026-11-11 15:57:01 完成，结论为 `success`。关键步骤 19「Finalize the board ADT from the compiled hardware tree」和步骤 20「Verify the finalized ADT before it can be uploaded」均成功。
+
+```text
+artifact id     13838875421
+artifact        rmx3551-kernel
+zip bytes       23346876
+zip SHA-256     15bbb48041a9d0bd0afdd707061fba417fb207b9a4420414682dd6bf10f387bb
+extracted root  D:\unixnu\UniXNU-rmx3551\out\ci-ff3d025-42981426332
+```
+
+从官方 artifact 独立复核：
+
+```text
+kernel.macho.adt.pong  15444 bytes     2586053ae57f16aae65b29a0860d5e83062cf33ef9377ef9226ee5b81b255634
+payload.img            100663296 bytes d095ee3e17a65bd9092e1a8cbd66a4cd7c8fab667f0270622ba788849f52a965
+kernel.macho           51949568 bytes  8e9569c2045e29bad99b384717bfecc5a0758e01c04acbad6d94ca692832d591
+verifier               PASS: cpus=4, trust-cache=1, touch axes=8640x19296
+```
+
+用该 artifact 的 `payload.img` 和不变更的 UEFI baseline 已生成另一张官方命名候选：
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-trustcache-ff3d025-42981426332.img
+bytes   102699008
+sha256  bdbc301db56c8a0988103382c03a350bab1a920bb36f00d09b3d3cbc3777398a
+```
+
+这张候选尚未实机启动。已实机越过 DarwinBoot 的是本地 `f0079848...baa07` 镜像；不要覆盖或删除该已验证镜像，下一次测试如需换图应使用上述新文件名。
+
 不要把 stage-3 的 HID-off 行为套到这张镜像上。它仍使用 `pong_s3910=4`；stage-4 成功时必须看到
 `S3910 ready`、真实触点事件，并且现场触屏可操作。
 

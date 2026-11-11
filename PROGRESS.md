@@ -90,6 +90,33 @@ Before the touch event the framebuffer reported roughly 9–18 FPS. After it, ca
 
 Commit `ff3d025` changed only the TrustCache ADT handoff, generator, finalizer, verifier, CI and preflight. It did not change framebuffer, touch HID, coordinate conversion, contact parsing, CPU count or kernel code.
 
+The log is from a fresh run rather than the previous cpus4 snapshot: the new header is `sequence 255`, `tick 2181`, with `pmap_startup` at 749,405 microseconds. The previous ring was `sequence 27`, `tick 45`, with `pmap_startup` at 770,232 microseconds.
+
+### `ff3d025` CI artifact
+
+GitHub Actions run `42981426332` completed successfully at 15:57:01 Asia/Shanghai. The ADT finalization and upload verification steps both passed.
+
+```text
+artifact id     13838875421
+artifact        rmx3551-kernel
+zip bytes       23346876
+zip SHA-256     15bbb48041a9d0bd0afdd707061fba417fb207b9a4420414682dd6bf10f387bb
+extracted root  D:\unixnu\UniXNU-rmx3551\out\ci-ff3d025-42981426332
+ADT             15444 bytes     2586053ae57f16aae65b29a0860d5e83062cf33ef9377ef9226ee5b81b255634
+payload.img     100663296 bytes d095ee3e17a65bd9092e1a8cbd66a4cd7c8fab667f0270622ba788849f52a965
+kernel.macho    51949568 bytes  8e9569c2045e29bad99b384717bfecc5a0758e01c04acbad6d94ca692832d591
+```
+
+Independent verification passed with `--cpus 4 --trust-cache`: `trust-cache=1`, touch axes `8640x19296`, UFS stream `0xe0`. A new official-named candidate was packed without replacing any baseline:
+
+```text
+D:\unixnu\UniXNU-rmx3551\out\rmx3551-boot-s3910-stage4-trustcache-ff3d025-42981426332.img
+bytes   102699008
+sha256  bdbc301db56c8a0988103382c03a350bab1a920bb36f00d09b3d3cbc3777398a
+```
+
+This CI-derived candidate has not yet been booted. The local `f0079848...baa07` image remains the hardware-validated artifact for the current boot-chain result.
+
 ### CPU progression
 
 | CPUs | Result | Visible cadence | Image SHA-256 |

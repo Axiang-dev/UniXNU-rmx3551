@@ -110,6 +110,18 @@ ponglog-clean.txt        184804 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb67
 
 本次日志也可归因于新一轮启动，不是上一轮残留：快照头为 `sequence 255`、`tick 2181`，而上一份 cpus4 快照为 `sequence 27`、`tick 45`；本次 `pmap_startup` 为 749,405 微秒，旧快照为 770,232 微秒。
 
+现场画面还有一个必须排除的混淆项。当前 22H374 兼容层在 `userland/ui_compat18.c` 的 `wake_home()` 中只调用
+`preventIdleSleepForNumberOfSeconds: 300`，即大约 300 秒后允许系统再次空闲休眠。本次指令原本要求等待
+4–5 分钟再回 TWRP，正好接近该窗口。日志后半段系统服务仍持续运行，但显示帧更新变得稀疏；这符合
+“SpringBoard 已运行、屏幕随后休眠或进入静止状态”，也符合显示异常，当前日志本身不能区分二者。
+
+因此下一次现场判断必须分时记录：
+
+1. fastboot 后 30–60 秒先确认屏幕状态，不能等满 5 分钟才第一次观察。
+2. 若此时有桌面或锁屏，说明启动和首帧已成功；记录是否可触摸以及卡顿程度。
+3. 若随后屏幕变黑或冻结，轻触屏幕并等待至少 30 秒，再记录是否恢复。
+4. 只有“从未出现桌面/锁屏，轻触后也不恢复”才按纯显示提交失败继续查。
+
 ### `ff3d025` CI 产物
 
 GitHub Actions run `42981426332`（<https://github.com/Axiang-dev/UniXNU-rmx3551/actions/runs/42981426332>）已于 2026-11-11 15:57:01 完成，结论为 `success`。关键步骤 19「Finalize the board ADT from the compiled hardware tree」和步骤 20「Verify the finalized ADT before it can be uploaded」均成功。

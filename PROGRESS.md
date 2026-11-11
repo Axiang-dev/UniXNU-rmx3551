@@ -92,6 +92,16 @@ Commit `ff3d025` changed only the TrustCache ADT handoff, generator, finalizer, 
 
 The log is from a fresh run rather than the previous cpus4 snapshot: the new header is `sequence 255`, `tick 2181`, with `pmap_startup` at 749,405 microseconds. The previous ring was `sequence 27`, `tick 45`, with `pmap_startup` at 770,232 microseconds.
 
+One observation confounder remains. The current 22H374 compatibility layer calls
+`preventIdleSleepForNumberOfSeconds: 300` from `userland/ui_compat18.c`, so it keeps idle sleep away for only about
+five minutes. The old instruction to wait four to five minutes before returning to TWRP lands at the edge of that
+window. The later log still shows live system services while frame updates become sparse. That is consistent with
+either a sleeping/static SpringBoard or a display fault, and this log alone cannot distinguish them.
+
+The next visual test must observe at 30–60 seconds, record whether the lock screen or desktop appeared, then wait for
+the display to change. If it goes dark, touch it and allow at least 30 seconds for wake. A pure display failure is
+only established when the UI never appears and touch wake does not restore it.
+
 ### `ff3d025` CI artifact
 
 GitHub Actions run `42981426332` completed successfully at 15:57:01 Asia/Shanghai. The ADT finalization and upload verification steps both passed.

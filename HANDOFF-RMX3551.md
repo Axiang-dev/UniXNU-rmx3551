@@ -1,9 +1,9 @@
 # RMX3551 · UniXNU / iPadOS 18 移植交接文档
 
 > 用户最终目标保持不变：**参考 UniXNU 官方仓库和文档，成功启动 iOS 并进入桌面**。
-> 2026-11-11 正在修复真实 stage-4 ADT 的 TrustCache handoff，使开发构建重新越过 DarwinBoot；S3910 stage-4 触摸此前已通过实机点击和坐标验证。CPU 多核与 USB 工作在当前回归关闭前暂停。
+> 2026-11-11：`ff3d025` 的 TrustCache handoff 已通过实机验证，系统越过 DarwinBoot 并进入内核、SpringBoard，S3910 stage-4 也持续产生真实 HID 触点。当前需要区分“设备实际没有启动”和“系统已运行但画面/帧更新不可见”，不得继续按启动封装错误排查。
 
-初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 15:52（Asia/Shanghai）。
+初次写作：2026-11-08 15:30（GMT+8）。最近更新：2026-11-11 15:56（Asia/Shanghai）。
 接手者先读本页新的「最新接手快照」。其后的 “历史快照（2026-11-10 18:15）” 及更早段落均只用于追溯，其中可能仍写着 stage 3 待测或 HID 未验证。
 
 接手核验（2026-11-08，GMT+8）：已只读提取设备日志与用户态库，证据在
@@ -19,11 +19,11 @@ SpringBoard 两次采样均阻塞于 LaunchServices 数据库请求；backboardd
 
 ---
 
-## 最新接手快照（2026-11-11 15:52，Asia/Shanghai；本段优先）
+## 最新接手快照（2026-11-11 15:56，Asia/Shanghai；本段优先）
 
 ### 一句话状态
 
-iPadOS 18.7.10（22H374）已进入 SpringBoard，S3910 的 stage-4 触摸此前已通过实机点击与坐标验证。`311b89e` 的真实 ADT 因缺少 DarwinBoot 的 TrustCache handoff 槽而在菜单被拒；提交 `ff3d025` 已在生成器、finalizer、verifier 和 CI 中修复该契约，并生成可临时启动的本地 `ff3d025` 镜像。现在唯一待证事项是这张修复镜像能越过 DarwinBoot、重新进入桌面并用触屏操作；在取得新 PongBootLog 和现场触摸结果前，不宣称硬件修复完成。
+iPadOS 18.7.10（22H374）的系统启动链路已经验证。`ff3d025` 的本地修复镜像在实机越过 DarwinBoot，日志包含内核启动、launchd、SpringBoard、1080x2412 BGRA surface、`first visible frame`，S3910 HID 还记录了真实触点。用户本次观察到的现象仍是“没开机成功”，但日志排除了 DarwinBoot 拒绝和内核未启动。当前主问题收窄为用户可见画面或稳定 scanout 不一致，不能继续沿 TrustCache、ADT 或缺槽位方向排查。
 
 ### 2026-11-11 TrustCache 启动拒绝与修复
 
@@ -68,8 +68,45 @@ sha256  f0079848126af0f2550f14ce7ca6e5f4c40b6cacc956ca43346317a7731baa07
 
 启动前已在 TWRP 核验 `ro.serialno=9ea882b4`、`ro.product.device=ovaltine`、
 `ro.product.name=twrp_ovaltine`；进入 bootloader 后又核验 `fastboot -s 9ea882b4 getvar serialno`
-返回 `9ea882b4`、`getvar product` 返回 `taro`。`fastboot -s 9ea882b4 boot` 的 Sending/Booting
-均为 `OKAY`。截至本节更新时间，尚无新的 PongBootLog；下一步是运行 4–5 分钟后回 TWRP，只读提取并解码日志。
+返回 `9ea882b4`、`getvar product` 返回 `taro`。只执行了临时 `fastboot -s 9ea882b4 boot`，没有刷写任何分区。
+
+### 2026-11-11 15:54 `ff3d025` 实机启动结果
+
+这张镜像已经不是“尚未实机启动”。回 TWRP 后只读提取并解码的 PongBootLog 显示系统运行了十几分钟，证据目录：
+
+```text
+D:\unixnu\ud\diagnostics-s3910-stage4-trustcache-ff3d025-20261111-155103
+```
+
+文件与哈希：
+
+```text
+ponglog-region.bin       4198486 bytes  ac8316d1fdd9827ef94e6dbc10f388d515a57cba5559a59998c7cffcf977084b
+ponglog.txt               186535 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb676cc11892f0e5f0de743c72f
+ponglog-region-clean.bin 4198400 bytes  de22a3b2947bee734d6f16b198af4f9a557672433c345204c3a820c89a7b60bb
+ponglog-clean.txt        184804 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb676cc11892f0e5f0de743c72f
+```
+
+第一次 region 多出的 86 字节是设备端 `dd` 统计文字。随后用 `exec-out` 和 `2>/dev/null` 重新抽取标准 4,198,400 字节，解码后的文本哈希与第一次完全相同，因此当前结论不是抓取时混入文字造成的。日志快照头仍显示 `status 2` 和可能被撕裂的警告，但内容连续并被重复抽取一致确认；不能把该警告解释成内核未启动。
+
+关键行：
+
+```text
+7:     Darwin Kernel Version 24.6.0: Tue Nov 10 14:00:36 UTC 2026
+210:   Pong touch: S3910 diagnostic stage 4
+288:   Pong touch: S3910 identified v1 ... axes=8640x19296 ...
+1046:  Pong touch HID: display-integrated digitizer opened
+1364:  Pong UI18: screen native=1080x2412 logical=360.00x804.00 scale=3.00
+1371:  Pong UI18: main queue wake completed backlight=1 lockscreen=1
+1395:  MiniIOMobileFramebuffer: first visible frame; releasing boot console
+1446:  MiniIOSurface: SpringBoard[27] created surface 7: 1080x2412 'BGRA'
+2118:  Pong touch HID: type=1 finger=0 xy=22664,30661
+2656:  MiniIOMobileFramebuffer: 7 frames in 182690 ms (0 a second)
+```
+
+用户点击以前，framebuffer 曾连续报告约 9–18 FPS。真实触点之后从约 10 FPS 掉到 1 FPS、0 FPS，之后偶尔恢复再出现长时间停顿。日志中没有 DarwinBoot `boot refused`，也没有内核 panic。当前现象因此是系统已运行但显示或帧更新不稳定，下一步应先确认现场究竟是黑屏、锁屏、UniXNU 菜单残留还是画面冻结，再针对 display/scanout 取证。
+
+`ff3d025` 只修改 TrustCache 的 ADT handoff、生成器、验证器、CI 和 preflight；没有修改 framebuffer、HID、触摸坐标、触点解析、CPU 数量或内核代码。该提交完成的启动修复应视为通过，当前失败继续查显示路径。
 
 不要把 stage-3 的 HID-off 行为套到这张镜像上。它仍使用 `pong_s3910=4`；stage-4 成功时必须看到
 `S3910 ready`、真实触点事件，并且现场触屏可操作。

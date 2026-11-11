@@ -1,10 +1,10 @@
 # RMX3551 / UniXNU bring-up progress
 
-Updated: 2026-11-11 15:52 (Asia/Shanghai)
+Updated: 2026-11-11 15:56 (Asia/Shanghai)
 
 The final goal is to keep iPadOS 18 bootable through the UniXNU reference stack and reach SpringBoard, then repair touch, hardware keys and USB. This file records only behavior confirmed by source, generated device trees, build artifacts or hardware logs.
 
-## Latest handoff snapshot (2026-11-11 15:52 Asia/Shanghai)
+## Latest handoff snapshot (2026-11-11 15:56 Asia/Shanghai)
 
 This new snapshot is authoritative. The historical sections below are retained, but statements that stage 3 was pending or HID was unverified are superseded.
 
@@ -14,8 +14,8 @@ This new snapshot is authoritative. The historical sections below are retained, 
 | Touch | Basic end-to-end pass | stage 3 app-info/report-format/identify checks passed; stage 4 opens HID at `8640x19296` and `60 Hz`; CPU3 and CPU4 logs each contain four real touch events with no coordinate offset |
 | CPU | cpus4 verified, cpus5 failed without a new log | CPU0–3 complete first boot on cpus4. The first cpus5 attempt failed on hardware, and the post-failure userdata log region is byte-identical to the cpus4 evidence, so it contains no CPU4 first-boot proof |
 | Current best measured UI | cpus4 | retained cadence windows total about 9.409 FPS, with the last two around 10.2 FPS |
-| Boot packaging | Source fix complete, hardware retest pending | The `311b89e` ADT omitted `/chosen/memory-map/TrustCache` while its payload carried `kernel.macho.trustcache`, so DarwinBoot returned `EFI_COMPROMISED_DATA`. Commit `ff3d025` emits, preserves and verifies the 16-byte slot |
-| Next engineering step | Confirm the repaired boot on the target | Boot the `ff3d025` repair image, recover a new PongBootLog and confirm stage-4 touch. Do not return to cpus5 or USB work until this regression is closed |
+| Boot packaging | Hardware pass | The `ff3d025` image crossed DarwinBoot and reached the kernel, launchd and SpringBoard. The payload/ADT TrustCache handoff defect is closed |
+| Next engineering step | Correlate the reported blank or stalled display with framebuffer/scanout state | The device ran for many minutes, created a 1080x2412 SpringBoard surface and emitted real S3910 HID events. Frame cadence later collapsed for long periods. Do not reopen TrustCache or touch parsing from this evidence |
 | RAM | 4 GiB managed | `Pong RAM: 1 owned banks, 4096 MiB managed`; the roughly 7 GB APFS Data volume is not physical RAM |
 | GPU | Deferred | `pong_software_ui=1` remains in use; Adreno 730 needs a separate platform bring-up |
 
@@ -58,9 +58,37 @@ sha256  f0079848126af0f2550f14ce7ca6e5f4c40b6cacc956ca43346317a7731baa07
 ```
 
 Target identity was verified as `9ea882b4 / ovaltine / twrp_ovaltine` in recovery and `serialno=9ea882b4`,
-`product=taro` in fastboot. The temporary `fastboot -s 9ea882b4 boot` completed with Sending and Booting `OKAY`.
-No new PongBootLog or stage-4 touch observation is claimed yet. CI run `42981426332` was triggered from `ff3d025`
-and must finish before its artifact can replace this local boot check.
+`product=taro` in fastboot. Only temporary `fastboot -s 9ea882b4 boot` was used.
+
+### 2026-11-11 15:54 `ff3d025` hardware result
+
+The decoded PongBootLog is at:
+
+```text
+D:\unixnu\ud\diagnostics-s3910-stage4-trustcache-ff3d025-20261111-155103
+region    4198486 bytes  ac8316d1fdd9827ef94e6dbc10f388d515a57cba5559a59998c7cffcf977084b
+log        186535 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb676cc11892f0e5f0de743c72f
+clean bin 4198400 bytes  de22a3b2947bee734d6f16b198af4f9a557672433c345204c3a820c89a7b60bb
+clean log  184804 bytes  ebd3297f224a9b39682aba4709cd71581ae02fb676cc11892f0e5f0de743c72f
+```
+
+The first archive contained 86 bytes of device-side `dd` stderr/statistics. A second `exec-out` pull discarded stderr and produced exactly 4,198,400 bytes. It decoded to the same text hash, so the conclusion is independent of that extraction artifact. The snapshot header still says `status 2` and warns that it may be torn, but the complete boot chain is present and repeated consistently.
+
+Observed evidence:
+
+```text
+Darwin Kernel Version 24.6.0
+S3910 identified ... axes=8640x19296
+Pong touch HID: display-integrated digitizer opened
+Pong UI18: screen native=1080x2412 logical=360.00x804.00 scale=3.00
+MiniIOMobileFramebuffer: first visible frame; releasing boot console
+MiniIOSurface: SpringBoard[27] created surface 7: 1080x2412 'BGRA'
+Pong touch HID: type=1 finger=0 xy=22664,30661
+```
+
+Before the touch event the framebuffer reported roughly 9–18 FPS. After it, cadence fell to 1 FPS and 0 FPS for long windows and later recovered sporadically. There is no DarwinBoot refusal or kernel panic. The user reported that the device did not appear to boot, so the unresolved symptom is now visual presentation or scanout stability, not the TrustCache packaging regression.
+
+Commit `ff3d025` changed only the TrustCache ADT handoff, generator, finalizer, verifier, CI and preflight. It did not change framebuffer, touch HID, coordinate conversion, contact parsing, CPU count or kernel code.
 
 ### CPU progression
 
